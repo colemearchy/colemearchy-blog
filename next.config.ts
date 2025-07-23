@@ -5,6 +5,8 @@ const nextConfig: NextConfig = {
     domains: ['images.unsplash.com'],
   },
   reactStrictMode: true,
+  // Temporarily disable experimental features to ensure stable builds
+  experimental: {},
 };
 
 export default nextConfig;
