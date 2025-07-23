@@ -3,10 +3,22 @@
 import { useRouter } from 'next/navigation'
 import PostEditor from '@/components/PostEditor'
 
+interface PostFormData {
+  title: string
+  slug: string
+  content: string
+  excerpt?: string
+  coverImage?: string
+  tags?: string[]
+  seoTitle?: string
+  seoDescription?: string
+  publishedAt?: string | null
+}
+
 export default function NewPostPage() {
   const router = useRouter()
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: PostFormData) => {
     const response = await fetch('/api/posts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

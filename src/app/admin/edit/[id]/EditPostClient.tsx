@@ -16,6 +16,18 @@ interface Post {
   publishedAt?: string | null
 }
 
+interface PostFormData {
+  title: string
+  slug: string
+  content: string
+  excerpt?: string
+  coverImage?: string
+  tags?: string[]
+  seoTitle?: string
+  seoDescription?: string
+  publishedAt?: string | null
+}
+
 export default function EditPostClient({ id }: { id: string }) {
   const router = useRouter()
   const [post, setPost] = useState<Post | null>(null)
@@ -30,7 +42,7 @@ export default function EditPostClient({ id }: { id: string }) {
       })
   }, [id])
 
-  const handleSubmit = async (data: any) => {
+  const handleSubmit = async (data: PostFormData) => {
     const response = await fetch(`/api/posts/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },

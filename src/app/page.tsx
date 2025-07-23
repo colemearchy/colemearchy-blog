@@ -4,8 +4,18 @@ import { prisma } from '@/lib/prisma'
 
 export const revalidate = 3600 // Revalidate every hour
 
+interface Post {
+  id: string
+  title: string
+  slug: string
+  excerpt: string | null
+  coverImage: string | null
+  publishedAt: Date | null
+  tags: string[]
+}
+
 export default async function HomePage() {
-  const posts = await prisma.post.findMany({
+  const posts: Post[] = await prisma.post.findMany({
     where: { publishedAt: { not: null } },
     orderBy: { publishedAt: 'desc' },
     select: {

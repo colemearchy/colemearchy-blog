@@ -22,7 +22,17 @@ interface PostEditorProps {
     seoDescription?: string
     publishedAt?: string | null
   }
-  onSubmit: (data: any) => Promise<void>
+  onSubmit: (data: {
+    title: string
+    slug: string
+    content: string
+    excerpt: string
+    coverImage: string
+    tags: string[]
+    seoTitle: string
+    seoDescription: string
+    publishedAt: string | null
+  }) => Promise<void>
   isEdit?: boolean
 }
 
