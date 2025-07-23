@@ -10,16 +10,9 @@ interface PostPageProps {
   params: Promise<{ slug: string }>
 }
 
-export async function generateStaticParams() {
-  const posts: { slug: string }[] = await prisma.post.findMany({
-    where: { publishedAt: { not: null } },
-    select: { slug: true },
-  })
-
-  return posts.map((post) => ({
-    slug: post.slug,
-  }))
-}
+// generateStaticParams를 제거하고 동적 렌더링으로 변경
+// 빌드 시점에 데이터베이스 접근을 방지
+export const dynamic = 'force-dynamic'
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { slug } = await params

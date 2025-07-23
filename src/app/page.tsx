@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 
+export const dynamic = 'force-dynamic' // 동적 렌더링으로 변경
 export const revalidate = 3600 // Revalidate every hour
 
 interface Post {
