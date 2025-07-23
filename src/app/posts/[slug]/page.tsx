@@ -35,10 +35,10 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
   return {
     title: post.seoTitle || post.title,
-    description: post.seoDescription || post.excerpt,
+    description: post.seoDescription || post.excerpt || undefined,
     openGraph: {
       title: post.seoTitle || post.title,
-      description: post.seoDescription || post.excerpt,
+      description: post.seoDescription || post.excerpt || undefined,
       type: 'article',
       publishedTime: post.publishedAt.toISOString(),
       modifiedTime: post.updatedAt.toISOString(),
@@ -48,7 +48,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     twitter: {
       card: 'summary_large_image',
       title: post.seoTitle || post.title,
-      description: post.seoDescription || post.excerpt,
+      description: post.seoDescription || post.excerpt || undefined,
       images: post.coverImage ? [post.coverImage] : [],
     },
   }

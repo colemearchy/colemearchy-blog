@@ -3,8 +3,16 @@ import Link from 'next/link'
 
 export const dynamic = 'force-dynamic'
 
+interface Post {
+  id: string
+  title: string
+  slug: string
+  publishedAt: Date | null
+  views: number
+}
+
 export default async function AdminPage() {
-  const posts = await prisma.post.findMany({
+  const posts: Post[] = await prisma.post.findMany({
     orderBy: { createdAt: 'desc' },
     select: {
       id: true,
