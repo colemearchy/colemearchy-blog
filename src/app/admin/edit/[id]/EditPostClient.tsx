@@ -4,9 +4,21 @@ import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import PostEditor from '@/components/PostEditor'
 
+interface Post {
+  title: string
+  slug: string
+  content: string
+  excerpt?: string
+  coverImage?: string
+  tags?: string[]
+  seoTitle?: string
+  seoDescription?: string
+  publishedAt?: string | null
+}
+
 export default function EditPostClient({ id }: { id: string }) {
   const router = useRouter()
-  const [post, setPost] = useState(null)
+  const [post, setPost] = useState<Post | null>(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
@@ -32,6 +44,10 @@ export default function EditPostClient({ id }: { id: string }) {
 
   if (loading) {
     return <div>Loading...</div>
+  }
+
+  if (!post) {
+    return <div>Post not found</div>
   }
 
   return (
