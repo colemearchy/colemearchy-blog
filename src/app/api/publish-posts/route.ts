@@ -38,6 +38,38 @@ async function triggerRedeploy() {
   }
 }
 
+// Submit URL to IndexNow for immediate indexing
+async function submitToIndexNow(url: string) {
+  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+  
+  if (!SITE_URL) {
+    console.error('NEXT_PUBLIC_SITE_URL not configured');
+    return false;
+  }
+  
+  try {
+    const indexNowUrl = `${SITE_URL}/api/index-now`;
+    const response = await fetch(indexNowUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ url }),
+    });
+    
+    if (response.ok) {
+      console.log(`✅ Successfully submitted to IndexNow: ${url}`);
+      return true;
+    } else {
+      console.error(`❌ Failed to submit to IndexNow: ${url}`, response.status);
+      return false;
+    }
+  } catch (error) {
+    console.error('Failed to submit to IndexNow:', error);
+    return false;
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Verify that this is a legitimate cron job request
@@ -70,6 +102,8 @@ export async function POST(request: NextRequest) {
     
     // Update posts to published status
     const publishedPosts = [];
+    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+    
     for (const post of postsToPublish) {
       try {
         const published = await prisma.post.update({
@@ -81,6 +115,12 @@ export async function POST(request: NextRequest) {
         });
         publishedPosts.push(published);
         console.log(`Published post: ${published.title} (${published.id})`);
+        
+        // Submit to IndexNow for immediate indexing
+        if (SITE_URL) {
+          const postUrl = `${SITE_URL}/posts/${published.slug}`;
+          await submitToIndexNow(postUrl);
+        }
       } catch (error) {
         console.error(`Failed to publish post ${post.id}:`, error);
       }
@@ -93,6 +133,12 @@ export async function POST(request: NextRequest) {
       
       if (!redeployed) {
         console.error('Failed to trigger redeploy, but posts were published');
+      }
+      
+      // Also submit the homepage and blog index to IndexNow
+      if (SITE_URL) {
+        await submitToIndexNow(SITE_URL);
+        await submitToIndexNow(`${SITE_URL}/posts`);
       }
     }
     

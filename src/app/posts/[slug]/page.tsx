@@ -26,6 +26,9 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     }
   }
 
+  const ogImageUrl = post.coverImage || 
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}`
+
   return {
     title: post.seoTitle || post.title,
     description: post.seoDescription || post.excerpt || undefined,
@@ -36,13 +39,13 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       publishedTime: post.publishedAt.toISOString(),
       modifiedTime: post.updatedAt.toISOString(),
       tags: post.tags,
-      images: post.coverImage ? [{ url: post.coverImage }] : [],
+      images: [{ url: ogImageUrl }],
     },
     twitter: {
       card: 'summary_large_image',
       title: post.seoTitle || post.title,
       description: post.seoDescription || post.excerpt || undefined,
-      images: post.coverImage ? [post.coverImage] : [],
+      images: [ogImageUrl],
     },
   }
 }
