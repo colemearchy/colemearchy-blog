@@ -61,3 +61,45 @@
 - 모든 배포 전 Lighthouse CI를 실행하여 400점 만점 유지
 - Core Web Vitals 지표를 지속적으로 모니터링
 - 성능 저하 시 즉시 롤백
+
+## 6. RAG (Retrieval-Augmented Generation) 시스템
+
+### 6.1. 개요
+- 과거 독서 노트와 요약을 기반으로 AI가 콘텐츠를 생성할 때 참고하는 지식 베이스 시스템
+- pgvector를 사용한 벡터 유사도 검색으로 관련 컨텍스트 자동 추출
+- Gemini text-embedding-004 모델로 임베딩 생성
+
+### 6.2. 지식 베이스 업데이트
+```bash
+# 지식 베이스 임베딩 실행
+pnpm tsx scripts/embed-knowledge.ts
+```
+- `knowledge-base.txt` 파일에 새로운 독서 노트 추가 후 위 명령어 실행
+- 형식: `[책 제목] 내용...`
+
+### 6.3. 환경 변수 설정
+```bash
+# Vercel 대시보드에서 설정 필요
+CRON_SECRET=your-secure-random-string  # 크론 작업 인증용
+REDEPLOY_WEBHOOK_URL=your-vercel-webhook-url  # 자동 재배포용
+```
+
+## 7. 자동 발행 시스템
+
+### 7.1. 작동 방식
+- 매시간 정각에 크론 작업이 실행되어 예약된 게시물 확인
+- 예약 시간이 지난 DRAFT 상태의 게시물을 자동으로 PUBLISHED로 변경
+- 발행 후 Vercel 재배포를 트리거하여 정적 사이트 재생성
+
+### 7.2. 게시물 예약
+- AI 콘텐츠 생성 시 `publishDate` 파라미터로 예약 발행 시간 설정
+- 생성된 모든 게시물은 DRAFT 상태로 저장되며, 예약 시간에 자동 발행
+
+### 7.3. 수동 테스트
+```bash
+# 예약된 게시물 확인 (GET 요청)
+curl -H "Authorization: Bearer YOUR_CRON_SECRET" https://colemearchy.com/api/publish-posts
+
+# 수동 발행 트리거 (POST 요청) 
+curl -X POST -H "Authorization: Bearer YOUR_CRON_SECRET" https://colemearchy.com/api/publish-posts
+```

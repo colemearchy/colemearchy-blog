@@ -1,10 +1,12 @@
 generator client {
   provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
   provider = "postgresql"
   url = env("DATABASE_URL")
+  extensions = [vector]
 }
 
 model Post {
@@ -14,7 +16,9 @@ model Post {
   content     String
   excerpt     String?
   coverImage  String?
-  publishedAt DateTime?
+  status      PostStatus @default(DRAFT)
+  scheduledAt DateTime?  // 예약 발행 시간
+  publishedAt DateTime?  // 실제 발행된 시간
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
   author      String?
@@ -25,6 +29,12 @@ model Post {
   
   @@index([slug])
   @@index([publishedAt])
+  @@index([status, scheduledAt])
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
 }
 
 model Admin {
@@ -33,4 +43,12 @@ model Admin {
   password  String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model Knowledge {
+  id        String                 @id @default(cuid())
+  content   String                 @db.Text
+  source    String?                // 책 제목 또는 출처
+  embedding Unsupported("vector")? // 벡터 임베딩 (1536 dimensions for text-embedding-004)
+  createdAt DateTime               @default(now())
 }

@@ -3,5 +3,11 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "installCommand": "pnpm install",
-  "devCommand": "pnpm run dev"
+  "devCommand": "pnpm run dev",
+  "crons": [
+    {
+      "path": "/api/publish-posts",
+      "schedule": "0 * * * *"
+    }
+  ]
 }
