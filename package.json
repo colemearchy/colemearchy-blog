@@ -19,6 +19,7 @@
     "@uiw/react-md-editor": "^4.0.8",
     "@vercel/postgres": "^0.10.0",
     "bcryptjs": "^3.0.2",
+    "beasties": "^0.3.5",
     "next": "15.4.3",
     "next-sitemap": "^4.2.3",
     "pgvector": "^0.2.1",
