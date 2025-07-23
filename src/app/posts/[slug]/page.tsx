@@ -11,7 +11,7 @@ interface PostPageProps {
 }
 
 export async function generateStaticParams() {
-  const posts = await prisma.post.findMany({
+  const posts: { slug: string }[] = await prisma.post.findMany({
     where: { publishedAt: { not: null } },
     select: { slug: true },
   })
