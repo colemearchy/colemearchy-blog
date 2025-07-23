@@ -3,7 +3,8 @@ User-agent: *
 Allow: /
 
 # Host
-Host: http://localhost:3000
+Host: https://colemearchy.com
 
 # Sitemaps
+Sitemap: https://colemearchy.com/sitemap.xml
 Sitemap: https://colemearchy.com/server-sitemap.xml
