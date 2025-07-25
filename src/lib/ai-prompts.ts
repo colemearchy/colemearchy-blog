@@ -58,7 +58,7 @@ Remember: Every piece of content must demonstrate real experience and expertise 
 `
 
 export function generateContentPrompt(userInput: string, keywords?: string[], affiliateProducts?: string[]) {
-  let prompt = `Create a comprehensive blog post based on the following:
+  let prompt = `Create a comprehensive, in-depth blog post (MINIMUM 3000 words) based on the following:
 
 Topic: ${userInput}
 `
@@ -73,13 +73,35 @@ Topic: ${userInput}
 
   prompt += `
 
+CRITICAL REQUIREMENTS:
+- MINIMUM 3000 words of high-quality, engaging content
+- Write from personal experience and expertise (E-E-A-T compliance)
+- Include specific examples, case studies, and actionable insights
+- Use storytelling to make complex topics accessible
+- Add multiple sections with H2 and H3 headings for better readability
+- Include at least 5-7 major sections beyond introduction and conclusion
+- Add personal anecdotes that demonstrate real experience
+- Provide practical, actionable advice readers can implement
+- Use data, statistics, or research when relevant
+- End with a compelling conclusion and thought-provoking question
+
+CONTENT STRUCTURE REQUIREMENTS:
+1. Hook: Personal story or surprising fact
+2. Problem/Context: Why this topic matters now
+3. Main Content: 5-7 detailed sections with subheadings
+4. Personal Experience: Your journey/experiments with this topic
+5. Practical Implementation: Step-by-step guidance
+6. Common Mistakes: What to avoid
+7. Advanced Tips: Next-level insights
+8. Conclusion: Key takeaways and engagement question
+
 Please provide the content in the following JSON format:
 {
   "title": "SEO-optimized title (max 60 chars)",
   "slug": "url-friendly-slug",
   "excerpt": "Compelling 2-3 sentence summary",
-  "content": "Full article content in Markdown format",
-  "tags": ["tag1", "tag2", "tag3"],
+  "content": "Full article content in Markdown format (MINIMUM 3000 words)",
+  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
   "seoTitle": "SEO title if different from main title",
   "seoDescription": "Meta description (max 160 chars)"
 }`

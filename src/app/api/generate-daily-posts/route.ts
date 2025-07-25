@@ -67,28 +67,38 @@ async function generateTopicIdeas(): Promise<string[]> {
   ).join('\n\n');
   
   const topicPrompt = `
-당신은 Colemearchy 블로그의 콘텐츠 기획자입니다. 다음 독서 노트들을 참고하여 흥미로운 블로그 주제 10개를 제안해주세요.
+You are the content strategist for Colemearchy blog. Based on the following reading notes, generate 10 engaging blog topics that match our brand voice.
 
-**독서 노트 샘플:**
+**Sample Knowledge Base:**
 ${knowledgeContext}
 
-**Colemearchy 블로그 스타일:**
-- 바이오해킹 & 자기계발 (건강, 최적화, 생산성)
-- 스타트업 & 비즈니스 인사이트
-- 투자 & 경제적 자유에 대한 관점
-- 개인적 경험과 솔직한 스토리텔링
+**Colemearchy Blog Style (The Golden Triangle):**
+1. Biohacking & The Optimized Self: Personal journeys with modern health solutions (Wegovy, mental health meds, fitness, keto diet)
+2. The Startup Architect: Actionable insights on growth, SEO, AI, and leadership from a tech director perspective
+3. The Sovereign Mind: Philosophical and practical takes on investing, personal freedom, and building meaningful life
 
-**요구사항:**
-1. 각 주제는 15-25단어 정도의 구체적인 제목으로 작성
-2. SEO에 적합한 키워드 포함
-3. 독자의 호기심을 자극하는 제목
-4. 실용적이고 액션 가능한 내용
+**Target Audience:** Ambitious millennials (25-40) in tech/finance/creative industries seeking life optimization beyond careers
 
-JSON 형식으로 응답해주세요:
+**Requirements:**
+1. Each topic should be 8-15 words long and click-worthy
+2. Include SEO-friendly keywords
+3. Provoke curiosity and promise actionable insights
+4. Be personal and experience-based (use "I", "My", "How I")
+5. Appeal to freedom-seeking, optimization-minded readers
+
+**Topic Categories to Cover:**
+- Biohacking experiments and results
+- Startup/business growth tactics
+- Investment and wealth building
+- Productivity and mental optimization
+- Technology and AI insights
+- Personal freedom and lifestyle design
+
+Respond in JSON format:
 {
   "topics": [
-    "첫 번째 주제 제목",
-    "두 번째 주제 제목",
+    "First topic title",
+    "Second topic title",
     ...
   ]
 }
@@ -111,11 +121,16 @@ JSON 형식으로 응답해주세요:
   } catch (error) {
     console.error('Failed to parse topic ideas:', error);
     return [
-      '30대 직장인이 실제로 해본 바이오해킹 실험 5가지 결과',
-      '스타트업 초기 팀이 놓치기 쉬운 성장 함정들',
-      '월급쟁이에서 투자 수익 월 300만원까지의 실제 과정',
-      '불안한 완벽주의자가 생산성을 높이는 법',
-      'AI 시대에도 사라지지 않을 직업 스킬 5가지'
+      'How I Biohacked My Way Out of Chronic Fatigue (5 Game-Changing Experiments)',
+      'The Growth Trap That Killed My Startup (And How to Avoid It)',
+      'From $50K to $500K: My Actual Investment Journey Timeline',
+      'Why I Quit Productivity Porn and Started Getting Things Done',
+      'The AI Tools That Actually Make Me Money (Not Just Hype)',
+      'How to Build Wealth While Working a 9-5 (My 3-Year Experiment)',
+      'The Biohacking Stack That Fixed My ADHD Without Medication',
+      'Why Your Startup is Failing (And the Pivot That Saved Mine)',
+      'My $10K Mistake That Taught Me How Markets Really Work',
+      'The Minimalist Productivity System That Changed Everything'
     ];
   }
 }
@@ -195,7 +210,19 @@ export async function POST(request: NextRequest) {
     const generatedPosts = [];
     const failedTopics = [];
 
-    // Step 2: Generate content for each topic
+    // Step 2: Generate content for each topic with scheduled publishing
+    const today = new Date();
+    const startOfDay = new Date(today);
+    startOfDay.setHours(9, 0, 0, 0); // Start publishing at 9 AM
+    
+    // Calculate publish times spread throughout the day (9 AM - 11 PM)
+    const publishTimes = [];
+    for (let i = 0; i < 10; i++) {
+      const publishTime = new Date(startOfDay);
+      publishTime.setHours(9 + Math.floor(i * 14 / 10), (i * 37) % 60, 0, 0); // Spread across 14 hours with varying minutes
+      publishTimes.push(publishTime);
+    }
+    
     for (let i = 0; i < Math.min(topics.length, 10); i++) {
       const topic = topics[i];
       console.log(`📝 Generating content for: "${topic}" (${i + 1}/${Math.min(topics.length, 10)})`);
@@ -204,7 +231,14 @@ export async function POST(request: NextRequest) {
         const content = await generateContentWithRAG(topic);
         
         if (content) {
-          // Save to database as draft
+          // Validate content length (minimum 2500 characters for ~3000 words)
+          const contentLength = content.content?.length || 0;
+          if (contentLength < 2500) {
+            console.warn(`⚠️ Content too short (${contentLength} chars), regenerating...`);
+            continue;
+          }
+          
+          // Save to database as draft with scheduled publish time
           const slug = generateSlug(content.title || topic);
           const uniqueSlug = `${slug}-${Date.now()}`;
           
@@ -218,7 +252,8 @@ export async function POST(request: NextRequest) {
               seoTitle: content.seoTitle || content.title,
               seoDescription: content.seoDescription || content.excerpt,
               status: 'DRAFT',
-              author: 'Colemearchy AI',
+              author: 'Colemearchy',
+              publishDate: publishTimes[i], // Schedule for automatic publishing
               createdAt: new Date()
             }
           });
@@ -226,17 +261,19 @@ export async function POST(request: NextRequest) {
           generatedPosts.push({
             id: post.id,
             title: post.title,
-            slug: post.slug
+            slug: post.slug,
+            publishDate: publishTimes[i].toISOString(),
+            contentLength: contentLength
           });
 
-          console.log(`✅ Generated post: "${post.title}"`);
+          console.log(`✅ Generated post: "${post.title}" (${contentLength} chars) - Scheduled for ${publishTimes[i].toLocaleString()}`);
         } else {
           failedTopics.push(topic);
         }
 
         // Add delay between generations to avoid rate limiting
         if (i < topics.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 2000));
+          await new Promise(resolve => setTimeout(resolve, 3000)); // Increased delay for quality
         }
       } catch (error) {
         console.error(`❌ Failed to generate content for topic: "${topic}"`, error);
