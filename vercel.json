@@ -12,7 +12,11 @@
   "crons": [
     {
       "path": "/api/generate-daily-posts",
-      "schedule": "0 0 * * *"
+      "schedule": "0 6 * * *"
+    },
+    {
+      "path": "/api/publish-posts",
+      "schedule": "0 */2 * * *"
     }
   ]
 }
