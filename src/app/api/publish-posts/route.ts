@@ -84,7 +84,7 @@ export async function POST(request: NextRequest) {
     const postsToPublish = await prisma.post.findMany({
       where: {
         status: 'DRAFT',
-        publishDate: {
+        publishedAt: {
           lte: now, // Less than or equal to current time
           not: null
         }
@@ -174,7 +174,7 @@ export async function GET(request: NextRequest) {
   const scheduledPosts = await prisma.post.findMany({
     where: {
       status: 'DRAFT',
-      publishDate: {
+      publishedAt: {
         lte: now,
         not: null
       }
@@ -182,7 +182,7 @@ export async function GET(request: NextRequest) {
     select: {
       id: true,
       title: true,
-      publishDate: true
+      publishedAt: true
     }
   });
   
