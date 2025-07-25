@@ -8,15 +8,5 @@
     "src/app/api/**/*.ts": {
       "maxDuration": 60
     }
-  },
-  "crons": [
-    {
-      "path": "/api/publish-posts",
-      "schedule": "0 * * * *"
-    },
-    {
-      "path": "/api/generate-daily-posts", 
-      "schedule": "0 0 * * *"
-    }
-  ]
+  }
 }
