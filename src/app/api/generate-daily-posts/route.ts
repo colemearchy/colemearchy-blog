@@ -251,9 +251,9 @@ export async function POST(request: NextRequest) {
               tags: Array.isArray(content.tags) ? content.tags : [],
               seoTitle: content.seoTitle || content.title,
               seoDescription: content.seoDescription || content.excerpt,
-              status: 'DRAFT',
+              status: 'PUBLISHED',
               author: 'Colemearchy',
-              publishDate: publishTimes[i], // Schedule for automatic publishing
+              publishedAt: publishTimes[i], // Publish at scheduled time
               createdAt: new Date()
             }
           });

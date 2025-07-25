@@ -13,10 +13,6 @@
     {
       "path": "/api/generate-daily-posts",
       "schedule": "0 0 * * *"
-    },
-    {
-      "path": "/api/publish-posts",
-      "schedule": "0 * * * *"
     }
   ]
 }
