@@ -212,7 +212,9 @@ export async function POST(request: NextRequest) {
 
     // Step 2: Generate content for each topic with scheduled publishing
     const today = new Date();
-    const startOfDay = new Date(today);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1); // Generate for tomorrow
+    const startOfDay = new Date(tomorrow);
     startOfDay.setHours(9, 0, 0, 0); // Start publishing at 9 AM
     
     // Calculate publish times spread throughout the day (9 AM - 11 PM)
