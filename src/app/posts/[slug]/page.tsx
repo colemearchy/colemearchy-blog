@@ -56,7 +56,12 @@ export default async function PostPage({ params }: PostPageProps) {
     where: { slug },
   })
 
-  if (!post || !post.publishedAt) {
+  if (!post || !post.publishedAt || post.status !== 'PUBLISHED') {
+    notFound()
+  }
+  
+  // Check if post is scheduled for future
+  if (post.publishedAt > new Date()) {
     notFound()
   }
 

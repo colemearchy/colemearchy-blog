@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 
 export const dynamic = 'force-dynamic' // 동적 렌더링으로 변경
-export const revalidate = 3600 // Revalidate every hour
+export const revalidate = 0 // Disable caching temporarily
 
 interface Post {
   id: string
@@ -16,19 +16,33 @@ interface Post {
 }
 
 export default async function HomePage() {
-  const posts: Post[] = await prisma.post.findMany({
-    where: { publishedAt: { not: null } },
-    orderBy: { publishedAt: 'desc' },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      excerpt: true,
-      coverImage: true,
-      publishedAt: true,
-      tags: true,
-    }
-  })
+  let posts: Post[] = []
+  
+  try {
+    posts = await prisma.post.findMany({
+      where: { 
+        status: 'PUBLISHED',
+        publishedAt: { 
+          not: null,
+          lte: new Date() // Only show posts that should be published by now
+        } 
+      },
+      orderBy: { publishedAt: 'desc' },
+      select: {
+        id: true,
+        title: true,
+        slug: true,
+        excerpt: true,
+        coverImage: true,
+        publishedAt: true,
+        tags: true,
+      }
+    })
+  } catch (error) {
+    console.error('Database error:', error)
+    // Return empty array if database fails
+    posts = []
+  }
 
   const featuredPost = posts[0]
   const recentPosts = posts.slice(1, 5)
