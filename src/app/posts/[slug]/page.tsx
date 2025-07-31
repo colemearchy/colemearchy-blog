@@ -5,6 +5,7 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
+import { BlogPostAnalytics } from '@/components/BlogPostAnalytics'
 
 interface PostPageProps {
   params: Promise<{ slug: string }>
@@ -164,6 +165,13 @@ export default async function PostPage({ params }: PostPageProps) {
               {post.content}
             </ReactMarkdown>
           </div>
+
+          <BlogPostAnalytics 
+            title={post.title} 
+            slug={post.slug} 
+            author={post.author || undefined}
+            tags={post.tags}
+          />
         </article>
 
         <footer className="bg-gray-50 mt-20">

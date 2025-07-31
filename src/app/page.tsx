@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
+import { NewsletterAnalytics } from '@/components/NewsletterAnalytics'
 
 export const dynamic = 'force-dynamic' // 동적 렌더링으로 변경
 export const revalidate = 0 // Disable caching temporarily
@@ -240,19 +241,23 @@ export default async function HomePage() {
           <p className="text-gray-600 mb-8">
             A weekly advice column about building product, driving growth, and accelerating your career.
           </p>
-          <form className="flex gap-4 max-w-md mx-auto">
-            <input
-              type="email"
-              placeholder="Type your email..."
-              className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
-            />
-            <button
-              type="submit"
-              className="px-6 py-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors"
-            >
-              Subscribe
-            </button>
-          </form>
+          <NewsletterAnalytics>
+            <div className="flex gap-4 max-w-md mx-auto">
+              <input
+                type="email"
+                name="email"
+                placeholder="Type your email..."
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                required
+              />
+              <button
+                type="submit"
+                className="px-6 py-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors"
+              >
+                Subscribe
+              </button>
+            </div>
+          </NewsletterAnalytics>
         </div>
       </section>
 
