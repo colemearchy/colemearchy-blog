@@ -1,6 +1,6 @@
 import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
-import { BulkImageUploader } from '@/components/admin/BulkImageUploader'
+import { BulkImageUrlUploader } from '@/components/admin/BulkImageUrlUploader'
 import { AdminPostsTable } from '@/components/admin/AdminPostsTable'
 
 export const dynamic = 'force-dynamic'
@@ -29,9 +29,9 @@ export default async function AdminPage() {
 
   return (
     <div className="space-y-8">
-      {/* 대량 이미지 업로드 섹션 */}
+      {/* 대량 이미지 URL 업로드 섹션 */}
       <div className="bg-white rounded-lg shadow p-6">
-        <BulkImageUploader />
+        <BulkImageUrlUploader />
       </div>
 
       {/* 게시물 목록 섹션 - Client Component로 분리 */}

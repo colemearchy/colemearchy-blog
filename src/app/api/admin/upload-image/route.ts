@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { writeFile } from 'fs/promises'
-import { join } from 'path'
+import { prisma } from '@/lib/prisma'
 
 export async function POST(request: NextRequest) {
   try {
@@ -15,27 +14,27 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 파일 저장을 위한 버퍼 생성
+    // 이미지를 Base64로 변환
     const bytes = await image.arrayBuffer()
     const buffer = Buffer.from(bytes)
-
-    // 파일명 생성 (postId_timestamp.확장자)
-    const fileExtension = image.name.split('.').pop()
-    const fileName = `${postId}_${Date.now()}.${fileExtension}`
+    const base64 = buffer.toString('base64')
     
-    // public/uploads 디렉토리에 저장
-    const uploadDir = join(process.cwd(), 'public', 'uploads')
-    const filePath = join(uploadDir, fileName)
+    // MIME 타입 확인
+    const mimeType = image.type || 'image/jpeg'
+    
+    // Data URL 형식으로 저장
+    const imageUrl = `data:${mimeType};base64,${base64}`
 
-    // 파일 저장
-    await writeFile(filePath, buffer)
-
-    // 웹에서 접근 가능한 URL 반환
-    const imageUrl = `/uploads/${fileName}`
+    // 실제 postId가 있는 경우 데이터베이스 업데이트
+    if (!postId.startsWith('temp-')) {
+      await prisma.post.update({
+        where: { id: postId },
+        data: { coverImage: imageUrl }
+      })
+    }
 
     return NextResponse.json({ 
       imageUrl,
-      fileName,
       postId 
     })
   } catch (error) {
