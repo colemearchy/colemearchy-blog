@@ -3,12 +3,7 @@
 import { useEffect, Suspense } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 
-declare global {
-  interface Window {
-    gtag: (...args: any[]) => void
-    dataLayer: any[]
-  }
-}
+// Global types are defined in src/types/gtag.d.ts
 
 const GA_MEASUREMENT_ID = 'G-YLCNXNGZX4'
 
