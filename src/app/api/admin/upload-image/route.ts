@@ -37,13 +37,16 @@ export async function POST(request: NextRequest) {
     // Generate unique filename
     const filename = generateUniqueFileName(image.name)
 
-    console.log('Uploading file:', filename, 'Size:', image.size)
+    console.log('Uploading file:', filename, 'Size:', image.size, 'Type:', image.type)
 
-    // Upload to Vercel Blob directly without optimization for now
-    const blob = await put(filename, image.stream(), {
+    // Convert File to Blob/ArrayBuffer for upload
+    const bytes = await image.arrayBuffer()
+    const buffer = Buffer.from(bytes)
+
+    // Upload to Vercel Blob
+    const blob = await put(filename, buffer, {
       access: 'public',
-      addRandomSuffix: false,
-      contentType: image.type
+      contentType: image.type || 'image/jpeg'
     })
 
     console.log('Upload successful:', blob.url)
