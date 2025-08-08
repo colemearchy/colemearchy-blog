@@ -148,15 +148,17 @@ export default async function PostPage({ params }: PostPageProps) {
           </header>
 
           {post.coverImage && (
-            <div className="relative h-96 mb-8 rounded-lg overflow-hidden">
-              <Image
-                src={post.coverImage}
-                alt={post.title}
-                fill
-                className="object-cover"
-                priority
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              />
+            <div className="relative w-full mb-8 rounded-lg overflow-hidden">
+              <div className="relative aspect-[16/9]">
+                <Image
+                  src={post.coverImage}
+                  alt={post.title}
+                  fill
+                  className="object-contain bg-gray-100"
+                  priority
+                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                />
+              </div>
             </div>
           )}
 
