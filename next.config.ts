@@ -2,12 +2,24 @@ import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
   images: {
-    domains: [
-      'images.unsplash.com',
-      'localhost',
-      'colemearchy.com',
-      process.env.VERCEL_BLOB_HOST || '', // Vercel Blob Storage 도메인
-    ].filter(Boolean),
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'images.unsplash.com',
+      },
+      {
+        protocol: 'http',
+        hostname: 'localhost',
+      },
+      {
+        protocol: 'https',
+        hostname: 'colemearchy.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.public.blob.vercel-storage.com',
+      },
+    ],
   },
   experimental: {
     serverComponentsExternalPackages: ['sharp'],
