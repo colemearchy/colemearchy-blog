@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { prisma } from '@/lib/prisma'
-import { optimizeImage } from '@/lib/image-utils'
 import { generateUniqueFileName, validateImageFile } from '@/lib/upload-utils'
 
 export async function POST(request: NextRequest) {
@@ -26,26 +25,14 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Convert file to buffer
-    const bytes = await image.arrayBuffer()
-    const buffer = Buffer.from(bytes)
-
-    // Optimize image
-    const optimizedBuffer = await optimizeImage(buffer, {
-      maxWidth: 1920,
-      maxHeight: 1080,
-      quality: 85,
-      format: 'webp'
-    })
-
     // Generate unique filename
     const filename = generateUniqueFileName(image.name)
 
-    // Upload to Vercel Blob
-    const blob = await put(filename, optimizedBuffer, {
+    // Upload to Vercel Blob directly without optimization for now
+    const blob = await put(filename, image.stream(), {
       access: 'public',
       addRandomSuffix: false,
-      contentType: 'image/webp'
+      contentType: image.type
     })
 
     // Update post if not temp
@@ -63,12 +50,18 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Error uploading image:', error)
     
-    // Check if it's a Vercel Blob error
-    if (error instanceof Error && error.message.includes('BLOB_')) {
-      return NextResponse.json(
-        { error: 'Storage service error. Please check your configuration.' },
-        { status: 503 }
-      )
+    // More detailed error logging
+    if (error instanceof Error) {
+      console.error('Error details:', error.message)
+      console.error('Error stack:', error.stack)
+      
+      // Check if it's a Vercel Blob error
+      if (error.message.includes('BLOB_') || error.message.includes('token')) {
+        return NextResponse.json(
+          { error: 'Storage service error. Please ensure BLOB_READ_WRITE_TOKEN is set in environment variables.' },
+          { status: 503 }
+        )
+      }
     }
     
     return NextResponse.json(
