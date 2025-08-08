@@ -5,6 +5,15 @@ import { generateUniqueFileName, validateImageFile } from '@/lib/upload-utils'
 
 export async function POST(request: NextRequest) {
   try {
+    // 환경 변수 체크
+    if (!process.env.BLOB_READ_WRITE_TOKEN) {
+      console.error('BLOB_READ_WRITE_TOKEN is not set')
+      return NextResponse.json(
+        { error: 'Storage service not configured. BLOB_READ_WRITE_TOKEN is missing.' },
+        { status: 503 }
+      )
+    }
+
     const formData = await request.formData()
     const image = formData.get('image') as File
     const postId = formData.get('postId') as string
@@ -28,12 +37,16 @@ export async function POST(request: NextRequest) {
     // Generate unique filename
     const filename = generateUniqueFileName(image.name)
 
+    console.log('Uploading file:', filename, 'Size:', image.size)
+
     // Upload to Vercel Blob directly without optimization for now
     const blob = await put(filename, image.stream(), {
       access: 'public',
       addRandomSuffix: false,
       contentType: image.type
     })
+
+    console.log('Upload successful:', blob.url)
 
     // Update post if not temp
     if (!postId.startsWith('temp-')) {
@@ -65,7 +78,7 @@ export async function POST(request: NextRequest) {
     }
     
     return NextResponse.json(
-      { error: 'Failed to upload image' },
+      { error: 'Failed to upload image: ' + (error instanceof Error ? error.message : 'Unknown error') },
       { status: 500 }
     )
   }
