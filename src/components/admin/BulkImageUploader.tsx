@@ -1,7 +1,8 @@
 'use client'
 
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { trackEvent } from '@/components/GoogleAnalytics'
+import { uploadWithRetry, validateImageFile } from '@/lib/upload-utils'
 
 interface BulkImageUploaderProps {
   onUploadComplete?: (results: UploadResult[]) => void
@@ -16,11 +17,34 @@ interface UploadResult {
   error?: string
 }
 
+interface UploadProgress {
+  current: number
+  total: number
+  currentFile: string
+}
+
+// 이미지 미리보기 컴포넌트 - 메모리 누수 방지
+function ImagePreview({ image, alt, className }: { image: File; alt: string; className: string }) {
+  const [imageUrl, setImageUrl] = useState<string>('')
+  
+  useEffect(() => {
+    const url = URL.createObjectURL(image)
+    setImageUrl(url)
+    
+    return () => {
+      URL.revokeObjectURL(url)
+    }
+  }, [image])
+  
+  return <img src={imageUrl} alt={alt} className={className} />
+}
+
 export function BulkImageUploader({ onUploadComplete }: BulkImageUploaderProps) {
   const [images, setImages] = useState<File[]>([])
   const [isUploading, setIsUploading] = useState(false)
   const [progress, setProgress] = useState(0)
   const [results, setResults] = useState<UploadResult[]>([])
+  const [uploadProgress, setUploadProgress] = useState<UploadProgress | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
   // 파일 선택 처리
@@ -38,17 +62,31 @@ export function BulkImageUploader({ onUploadComplete }: BulkImageUploaderProps) 
 
   // 파일 처리 및 정렬
   const processFiles = (files: File[]) => {
-    const imageFiles = files
-      .filter(f => f.type.startsWith('image/'))
-      .sort((a, b) => {
-        // 파일명에서 숫자 추출 (1.png, 2.png, 10.png 등)
-        const numA = parseInt(a.name.match(/\d+/)?.[0] || '0')
-        const numB = parseInt(b.name.match(/\d+/)?.[0] || '0')
-        return numA - numB
-      })
+    const validFiles: File[] = []
+    const errors: string[] = []
     
-    setImages(prev => [...prev, ...imageFiles])
-    trackEvent('bulk_image_select', 'admin', `${imageFiles.length} images`)
+    files.forEach(file => {
+      const validation = validateImageFile(file)
+      if (validation.valid) {
+        validFiles.push(file)
+      } else {
+        errors.push(`${file.name}: ${validation.error}`)
+      }
+    })
+    
+    if (errors.length > 0) {
+      alert(errors.join('\n'))
+    }
+    
+    const sortedFiles = validFiles.sort((a, b) => {
+      // 파일명에서 숫자 추출 (1.png, 2.png, 10.png 등)
+      const numA = parseInt(a.name.match(/\d+/)?.[0] || '0')
+      const numB = parseInt(b.name.match(/\d+/)?.[0] || '0')
+      return numA - numB
+    })
+    
+    setImages(prev => [...prev, ...sortedFiles])
+    trackEvent('bulk_image_select', 'admin', `${sortedFiles.length} images`)
   }
 
   // 일괄 업로드 처리
@@ -86,17 +124,19 @@ export function BulkImageUploader({ onUploadComplete }: BulkImageUploaderProps) 
           formData.append('image', image)
           formData.append('postId', post.id)
 
-          // 이미지 업로드
-          const uploadResponse = await fetch('/api/admin/upload-image', {
-            method: 'POST',
-            body: formData
+          // 이미지 업로드 with retry
+          const uploadResponse = await uploadWithRetry(async () => {
+            return await fetch('/api/admin/upload-image', {
+              method: 'POST',
+              body: formData
+            })
           })
 
           if (uploadResponse.ok) {
             const { imageUrl } = await uploadResponse.json()
             
-            // 게시물 업데이트
-            const updateResponse = await fetch(`/api/posts/${post.id}`, {
+            // 게시물 업데이트 - admin API 사용
+            const updateResponse = await fetch(`/api/admin/posts/${post.id}`, {
               method: 'PATCH',
               headers: { 'Content-Type': 'application/json' },
               body: JSON.stringify({ coverImage: imageUrl })
@@ -111,10 +151,12 @@ export function BulkImageUploader({ onUploadComplete }: BulkImageUploaderProps) 
                 success: true
               })
             } else {
-              throw new Error('게시물 업데이트 실패')
+              const errorData = await updateResponse.json().catch(() => ({}))
+              throw new Error(errorData.error || '게시물 업데이트 실패')
             }
           } else {
-            throw new Error('이미지 업로드 실패')
+            const errorData = await uploadResponse.json().catch(() => ({}))
+            throw new Error(errorData.error || '이미지 업로드 실패')
           }
         } catch (error) {
           uploadResults.push({
@@ -129,6 +171,11 @@ export function BulkImageUploader({ onUploadComplete }: BulkImageUploaderProps) 
 
         // 진행률 업데이트
         setProgress(Math.round(((i + 1) / totalImages) * 100))
+        setUploadProgress({
+          current: i + 1,
+          total: totalImages,
+          currentFile: image.name
+        })
       }
 
       setResults(uploadResults)
@@ -147,6 +194,7 @@ export function BulkImageUploader({ onUploadComplete }: BulkImageUploaderProps) 
       alert('업로드 중 오류가 발생했습니다.')
     } finally {
       setIsUploading(false)
+      setUploadProgress(null)
     }
   }
 
@@ -208,8 +256,8 @@ export function BulkImageUploader({ onUploadComplete }: BulkImageUploaderProps) 
           <div className="grid grid-cols-5 gap-2 max-h-64 overflow-y-auto">
             {images.map((image, index) => (
               <div key={index} className="relative group">
-                <img
-                  src={URL.createObjectURL(image)}
+                <ImagePreview
+                  image={image}
                   alt={image.name}
                   className="w-full h-24 object-cover rounded"
                 />
@@ -263,6 +311,12 @@ export function BulkImageUploader({ onUploadComplete }: BulkImageUploaderProps) 
                   style={{ width: `${progress}%` }}
                 />
               </div>
+              {uploadProgress && (
+                <div className="mt-2 text-sm text-gray-600">
+                  <p>현재 업로드 중: {uploadProgress.currentFile}</p>
+                  <p>{uploadProgress.current} / {uploadProgress.total} 완료</p>
+                </div>
+              )}
             </div>
           )}
         </div>

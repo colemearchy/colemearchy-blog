@@ -5,7 +5,7 @@ import { usePathname, useSearchParams } from 'next/navigation'
 
 // Global types are defined in src/types/gtag.d.ts
 
-const GA_MEASUREMENT_ID = 'G-YLCNXNGZX4'
+const GA_MEASUREMENT_ID = 'G-KBJG8YGB9P'
 
 function GoogleAnalyticsInner() {
   const pathname = usePathname()

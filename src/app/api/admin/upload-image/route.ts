@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { put } from '@vercel/blob'
 import { prisma } from '@/lib/prisma'
+import { optimizeImage } from '@/lib/image-utils'
+import { generateUniqueFileName, validateImageFile } from '@/lib/upload-utils'
 
 export async function POST(request: NextRequest) {
   try {
@@ -14,31 +17,60 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // 이미지를 Base64로 변환
+    // Validate image file
+    const validation = validateImageFile(image)
+    if (!validation.valid) {
+      return NextResponse.json(
+        { error: validation.error },
+        { status: 400 }
+      )
+    }
+
+    // Convert file to buffer
     const bytes = await image.arrayBuffer()
     const buffer = Buffer.from(bytes)
-    const base64 = buffer.toString('base64')
-    
-    // MIME 타입 확인
-    const mimeType = image.type || 'image/jpeg'
-    
-    // Data URL 형식으로 저장
-    const imageUrl = `data:${mimeType};base64,${base64}`
 
-    // 실제 postId가 있는 경우 데이터베이스 업데이트
+    // Optimize image
+    const optimizedBuffer = await optimizeImage(buffer, {
+      maxWidth: 1920,
+      maxHeight: 1080,
+      quality: 85,
+      format: 'webp'
+    })
+
+    // Generate unique filename
+    const filename = generateUniqueFileName(image.name)
+
+    // Upload to Vercel Blob
+    const blob = await put(filename, optimizedBuffer, {
+      access: 'public',
+      addRandomSuffix: false,
+      contentType: 'image/webp'
+    })
+
+    // Update post if not temp
     if (!postId.startsWith('temp-')) {
       await prisma.post.update({
         where: { id: postId },
-        data: { coverImage: imageUrl }
+        data: { coverImage: blob.url }
       })
     }
 
     return NextResponse.json({ 
-      imageUrl,
+      imageUrl: blob.url,
       postId 
     })
   } catch (error) {
     console.error('Error uploading image:', error)
+    
+    // Check if it's a Vercel Blob error
+    if (error instanceof Error && error.message.includes('BLOB_')) {
+      return NextResponse.json(
+        { error: 'Storage service error. Please check your configuration.' },
+        { status: 503 }
+      )
+    }
+    
     return NextResponse.json(
       { error: 'Failed to upload image' },
       { status: 500 }
