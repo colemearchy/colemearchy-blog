@@ -18,7 +18,11 @@ export async function PATCH(
     if (data.tags !== undefined) updateData.tags = data.tags
     if (data.seoTitle !== undefined) updateData.seoTitle = data.seoTitle
     if (data.seoDescription !== undefined) updateData.seoDescription = data.seoDescription
-    if (data.publishedAt !== undefined) updateData.publishedAt = data.publishedAt ? new Date(data.publishedAt) : null
+    if (data.publishedAt !== undefined) {
+      updateData.publishedAt = data.publishedAt ? new Date(data.publishedAt) : null
+      // If publishedAt is set, automatically set status to PUBLISHED
+      updateData.status = data.publishedAt ? 'PUBLISHED' : 'DRAFT'
+    }
     
     const post = await prisma.post.update({
       where: { id },

@@ -27,6 +27,8 @@ export async function POST(request: NextRequest) {
         seoTitle: data.seoTitle || data.title,
         seoDescription: data.seoDescription || data.excerpt,
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
+        // If publishedAt is set, automatically set status to PUBLISHED
+        status: data.publishedAt ? 'PUBLISHED' : 'DRAFT',
       },
     })
     

@@ -3,9 +3,8 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import ReactMarkdown from 'react-markdown'
-import remarkGfm from 'remark-gfm'
 import { BlogPostAnalytics } from '@/components/BlogPostAnalytics'
+import MarkdownContent from '@/components/MarkdownContent'
 
 interface PostPageProps {
   params: Promise<{ slug: string }>
@@ -162,11 +161,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           )}
 
-          <div className="prose prose-lg max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
-              {post.content}
-            </ReactMarkdown>
-          </div>
+          <MarkdownContent content={post.content} />
 
           <BlogPostAnalytics 
             title={post.title} 

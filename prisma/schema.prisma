@@ -1,40 +1,35 @@
 generator client {
-  provider = "prisma-client-js"
+  provider        = "prisma-client-js"
   previewFeatures = ["postgresqlExtensions"]
 }
 
 datasource db {
-  provider = "postgresql"
-  url = env("DATABASE_URL")
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
   extensions = [vector]
 }
 
 model Post {
-  id          String   @id @default(cuid())
-  title       String
-  slug        String   @unique
-  content     String
-  excerpt     String?
-  coverImage  String?
-  status      PostStatus @default(DRAFT)
-  scheduledAt DateTime?  // 예약 발행 시간
-  publishedAt DateTime?  // 실제 발행된 시간
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-  author      String?
-  tags        String[] @default([])
-  seoTitle    String?
+  id             String     @id @default(cuid())
+  title          String
+  slug           String     @unique
+  content        String
+  excerpt        String?
+  coverImage     String?
+  publishedAt    DateTime?
+  createdAt      DateTime   @default(now())
+  updatedAt      DateTime   @updatedAt
+  author         String?
+  tags           String[]   @default([])
+  seoTitle       String?
   seoDescription String?
-  views       Int      @default(0)
-  
+  views          Int        @default(0)
+  scheduledAt    DateTime?
+  status         PostStatus @default(DRAFT)
+
   @@index([slug])
   @@index([publishedAt])
   @@index([status, scheduledAt])
-}
-
-enum PostStatus {
-  DRAFT
-  PUBLISHED
 }
 
 model Admin {
@@ -47,8 +42,13 @@ model Admin {
 
 model Knowledge {
   id        String                 @id @default(cuid())
-  content   String                 @db.Text
-  source    String?                // 책 제목 또는 출처
-  embedding Unsupported("vector")? // 벡터 임베딩 (1536 dimensions for text-embedding-004)
+  content   String
+  source    String?
+  embedding Unsupported("vector")?
   createdAt DateTime               @default(now())
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
 }
