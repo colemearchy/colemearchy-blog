@@ -98,7 +98,7 @@ export async function POST(request: NextRequest) {
         title: prompt.substring(0, 60),
         content: responseText,
         excerpt: responseText.substring(0, 160),
-        tags: keywords ? keywords.split(',').map((k: string) => k.trim()) : []
+        tags: Array.isArray(keywords) ? keywords : (keywords ? keywords.split(',').map((k: string) => k.trim()) : [])
       };
     }
 

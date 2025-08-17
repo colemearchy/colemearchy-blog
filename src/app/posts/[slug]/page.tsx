@@ -5,6 +5,9 @@ import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { BlogPostAnalytics } from '@/components/BlogPostAnalytics'
 import MarkdownContent from '@/components/MarkdownContent'
+import RelatedPosts from '@/components/RelatedPosts'
+import TableOfContents from '@/components/TableOfContents'
+import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 
 interface PostPageProps {
   params: Promise<{ slug: string }>
@@ -70,6 +73,9 @@ export default async function PostPage({ params }: PostPageProps) {
     where: { id: post.id },
     data: { views: { increment: 1 } },
   })
+  
+  // Calculate reading time
+  const readingTime = calculateReadingTime(post.content)
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -115,26 +121,30 @@ export default async function PostPage({ params }: PostPageProps) {
           </div>
         </header>
 
-        <article className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-          <header className="mb-8">
-            <h1 className="text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
-            <div className="flex items-center text-gray-600 space-x-4">
-              <time dateTime={post.publishedAt.toISOString()}>
-                {new Date(post.publishedAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                })}
-              </time>
-              <span>•</span>
-              <span>{post.views} views</span>
-              {post.author && (
-                <>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="flex gap-8">
+            <article className="flex-1 max-w-4xl">
+              <header className="mb-8">
+                <h1 className="text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
+                <div className="flex items-center text-gray-600 space-x-4">
+                  <time dateTime={post.publishedAt.toISOString()}>
+                    {new Date(post.publishedAt).toLocaleDateString('en-US', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric',
+                    })}
+                  </time>
                   <span>•</span>
-                  <span>By {post.author}</span>
-                </>
-              )}
-            </div>
+                  <span>{formatReadingTime(readingTime)}</span>
+                  <span>•</span>
+                  <span>{post.views} views</span>
+                  {post.author && (
+                    <>
+                      <span>•</span>
+                      <span>By {post.author}</span>
+                    </>
+                  )}
+                </div>
             {post.tags.length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
                 {post.tags.map((tag) => (
@@ -161,15 +171,23 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           )}
 
-          <MarkdownContent content={post.content} />
+              <MarkdownContent content={post.content} />
+              
+              <RelatedPosts postId={post.id} />
 
-          <BlogPostAnalytics 
-            title={post.title} 
-            slug={post.slug} 
-            author={post.author || undefined}
-            tags={post.tags}
-          />
-        </article>
+              <BlogPostAnalytics 
+                title={post.title} 
+                slug={post.slug} 
+                author={post.author || undefined}
+                tags={post.tags}
+              />
+            </article>
+            
+            <aside className="hidden xl:block">
+              <TableOfContents content={post.content} />
+            </aside>
+          </div>
+        </div>
 
         <footer className="bg-gray-50 mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">

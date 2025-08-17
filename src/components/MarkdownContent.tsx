@@ -9,15 +9,32 @@ interface MarkdownContentProps {
 }
 
 export default function MarkdownContent({ content }: MarkdownContentProps) {
+  let headingIndex = 0
+  
+  const createHeadingId = (text: string, level: number) => {
+    const id = `heading-${headingIndex}-${text.toString().toLowerCase().replace(/[^\w]+/g, '-')}`
+    headingIndex++
+    return id
+  }
+  
   return (
     <div style={{ maxWidth: '65ch', margin: '0 auto' }}>
       <ReactMarkdown 
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeRaw]}
         components={{
-          h1: ({children}: any) => <h1 style={{fontSize: '2.25rem', fontWeight: 700, marginTop: '2rem', marginBottom: '1rem', lineHeight: 1.2}}>{children}</h1>,
-          h2: ({children}: any) => <h2 style={{fontSize: '1.875rem', fontWeight: 600, marginTop: '1.75rem', marginBottom: '0.75rem', lineHeight: 1.3}}>{children}</h2>,
-          h3: ({children}: any) => <h3 style={{fontSize: '1.5rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.5rem', lineHeight: 1.3}}>{children}</h3>,
+          h1: ({children}: any) => {
+            const id = createHeadingId(children, 1)
+            return <h1 id={id} style={{fontSize: '2.25rem', fontWeight: 700, marginTop: '2rem', marginBottom: '1rem', lineHeight: 1.2}}>{children}</h1>
+          },
+          h2: ({children}: any) => {
+            const id = createHeadingId(children, 2)
+            return <h2 id={id} style={{fontSize: '1.875rem', fontWeight: 600, marginTop: '1.75rem', marginBottom: '0.75rem', lineHeight: 1.3}}>{children}</h2>
+          },
+          h3: ({children}: any) => {
+            const id = createHeadingId(children, 3)
+            return <h3 id={id} style={{fontSize: '1.5rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.5rem', lineHeight: 1.3}}>{children}</h3>
+          },
           p: ({children}: any) => <p style={{marginBottom: '1.25rem', lineHeight: 1.75}}>{children}</p>,
           strong: ({children}: any) => <strong style={{fontWeight: 700}}>{children}</strong>,
           em: ({children}: any) => <em style={{fontStyle: 'italic'}}>{children}</em>,
