@@ -56,7 +56,6 @@ function generateSlug(title: string): string {
 async function generateTopicIdeas(): Promise<string[]> {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
   
-  // Get some sample knowledge to inspire topics
   const sampleKnowledge = await prisma.knowledge.findMany({
     take: 5,
     select: { content: true, source: true }
@@ -138,13 +137,9 @@ Respond in JSON format:
 // Generate content using RAG
 async function generateContentWithRAG(topic: string): Promise<any> {
   try {
-    // Generate embedding for the topic
     const topicEmbedding = await generateEmbedding(topic);
-    
-    // Search for similar knowledge
     const similarKnowledge = await searchSimilarKnowledge(topicEmbedding);
     
-    // Create RAG context
     const ragContext = similarKnowledge.length > 0 
       ? `\n\n**과거 기록 컨텍스트 (Past Knowledge Context):**\n${
           similarKnowledge.map((k, i) => 
@@ -153,7 +148,6 @@ async function generateContentWithRAG(topic: string): Promise<any> {
         }\n\n**위 컨텍스트를 참고하여 나의 과거 생각과 스타일을 반영해 글을 작성해주세요.**\n\n`
       : '';
 
-    // Generate content
     const fullPrompt = `${MASTER_SYSTEM_PROMPT}\n\n------\n\n${ragContext}**EXECUTE TASK:**\n\n${generateContentPrompt(topic, [], [])}`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
@@ -170,11 +164,9 @@ async function generateContentWithRAG(topic: string): Promise<any> {
 
     const responseText = result.response.text();
     
-    // Parse the generated content
     try {
       return JSON.parse(responseText);
     } catch {
-      // If not JSON, wrap in content object
       return { 
         title: topic,
         content: responseText,
@@ -190,19 +182,17 @@ async function generateContentWithRAG(topic: string): Promise<any> {
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify that this is a legitimate cron job request
     if (!verifyCronSecret(request)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
     
-    console.log('🚀 Starting daily content generation...');
+    console.log('🚀 Starting hourly content generation...');
     
     const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
     if (!GEMINI_API_KEY) {
       return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
     }
 
-    // Step 1: Generate topic ideas
     console.log('💡 Generating topic ideas...');
     const topics = await generateTopicIdeas();
     console.log(`Generated ${topics.length} topics:`, topics);
@@ -210,21 +200,6 @@ export async function POST(request: NextRequest) {
     const generatedPosts = [];
     const failedTopics = [];
 
-    // Step 2: Generate content for each topic with scheduled publishing
-    const today = new Date();
-    const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1); // Generate for tomorrow
-    const startOfDay = new Date(tomorrow);
-    startOfDay.setHours(9, 0, 0, 0); // Start publishing at 9 AM
-    
-    // Calculate publish times spread throughout the day (9 AM - 11 PM)
-    const publishTimes = [];
-    for (let i = 0; i < 10; i++) {
-      const publishTime = new Date(startOfDay);
-      publishTime.setHours(9 + Math.floor(i * 14 / 10), (i * 37) % 60, 0, 0); // Spread across 14 hours with varying minutes
-      publishTimes.push(publishTime);
-    }
-    
     for (let i = 0; i < Math.min(topics.length, 10); i++) {
       const topic = topics[i];
       console.log(`📝 Generating content for: "${topic}" (${i + 1}/${Math.min(topics.length, 10)})`);
@@ -233,14 +208,12 @@ export async function POST(request: NextRequest) {
         const content = await generateContentWithRAG(topic);
         
         if (content) {
-          // Validate content length (minimum 2500 characters for ~3000 words)
           const contentLength = content.content?.length || 0;
           if (contentLength < 2500) {
             console.warn(`⚠️ Content too short (${contentLength} chars), regenerating...`);
             continue;
           }
           
-          // Save to database as draft with scheduled publish time
           const slug = generateSlug(content.title || topic);
           const uniqueSlug = `${slug}-${Date.now()}`;
           
@@ -255,7 +228,7 @@ export async function POST(request: NextRequest) {
               seoDescription: content.seoDescription || content.excerpt,
               status: 'PUBLISHED',
               author: 'Colemearchy',
-              publishedAt: publishTimes[i], // Publish at scheduled time
+              publishedAt: new Date(),
               createdAt: new Date()
             }
           });
@@ -264,18 +237,17 @@ export async function POST(request: NextRequest) {
             id: post.id,
             title: post.title,
             slug: post.slug,
-            publishDate: publishTimes[i].toISOString(),
+            publishDate: new Date().toISOString(),
             contentLength: contentLength
           });
 
-          console.log(`✅ Generated post: "${post.title}" (${contentLength} chars) - Scheduled for ${publishTimes[i].toLocaleString()}`);
+          console.log(`✅ Generated post: "${post.title}" (${contentLength} chars)`);
         } else {
           failedTopics.push(topic);
         }
 
-        // Add delay between generations to avoid rate limiting
         if (i < topics.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 3000)); // Increased delay for quality
+          await new Promise(resolve => setTimeout(resolve, 3000));
         }
       } catch (error) {
         console.error(`❌ Failed to generate content for topic: "${topic}"`, error);
@@ -283,33 +255,32 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    console.log(`🎉 Daily content generation complete! Generated ${generatedPosts.length} posts`);
+    console.log(`🎉 Hourly content generation complete! Generated ${generatedPosts.length} posts`);
 
     return NextResponse.json({
       success: true,
-      message: `Generated ${generatedPosts.length} draft posts`,
+      message: `Generated ${generatedPosts.length} posts`,
       generatedPosts,
       failedTopics,
       timestamp: new Date().toISOString()
     });
 
   } catch (error) {
-    console.error('❌ Error in daily content generation:', error);
+    console.error('❌ Error in hourly content generation:', error);
     return NextResponse.json({ 
-      error: 'Failed to generate daily content',
+      error: 'Failed to generate hourly content',
       details: error instanceof Error ? error.message : 'Unknown error' 
     }, { status: 500 });
   }
 }
 
-// Support GET for manual testing
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
   
   return NextResponse.json({
-    message: 'Daily content generation endpoint is ready',
+    message: 'Hourly content generation endpoint is ready',
     timestamp: new Date().toISOString()
   });
 }
