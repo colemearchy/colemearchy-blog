@@ -1,10 +1,12 @@
 import { google } from 'googleapis';
 
-// YouTube API 클라이언트 초기화
-const youtube = google.youtube({
-  version: 'v3',
-  auth: process.env.YOUTUBE_API_KEY,
-});
+// YouTube API 클라이언트를 함수로 변경하여 런타임에 환경 변수 로드
+function getYouTubeClient() {
+  return google.youtube({
+    version: 'v3',
+    auth: process.env.YOUTUBE_API_KEY,
+  });
+}
 
 export interface YouTubeVideo {
   id: string;
@@ -20,10 +22,24 @@ export interface YouTubeVideo {
 export async function getChannelVideos(maxResults: number = 10): Promise<YouTubeVideo[]> {
   try {
     const channelId = process.env.YOUTUBE_CHANNEL_ID;
+    const apiKey = process.env.YOUTUBE_API_KEY;
+    
+    console.log('YouTube API Config:', {
+      hasApiKey: !!apiKey,
+      apiKeyLength: apiKey?.length,
+      hasChannelId: !!channelId,
+      channelId: channelId
+    });
+    
+    if (!apiKey) {
+      throw new Error('YouTube API Key not configured. Please set YOUTUBE_API_KEY environment variable.');
+    }
     
     if (!channelId) {
-      throw new Error('YouTube Channel ID not configured');
+      throw new Error('YouTube Channel ID not configured. Please set YOUTUBE_CHANNEL_ID environment variable.');
     }
+
+    const youtube = getYouTubeClient();
 
     // 채널의 업로드 플레이리스트 ID 가져오기
     const channelResponse = await youtube.channels.list({
@@ -34,10 +50,10 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
     const uploadsPlaylistId = channelResponse.data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
     
     if (!uploadsPlaylistId) {
-      throw new Error('Could not find uploads playlist');
+      throw new Error('Could not find uploads playlist for channel: ' + channelId);
     }
 
-    // 플레이리스트의 동영상 목록 가져오기 (order는 playlistItems에서 지원하지 않음)
+    // 플레이리스트의 동영상 목록 가져오기
     const playlistResponse = await youtube.playlistItems.list({
       part: ['snippet'],
       playlistId: uploadsPlaylistId,
@@ -65,8 +81,13 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
     }
 
     return videos;
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error fetching YouTube videos:', error);
+    console.error('Error details:', {
+      message: error.message,
+      code: error.code,
+      errors: error.errors
+    });
     throw error;
   }
 }
@@ -74,6 +95,8 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
 // 특정 동영상의 상세 정보 가져오기
 export async function getVideoDetails(videoId: string): Promise<YouTubeVideo | null> {
   try {
+    const youtube = getYouTubeClient();
+    
     const response = await youtube.videos.list({
       part: ['snippet'],
       id: [videoId],
