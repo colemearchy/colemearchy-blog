@@ -19,16 +19,33 @@ interface Post {
 function parseExcerpt(excerpt: string | null): string | null {
   if (!excerpt) return null;
   
-  // Check if excerpt is wrapped in ```json block
-  if (excerpt.startsWith('```json')) {
-    const jsonMatch = excerpt.match(/```json\n([\s\S]*?)\n```/);
+  // Handle potentially truncated JSON content
+  if (excerpt.includes('```json') || excerpt.includes('"excerpt":')) {
+    // 1. Try to extract from ```json block
+    const jsonMatch = excerpt.match(/```json\s*([\s\S]*?)(?:```|$)/);
     if (jsonMatch) {
       try {
         const parsed = JSON.parse(jsonMatch[1]);
-        return parsed.excerpt || excerpt;
+        return parsed.excerpt || parsed.description || null;
       } catch (e) {
-        console.error('Failed to parse excerpt JSON:', e);
+        // JSON might be truncated, continue to fallback methods
       }
+    }
+    
+    // 2. Try to extract excerpt value directly from JSON string
+    const excerptMatch = excerpt.match(/"excerpt"\s*:\s*"([^"]+)"/);
+    if (excerptMatch) {
+      return excerptMatch[1];
+    }
+    
+    // 3. If it's clearly JSON but we can't parse it, return a default message
+    if (excerpt.startsWith('```json') || excerpt.startsWith('{')) {
+      // Extract title if possible as fallback
+      const titleMatch = excerpt.match(/"title"\s*:\s*"([^"]+)"/);
+      if (titleMatch) {
+        return `Read about: ${titleMatch[1]}`;
+      }
+      return "Click to read more...";
     }
   }
   
