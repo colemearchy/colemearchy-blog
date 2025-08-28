@@ -135,6 +135,16 @@ export async function POST(request: NextRequest) {
         console.error('Failed to trigger redeploy, but posts were published');
       }
       
+      // Trigger sitemap update
+      try {
+        await fetch(`${SITE_URL}/api/sitemap/update`, {
+          method: 'POST',
+        })
+        console.log('✅ Sitemap update triggered');
+      } catch (error) {
+        console.error('Failed to trigger sitemap update:', error)
+      }
+      
       // Also submit the homepage and blog index to IndexNow
       if (SITE_URL) {
         await submitToIndexNow(SITE_URL);

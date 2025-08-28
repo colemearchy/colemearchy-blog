@@ -17,6 +17,9 @@ importers:
       '@types/bcryptjs':
         specifier: ^3.0.0
         version: 3.0.0
+      '@types/prismjs':
+        specifier: ^1.26.5
+        version: 1.26.5
       '@uiw/react-md-editor':
         specifier: ^4.0.8
         version: 4.0.8(@types/react@19.1.8)(react-dom@19.1.0(react@19.1.0))(react@19.1.0)
@@ -41,6 +44,9 @@ importers:
       prisma:
         specifier: ^6.12.0
         version: 6.12.0(typescript@5.8.3)
+      prismjs:
+        specifier: ^1.30.0
+        version: 1.30.0
       react:
         specifier: 19.1.0
         version: 19.1.0
@@ -1886,6 +1892,10 @@ packages:
     peerDependenciesMeta:
       typescript:
         optional: true
+
+  prismjs@1.30.0:
+    resolution: {integrity: sha512-DEvV2ZF2r2/63V+tK8hQvrR2ZGn10srHbXviTlcv7Kpzw8jWiNTqbVgjO3IY8RxrrOUF8VPMQQFysYYYv0YZxw==}
+    engines: {node: '>=6'}
 
   progress@2.0.3:
     resolution: {integrity: sha512-7PiHtLll5LdnKIMw100I+8xJXR5gW2QwWYkT6iJva0bXitZKa/XMrSbdmg3r2Xnaidz9Qumd0VPaMrZlF9V9sA==}
@@ -4341,6 +4351,8 @@ snapshots:
       '@prisma/engines': 6.12.0
     optionalDependencies:
       typescript: 5.8.3
+
+  prismjs@1.30.0: {}
 
   progress@2.0.3: {}
 

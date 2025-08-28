@@ -13,6 +13,7 @@ export default function AdminLayout({
             </div>
             <div className="flex items-center gap-4">
               <a href="/admin" className="text-gray-700 hover:text-gray-900">Posts</a>
+              <a href="/admin/analytics" className="text-gray-700 hover:text-gray-900">Analytics</a>
               <a 
                 href="/api/download/desktop-app" 
                 className="inline-flex items-center gap-2 text-gray-700 hover:text-gray-900 border border-gray-300 px-3 py-2 rounded-md hover:bg-gray-50"

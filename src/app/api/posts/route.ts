@@ -32,6 +32,17 @@ export async function POST(request: NextRequest) {
       },
     })
     
+    // If post is published, trigger sitemap update
+    if (post.status === 'PUBLISHED' && post.publishedAt) {
+      try {
+        await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/sitemap/update`, {
+          method: 'POST',
+        })
+      } catch (error) {
+        console.error('Failed to trigger sitemap update:', error)
+      }
+    }
+    
     return NextResponse.json(post)
   } catch (error) {
     return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })

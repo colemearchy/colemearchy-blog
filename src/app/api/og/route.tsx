@@ -8,6 +8,9 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const title = searchParams.get('title') || 'Colemearchy Blog';
     const author = searchParams.get('author') || 'Colemearchy';
+    const date = searchParams.get('date') || new Date().toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const readTime = searchParams.get('readTime') || '5 min read';
+    const tags = searchParams.get('tags')?.split(',').slice(0, 3) || [];
 
     return new ImageResponse(
       (
@@ -94,19 +97,55 @@ export async function GET(request: NextRequest) {
             </p>
           </div>
 
-          {/* Author */}
+          {/* Tags */}
+          {tags.length > 0 && (
+            <div
+              style={{
+                position: 'absolute',
+                top: '100px',
+                left: '50px',
+                display: 'flex',
+                gap: '10px',
+              }}
+            >
+              {tags.map((tag, i) => (
+                <span
+                  key={i}
+                  style={{
+                    backgroundColor: 'rgba(59, 130, 246, 0.2)',
+                    color: '#60a5fa',
+                    padding: '6px 12px',
+                    borderRadius: '16px',
+                    fontSize: '16px',
+                    fontWeight: '500',
+                  }}
+                >
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* Author and metadata */}
           <div
             style={{
               position: 'absolute',
               bottom: '40px',
+              left: '50px',
               right: '50px',
               display: 'flex',
+              justifyContent: 'space-between',
               alignItems: 'center',
               color: '#64748b', // slate-500
               fontSize: '20px',
             }}
           >
-            by {author}
+            <div>by {author}</div>
+            <div style={{ display: 'flex', gap: '20px' }}>
+              <span>{date}</span>
+              <span>•</span>
+              <span>{readTime}</span>
+            </div>
           </div>
 
           {/* Decorative element */}
