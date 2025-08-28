@@ -53,13 +53,30 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
   // Parse content if it's in JSON format
   let content = post.content
-  try {
-    const parsed = JSON.parse(post.content)
-    if (parsed.content) {
-      content = parsed.content
+  
+  // Check if content starts with ```json block
+  if (content.startsWith('```json')) {
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/)
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[1])
+        if (parsed.content) {
+          content = parsed.content
+        }
+      } catch (e) {
+        console.error('Failed to parse JSON block:', e)
+      }
     }
-  } catch (e) {
-    // Content is already in markdown format
+  } else {
+    // Try direct JSON parse
+    try {
+      const parsed = JSON.parse(post.content)
+      if (parsed.content) {
+        content = parsed.content
+      }
+    } catch (e) {
+      // Content is already in markdown format
+    }
   }
 
   const readingTime = calculateReadingTime(content)
@@ -111,13 +128,30 @@ export default async function PostPage({ params }: PostPageProps) {
   
   // Parse content if it's in JSON format
   let content = post.content
-  try {
-    const parsed = JSON.parse(post.content)
-    if (parsed.content) {
-      content = parsed.content
+  
+  // Check if content starts with ```json block
+  if (content.startsWith('```json')) {
+    const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/)
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[1])
+        if (parsed.content) {
+          content = parsed.content
+        }
+      } catch (e) {
+        console.error('Failed to parse JSON block:', e)
+      }
     }
-  } catch (e) {
-    // Content is already in markdown format
+  } else {
+    // Try direct JSON parse
+    try {
+      const parsed = JSON.parse(post.content)
+      if (parsed.content) {
+        content = parsed.content
+      }
+    } catch (e) {
+      // Content is already in markdown format
+    }
   }
   
   // Calculate reading time
