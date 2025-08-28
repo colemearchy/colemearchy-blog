@@ -1,7 +1,6 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import dynamic from 'next/dynamic'
 import 'prismjs/themes/prism-tomorrow.css'
 
 interface CodeBlockProps {
@@ -10,46 +9,66 @@ interface CodeBlockProps {
   inline?: boolean
 }
 
-// Dynamically import Prism to reduce initial bundle size
-const loadPrism = () => import('prismjs')
-
-// Map of supported languages and their imports
-const languageLoaders: Record<string, () => Promise<any>> = {
-  javascript: () => import('prismjs/components/prism-javascript'),
-  typescript: () => import('prismjs/components/prism-typescript'),
-  jsx: () => import('prismjs/components/prism-jsx'),
-  tsx: () => import('prismjs/components/prism-tsx'),
-  css: () => import('prismjs/components/prism-css'),
-  python: () => import('prismjs/components/prism-python'),
-  bash: () => import('prismjs/components/prism-bash'),
-  json: () => import('prismjs/components/prism-json'),
-  markdown: () => import('prismjs/components/prism-markdown'),
-  sql: () => import('prismjs/components/prism-sql'),
-}
-
 export default function CodeBlock({ children, className, inline }: CodeBlockProps) {
   const [copied, setCopied] = useState(false)
-  const [Prism, setPrism] = useState<any>(null)
   
   // Extract language from className (e.g., "language-javascript")
   const language = className?.replace(/language-/, '') || 'text'
   
   useEffect(() => {
-    if (!inline) {
-      // Load Prism and the specific language component
-      loadPrism().then(async (prismModule) => {
-        const prism = prismModule.default
-        setPrism(prism)
-        
-        // Load language component if available
-        if (languageLoaders[language]) {
-          await languageLoaders[language]()
+    if (!inline && typeof window !== 'undefined') {
+      // Dynamically import Prism to avoid SSR issues
+      import('prismjs').then((Prism) => {
+        // Import language components based on the detected language
+        const loadLanguage = async () => {
+          try {
+            switch (language) {
+              case 'javascript':
+              case 'js':
+                await import('prismjs/components/prism-javascript')
+                break
+              case 'typescript':
+              case 'ts':
+                await import('prismjs/components/prism-typescript')
+                break
+              case 'jsx':
+                await import('prismjs/components/prism-jsx')
+                break
+              case 'tsx':
+                await import('prismjs/components/prism-tsx')
+                break
+              case 'css':
+                await import('prismjs/components/prism-css')
+                break
+              case 'python':
+                await import('prismjs/components/prism-python')
+                break
+              case 'bash':
+              case 'sh':
+                await import('prismjs/components/prism-bash')
+                break
+              case 'json':
+                await import('prismjs/components/prism-json')
+                break
+              case 'markdown':
+              case 'md':
+                await import('prismjs/components/prism-markdown')
+                break
+              case 'sql':
+                await import('prismjs/components/prism-sql')
+                break
+            }
+          } catch (error) {
+            console.warn(`Failed to load language: ${language}`, error)
+          }
+          
+          // Highlight all code blocks after language is loaded
+          setTimeout(() => {
+            Prism.default.highlightAll()
+          }, 0)
         }
         
-        // Highlight the code
-        setTimeout(() => {
-          prism.highlightAll()
-        }, 0)
+        loadLanguage()
       })
     }
   }, [inline, children, language])
@@ -62,70 +81,58 @@ export default function CodeBlock({ children, className, inline }: CodeBlockProp
   
   if (inline) {
     return (
-      <code 
-        style={{
-          backgroundColor: '#f3f4f6',
-          padding: '0.125rem 0.375rem',
-          borderRadius: '0.25rem',
-          fontSize: '0.875rem',
-          fontFamily: 'monospace'
-        }}
-      >
+      <code className={`${className || ''} inline-code`} style={{
+        backgroundColor: '#f3f4f6',
+        padding: '0.125rem 0.375rem',
+        borderRadius: '0.25rem',
+        fontSize: '0.875rem',
+        fontFamily: 'monospace'
+      }}>
         {children}
       </code>
     )
   }
   
   return (
-    <div style={{ position: 'relative', marginBottom: '1.5rem' }}>
-      <div style={{
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        backgroundColor: '#1e293b',
-        padding: '0.5rem 1rem',
-        borderTopLeftRadius: '0.5rem',
-        borderTopRightRadius: '0.5rem',
-        fontSize: '0.75rem',
-        color: '#94a3b8'
-      }}>
-        <span>{language}</span>
-        <button
-          onClick={handleCopy}
-          style={{
-            background: 'none',
-            border: 'none',
-            color: copied ? '#10b981' : '#94a3b8',
-            cursor: 'pointer',
-            fontSize: '0.75rem',
-            padding: '0.25rem 0.5rem',
-            borderRadius: '0.25rem',
-            transition: 'all 0.2s'
-          }}
-          onMouseEnter={(e) => {
-            if (!copied) {
-              e.currentTarget.style.backgroundColor = '#334155'
-              e.currentTarget.style.color = '#e2e8f0'
-            }
-          }}
-          onMouseLeave={(e) => {
-            if (!copied) {
-              e.currentTarget.style.backgroundColor = 'transparent'
-              e.currentTarget.style.color = '#94a3b8'
-            }
-          }}
-        >
-          {copied ? '✓ Copied' : 'Copy'}
-        </button>
-      </div>
+    <div className="code-block relative" style={{position: 'relative', marginBottom: '1.5rem'}}>
+      <button
+        onClick={handleCopy}
+        className="copy-button"
+        style={{
+          position: 'absolute',
+          top: '0.5rem',
+          right: '0.5rem',
+          padding: '0.25rem 0.5rem',
+          backgroundColor: 'rgba(255, 255, 255, 0.1)',
+          color: '#fff',
+          border: 'none',
+          borderRadius: '0.25rem',
+          fontSize: '0.75rem',
+          cursor: 'pointer',
+          zIndex: 1,
+          transition: 'background-color 0.2s'
+        }}
+        onMouseEnter={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.2)'
+        }}
+        onMouseLeave={(e) => {
+          e.currentTarget.style.backgroundColor = 'rgba(255, 255, 255, 0.1)'
+        }}
+      >
+        {copied ? 'Copied!' : 'Copy'}
+      </button>
       <pre style={{
-        margin: 0,
-        borderBottomLeftRadius: '0.5rem',
-        borderBottomRightRadius: '0.5rem',
-        overflow: 'auto',
-        maxHeight: '600px'
+        backgroundColor: '#1f2937',
+        color: '#f3f4f6',
+        padding: '1rem',
+        paddingTop: '2.5rem',
+        borderRadius: '0.5rem',
+        overflowX: 'auto',
+        fontSize: '0.875rem',
+        lineHeight: 1.7,
+        margin: 0
       }}>
-        <code className={`language-${language}`}>
+        <code className={className}>
           {children}
         </code>
       </pre>
