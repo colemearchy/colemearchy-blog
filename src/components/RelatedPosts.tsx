@@ -19,6 +19,42 @@ interface RelatedPostsProps {
   postId: string
 }
 
+function parseExcerpt(excerpt: string | null): string | null {
+  if (!excerpt) return null;
+  
+  // Handle potentially truncated JSON content
+  if (excerpt.includes('```json') || excerpt.includes('"excerpt":')) {
+    // 1. Try to extract from ```json block
+    const jsonMatch = excerpt.match(/```json\s*([\s\S]*?)(?:```|$)/);
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[1]);
+        return parsed.excerpt || parsed.description || null;
+      } catch (e) {
+        // JSON might be truncated, continue to fallback methods
+      }
+    }
+    
+    // 2. Try to extract excerpt value directly from JSON string
+    const excerptMatch = excerpt.match(/"excerpt"\s*:\s*"([^"]+)"/);
+    if (excerptMatch) {
+      return excerptMatch[1];
+    }
+    
+    // 3. If it's clearly JSON but we can't parse it, return a default message
+    if (excerpt.startsWith('```json') || excerpt.startsWith('{')) {
+      // Extract title if possible as fallback
+      const titleMatch = excerpt.match(/"title"\s*:\s*"([^"]+)"/);
+      if (titleMatch) {
+        return `Read about: ${titleMatch[1]}`;
+      }
+      return "Click to read more...";
+    }
+  }
+  
+  return excerpt;
+}
+
 export default function RelatedPosts({ postId }: RelatedPostsProps) {
   const [posts, setPosts] = useState<RelatedPost[]>([])
   const [loading, setLoading] = useState(true)
@@ -87,7 +123,7 @@ export default function RelatedPosts({ postId }: RelatedPostsProps) {
               </h3>
               {post.excerpt && (
                 <p className="text-gray-600 text-sm line-clamp-3 mb-3">
-                  {post.excerpt}
+                  {parseExcerpt(post.excerpt)}
                 </p>
               )}
               <div className="mt-auto flex items-center text-sm text-gray-500">
