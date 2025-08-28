@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import Image from 'next/image'
 // import { extractContentFromDescription } from '@/lib/youtube'
 
 interface YouTubeVideo {
@@ -129,12 +128,14 @@ This post is based on our YouTube video. Watch it for more details!
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {videos.map((video) => (
             <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="relative aspect-video">
-                <Image
-                  src={video.thumbnailUrl}
+              <div className="relative aspect-video bg-gray-100">
+                <img
+                  src={video.thumbnailUrl || `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
                   alt={video.title}
-                  fill
-                  className="object-cover"
+                  className="w-full h-full object-cover"
+                  onError={(e) => {
+                    e.currentTarget.src = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`
+                  }}
                 />
                 <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity" />
               </div>

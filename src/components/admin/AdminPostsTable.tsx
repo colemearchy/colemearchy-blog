@@ -20,6 +20,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
   const [posts, setPosts] = useState(initialPosts)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [copiedTitle, setCopiedTitle] = useState<string | null>(null)
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null)
 
   const handleSort = () => {
     const newOrder = sortOrder === 'asc' ? 'desc' : 'asc'
@@ -36,6 +37,17 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
       setTimeout(() => setCopiedTitle(null), 2000)
     } catch (err) {
       console.error('Failed to copy title:', err)
+    }
+  }
+
+  const handleCopyUrl = async (slug: string) => {
+    try {
+      const url = `https://colemearchy.com/posts/${slug}`
+      await navigator.clipboard.writeText(url)
+      setCopiedUrl(slug)
+      setTimeout(() => setCopiedUrl(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy URL:', err)
     }
   }
 
@@ -139,12 +151,48 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
                     {post.views}
                   </td>
                   <td className="px-3 py-4 text-sm text-center">
-                    <Link 
-                      href={`/admin/edit/${post.id}`} 
-                      className="text-indigo-600 hover:text-indigo-900 font-medium"
-                    >
-                      수정
-                    </Link>
+                    <div className="flex items-center justify-center gap-3">
+                      {/* 미리보기 */}
+                      <Link 
+                        href={`/posts/${post.slug}`} 
+                        target="_blank"
+                        className="text-gray-600 hover:text-gray-900 font-medium"
+                        title="미리보기"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                      </Link>
+                      
+                      {/* URL 복사 */}
+                      <button
+                        onClick={() => handleCopyUrl(post.slug)}
+                        className="relative text-gray-600 hover:text-gray-900"
+                        title="URL 복사"
+                      >
+                        {copiedUrl === post.slug ? (
+                          <svg className="w-4 h-4 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+                          </svg>
+                        )}
+                      </button>
+                      
+                      {/* 수정 */}
+                      <Link 
+                        href={`/admin/edit/${post.id}`} 
+                        className="text-indigo-600 hover:text-indigo-900 font-medium"
+                        title="수정"
+                      >
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               )

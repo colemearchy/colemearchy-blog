@@ -304,8 +304,8 @@ export default function PostEditor({ initialData, onSubmit, isEdit = false }: Po
                   
                   // YouTube 썸네일을 coverImage로 자동 설정
                   if (!formData.coverImage || formData.coverImage.includes('ytimg.com')) {
-                    // maxresdefault (1280x720) > hqdefault (480x360) 순으로 시도
-                    const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`
+                    // hqdefault를 기본으로 사용 (항상 존재)
+                    const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
                     setFormData(prev => ({ 
                       ...prev, 
                       youtubeVideoId: videoId,
