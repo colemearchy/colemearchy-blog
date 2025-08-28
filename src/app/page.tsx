@@ -16,6 +16,25 @@ interface Post {
   tags: string[]
 }
 
+function parseExcerpt(excerpt: string | null): string | null {
+  if (!excerpt) return null;
+  
+  // Check if excerpt is wrapped in ```json block
+  if (excerpt.startsWith('```json')) {
+    const jsonMatch = excerpt.match(/```json\n([\s\S]*?)\n```/);
+    if (jsonMatch) {
+      try {
+        const parsed = JSON.parse(jsonMatch[1]);
+        return parsed.excerpt || excerpt;
+      } catch (e) {
+        console.error('Failed to parse excerpt JSON:', e);
+      }
+    }
+  }
+  
+  return excerpt;
+}
+
 export default async function HomePage() {
   let posts: Post[] = []
   
@@ -98,7 +117,7 @@ export default async function HomePage() {
                         </h2>
                         {featuredPost.excerpt && (
                           <p className="text-lg text-gray-600 leading-relaxed">
-                            {featuredPost.excerpt}
+                            {parseExcerpt(featuredPost.excerpt)}
                           </p>
                         )}
                         <div className="flex items-center gap-2 text-sm text-gray-500">
@@ -194,7 +213,7 @@ export default async function HomePage() {
                             </h3>
                             {post.excerpt && (
                               <p className="text-gray-600 line-clamp-2">
-                                {post.excerpt}
+                                {parseExcerpt(post.excerpt)}
                               </p>
                             )}
                             <div className="flex items-center gap-2 text-sm text-gray-500">
