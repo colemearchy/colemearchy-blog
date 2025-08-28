@@ -39,7 +39,7 @@ export async function GET(request: Request) {
     const videos = await getChannelVideos(limit);
     
     return NextResponse.json(videos);
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error in YouTube API:', error);
     
     // 더 상세한 에러 정보 반환
