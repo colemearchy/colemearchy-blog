@@ -75,6 +75,10 @@ const nextConfig: NextConfig = {
           key: 'Permissions-Policy',
           value: 'camera=(), microphone=(), geolocation=()',
         },
+        {
+          key: 'Content-Security-Policy',
+          value: "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;",
+        },
       ],
     },
   ],

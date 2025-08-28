@@ -13,6 +13,7 @@ interface PostFormData {
   seoTitle?: string
   seoDescription?: string
   publishedAt?: string | null
+  youtubeVideoId?: string | null
 }
 
 export default function NewPostPage() {

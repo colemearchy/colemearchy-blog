@@ -18,6 +18,7 @@ export async function PATCH(
     if (data.tags !== undefined) updateData.tags = data.tags
     if (data.seoTitle !== undefined) updateData.seoTitle = data.seoTitle
     if (data.seoDescription !== undefined) updateData.seoDescription = data.seoDescription
+    if (data.youtubeVideoId !== undefined) updateData.youtubeVideoId = data.youtubeVideoId
     if (data.publishedAt !== undefined) {
       updateData.publishedAt = data.publishedAt ? new Date(data.publishedAt) : null
       // If publishedAt is set, automatically set status to PUBLISHED

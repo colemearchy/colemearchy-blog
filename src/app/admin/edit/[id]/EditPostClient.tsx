@@ -14,6 +14,7 @@ interface Post {
   seoTitle?: string
   seoDescription?: string
   publishedAt?: string | null
+  youtubeVideoId?: string
 }
 
 interface PostFormData {
@@ -26,6 +27,7 @@ interface PostFormData {
   seoTitle?: string
   seoDescription?: string
   publishedAt?: string | null
+  youtubeVideoId?: string | null
 }
 
 export default function EditPostClient({ id }: { id: string }) {

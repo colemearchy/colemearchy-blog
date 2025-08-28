@@ -26,6 +26,8 @@ model Post {
   views          Int        @default(0)
   scheduledAt    DateTime?
   status         PostStatus @default(DRAFT)
+  youtubeVideoId String?
+  socialLinks    Json?      // { threads: string[], youtube: string[] }
 
   @@index([slug])
   @@index([publishedAt])

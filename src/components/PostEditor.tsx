@@ -4,6 +4,7 @@ import dynamic from 'next/dynamic'
 import { useState } from 'react'
 import '@uiw/react-md-editor/markdown-editor.css'
 import '@uiw/react-markdown-preview/markdown.css'
+import { extractYouTubeVideoId } from '@/components/YouTubeEmbed'
 
 const MDEditor = dynamic(
   () => import('@uiw/react-md-editor').then((mod) => mod.default),
@@ -21,6 +22,7 @@ interface PostEditorProps {
     seoTitle?: string
     seoDescription?: string
     publishedAt?: string | null
+    youtubeVideoId?: string
   }
   onSubmit: (data: {
     title: string
@@ -32,6 +34,7 @@ interface PostEditorProps {
     seoTitle: string
     seoDescription: string
     publishedAt: string | null
+    youtubeVideoId: string | null
   }) => Promise<void>
   isEdit?: boolean
 }
@@ -47,7 +50,9 @@ export default function PostEditor({ initialData, onSubmit, isEdit = false }: Po
     seoTitle: initialData?.seoTitle || '',
     seoDescription: initialData?.seoDescription || '',
     publishedAt: initialData?.publishedAt || null,
+    youtubeVideoId: initialData?.youtubeVideoId || '',
   })
+  const [youtubeUrl, setYoutubeUrl] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [aiPrompt, setAiPrompt] = useState('')
   const [aiKeywords, setAiKeywords] = useState('')
@@ -62,6 +67,7 @@ export default function PostEditor({ initialData, onSubmit, isEdit = false }: Po
       await onSubmit({
         ...formData,
         tags: formData.tags.split(',').map(tag => tag.trim()).filter(Boolean),
+        youtubeVideoId: formData.youtubeVideoId || null,
       })
     } catch (error) {
       console.error('Error submitting:', error)
@@ -244,6 +250,44 @@ export default function PostEditor({ initialData, onSubmit, isEdit = false }: Po
               </div>
             )}
           </div>
+        </div>
+      </div>
+
+      <div>
+        <label htmlFor="youtubeUrl" className="block text-sm font-medium text-gray-700">
+          YouTube Video
+        </label>
+        <div className="mt-1 space-y-2">
+          <input
+            type="url"
+            id="youtubeUrl"
+            placeholder="https://www.youtube.com/watch?v=... or https://youtu.be/..."
+            value={youtubeUrl}
+            onChange={(e) => {
+              const url = e.target.value
+              setYoutubeUrl(url)
+              const videoId = extractYouTubeVideoId(url)
+              if (videoId) {
+                setFormData({ ...formData, youtubeVideoId: videoId })
+              }
+            }}
+            className="block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+          />
+          {formData.youtubeVideoId && (
+            <div className="text-sm text-gray-600">
+              Video ID: {formData.youtubeVideoId}
+              <button
+                type="button"
+                onClick={() => {
+                  setFormData({ ...formData, youtubeVideoId: '' })
+                  setYoutubeUrl('')
+                }}
+                className="ml-2 text-red-600 hover:text-red-800"
+              >
+                Remove
+              </button>
+            </div>
+          )}
         </div>
       </div>
 
