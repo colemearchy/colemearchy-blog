@@ -29,7 +29,7 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
     const channelResponse = await youtube.channels.list({
       part: ['contentDetails'],
       id: [channelId],
-    });
+    } as any);
 
     const uploadsPlaylistId = channelResponse.data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
     
@@ -37,13 +37,12 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
       throw new Error('Could not find uploads playlist');
     }
 
-    // 플레이리스트의 동영상 목록 가져오기
+    // 플레이리스트의 동영상 목록 가져오기 (order는 playlistItems에서 지원하지 않음)
     const playlistResponse = await youtube.playlistItems.list({
       part: ['snippet'],
       playlistId: uploadsPlaylistId,
       maxResults,
-      order: 'date',
-    });
+    } as any);
 
     const videos: YouTubeVideo[] = [];
     
@@ -78,7 +77,7 @@ export async function getVideoDetails(videoId: string): Promise<YouTubeVideo | n
     const response = await youtube.videos.list({
       part: ['snippet'],
       id: [videoId],
-    });
+    } as any);
 
     const video = response.data.items?.[0];
     if (!video || !video.snippet) return null;
