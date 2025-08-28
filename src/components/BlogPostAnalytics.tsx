@@ -78,8 +78,8 @@ export function BlogPostAnalytics({ title, slug, author, tags }: BlogPostAnalyti
       }
     }
 
-    // Add scroll listener
-    window.addEventListener('scroll', trackScrollDepth)
+    // Add scroll listener with passive flag for better performance
+    window.addEventListener('scroll', trackScrollDepth, { passive: true })
     
     // Track time on page when user leaves
     window.addEventListener('beforeunload', trackTimeOnPage)

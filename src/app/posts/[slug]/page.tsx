@@ -7,15 +7,37 @@ import { BlogPostAnalytics } from '@/components/BlogPostAnalytics'
 import MarkdownContent from '@/components/MarkdownContent'
 import RelatedPosts from '@/components/RelatedPosts'
 import TableOfContents from '@/components/TableOfContents'
+import Breadcrumb from '@/components/Breadcrumb'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 
 interface PostPageProps {
   params: Promise<{ slug: string }>
 }
 
-// generateStaticParams를 제거하고 동적 렌더링으로 변경
-// 빌드 시점에 데이터베이스 접근을 방지
-export const dynamic = 'force-dynamic'
+// Static generation for better performance
+export async function generateStaticParams() {
+  try {
+    const posts = await prisma.post.findMany({
+      where: {
+        status: 'PUBLISHED',
+        publishedAt: {
+          not: null,
+          lte: new Date()
+        }
+      },
+      select: {
+        slug: true
+      }
+    })
+    
+    return posts.map((post) => ({
+      slug: post.slug,
+    }))
+  } catch (error) {
+    console.error('Error generating static params:', error)
+    return []
+  }
+}
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
   const { slug } = await params
@@ -29,8 +51,21 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     }
   }
 
+  // Parse content if it's in JSON format
+  let content = post.content
+  try {
+    const parsed = JSON.parse(post.content)
+    if (parsed.content) {
+      content = parsed.content
+    }
+  } catch (e) {
+    // Content is already in markdown format
+  }
+
+  const readingTime = calculateReadingTime(content)
+  
   const ogImageUrl = post.coverImage || 
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}`
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}&date=${encodeURIComponent(post.publishedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(post.tags.join(','))}`
 
   return {
     title: post.seoTitle || post.title,
@@ -74,20 +109,32 @@ export default async function PostPage({ params }: PostPageProps) {
     data: { views: { increment: 1 } },
   })
   
+  // Parse content if it's in JSON format
+  let content = post.content
+  try {
+    const parsed = JSON.parse(post.content)
+    if (parsed.content) {
+      content = parsed.content
+    }
+  } catch (e) {
+    // Content is already in markdown format
+  }
+  
   // Calculate reading time
-  const readingTime = calculateReadingTime(post.content)
+  const readingTime = calculateReadingTime(content)
 
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
-    image: post.coverImage,
+    image: post.coverImage || `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}&date=${encodeURIComponent(post.publishedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(post.tags.join(','))}`,
     datePublished: post.publishedAt.toISOString(),
     dateModified: post.updatedAt.toISOString(),
     author: {
       '@type': 'Person',
       name: post.author || 'Colemearchy Blog',
+      url: `${process.env.NEXT_PUBLIC_SITE_URL}/about`,
     },
     publisher: {
       '@type': 'Organization',
@@ -96,7 +143,42 @@ export default async function PostPage({ params }: PostPageProps) {
         '@type': 'ImageObject',
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`,
       },
+      url: process.env.NEXT_PUBLIC_SITE_URL,
     },
+    mainEntityOfPage: {
+      '@type': 'WebPage',
+      '@id': `${process.env.NEXT_PUBLIC_SITE_URL}/posts/${post.slug}`,
+    },
+    keywords: post.tags.join(', '),
+    articleSection: post.tags[0] || 'Blog',
+    wordCount: content.split(/\s+/).length,
+    timeRequired: `PT${readingTime}M`,
+    inLanguage: 'ko-KR',
+  }
+  
+  const breadcrumbJsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      {
+        '@type': 'ListItem',
+        position: 1,
+        name: 'Home',
+        item: process.env.NEXT_PUBLIC_SITE_URL,
+      },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: 'Posts',
+        item: `${process.env.NEXT_PUBLIC_SITE_URL}/posts`,
+      },
+      {
+        '@type': 'ListItem',
+        position: 3,
+        name: post.title,
+        item: `${process.env.NEXT_PUBLIC_SITE_URL}/posts/${post.slug}`,
+      },
+    ],
   }
 
   return (
@@ -104,6 +186,10 @@ export default async function PostPage({ params }: PostPageProps) {
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       
       <div className="min-h-screen bg-white">
@@ -124,6 +210,7 @@ export default async function PostPage({ params }: PostPageProps) {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           <div className="flex gap-8">
             <article className="flex-1 max-w-4xl">
+              <Breadcrumb postTitle={post.title} postSlug={post.slug} />
               <header className="mb-8">
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">{post.title}</h1>
                 <div className="flex items-center text-gray-600 space-x-4">
@@ -171,7 +258,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </div>
           )}
 
-              <MarkdownContent content={post.content} />
+              <MarkdownContent content={content} />
               
               <RelatedPosts postId={post.id} />
 
@@ -184,7 +271,7 @@ export default async function PostPage({ params }: PostPageProps) {
             </article>
             
             <aside className="hidden xl:block">
-              <TableOfContents content={post.content} />
+              <TableOfContents content={content} />
             </aside>
           </div>
         </div>
