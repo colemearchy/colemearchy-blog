@@ -76,13 +76,15 @@ export const paginationSchema = z.object({
   page: z
     .string()
     .transform((val) => parseInt(val, 10))
-    .pipe(z.number().min(1).default(1))
-    .optional(),
+    .pipe(z.number().min(1))
+    .optional()
+    .nullable(),
   limit: z
     .string()
     .transform((val) => parseInt(val, 10))
-    .pipe(z.number().min(1).max(100).default(10))
-    .optional(),
+    .pipe(z.number().min(1).max(100))
+    .optional()
+    .nullable(),
   search: z.string().optional(),
   tag: z.string().optional(),
 });

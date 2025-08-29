@@ -50,7 +50,7 @@ export function handleApiError(
       {
         error: 'Validation Error',
         message: 'Invalid request data',
-        details: isDevelopment ? error.errors : undefined,
+        details: isDevelopment ? (error as any).errors : undefined,
         timestamp: new Date().toISOString(),
         path,
       },

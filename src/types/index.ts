@@ -157,14 +157,3 @@ export type ErrorResponse = {
   details?: unknown;
   status?: number;
 };
-
-export class ApiError extends Error {
-  constructor(
-    public statusCode: number,
-    public message: string,
-    public details?: unknown
-  ) {
-    super(message);
-    this.name = 'ApiError';
-  }
-}

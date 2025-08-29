@@ -1,6 +1,8 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { extractYouTubeVideoId } from '@/lib/youtube-thumbnail'
+import YouTubeThumbnail from '@/components/YouTubeThumbnail'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
 import { BlogPostAnalytics } from '@/components/BlogPostAnalytics'
@@ -9,6 +11,7 @@ import RelatedPosts from '@/components/RelatedPosts'
 import TableOfContents from '@/components/TableOfContents'
 import Breadcrumb from '@/components/Breadcrumb'
 import YouTubeEmbed from '@/components/YouTubeEmbed'
+import CommentSection from '@/components/comments/CommentSection'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 
 interface PostPageProps {
@@ -281,14 +284,35 @@ export default async function PostPage({ params }: PostPageProps) {
           {post.coverImage && (
             <div className="relative w-full mb-8 rounded-lg overflow-hidden">
               <div className="relative aspect-[16/9]">
-                <Image
-                  src={post.coverImage}
-                  alt={post.title}
-                  fill
-                  className="object-contain bg-gray-100"
-                  priority
-                  sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
-                />
+                {(() => {
+                  const isYouTubeThumbnail = post.coverImage.includes('ytimg.com') || post.coverImage.includes('img.youtube.com')
+                  const youtubeVideoIdMatch = post.coverImage.match(/\/vi\/([a-zA-Z0-9_-]{11})\//)
+                  const youtubeVideoId = youtubeVideoIdMatch ? youtubeVideoIdMatch[1] : null
+                  
+                  if (isYouTubeThumbnail && youtubeVideoId) {
+                    return (
+                      <YouTubeThumbnail
+                        videoId={youtubeVideoId}
+                        alt={post.title}
+                        fill
+                        className="object-contain bg-gray-100"
+                        priority
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                      />
+                    )
+                  }
+                  
+                  return (
+                    <Image
+                      src={post.coverImage}
+                      alt={post.title}
+                      fill
+                      className="object-contain bg-gray-100"
+                      priority
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                    />
+                  )
+                })()}
               </div>
             </div>
           )}
@@ -301,6 +325,8 @@ export default async function PostPage({ params }: PostPageProps) {
           )}
 
               <MarkdownContent content={content} />
+              
+              <CommentSection postSlug={post.slug} />
               
               <RelatedPosts postId={post.id} />
 

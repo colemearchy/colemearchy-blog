@@ -6,10 +6,9 @@ import {
   GenerateContentRequest,
   GenerateContentResponse,
   PaginationParams,
-  PaginatedResponse,
-  ApiError 
+  PaginatedResponse
 } from '@/types'
-import { getErrorMessage } from './error-handler'
+import { getErrorMessage, ApiError } from './error-handler'
 
 class ApiClient {
   private baseUrl: string

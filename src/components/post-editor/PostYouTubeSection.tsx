@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react'
 import { PostFormData, YouTubeVideo } from '@/types'
 import { extractYouTubeVideoId } from '@/components/YouTubeEmbed'
+import { getYouTubeThumbnailUrl } from '@/lib/youtube-thumbnail'
 
 interface PostYouTubeSectionProps {
   formData: PostFormData
@@ -44,7 +45,8 @@ export function PostYouTubeSection({ formData, onChange }: PostYouTubeSectionPro
     if (videoId) {
       // YouTube 썸네일을 coverImage로 자동 설정
       if (!formData.coverImage || formData.coverImage.includes('ytimg.com')) {
-        const thumbnailUrl = `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`
+        // Use high quality thumbnail
+        const thumbnailUrl = getYouTubeThumbnailUrl(videoId, 'maxresdefault')
         onChange({ 
           youtubeVideoId: videoId,
           coverImage: thumbnailUrl 

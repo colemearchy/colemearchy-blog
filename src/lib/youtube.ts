@@ -1,4 +1,5 @@
 import { google } from 'googleapis';
+import { getBestThumbnailFromApiResponse } from './youtube-thumbnail';
 
 // YouTube API 클라이언트를 함수로 변경하여 런타임에 환경 변수 로드
 function getYouTubeClient() {
@@ -73,7 +74,7 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
         id: videoId,
         title: snippet.title || '',
         description: snippet.description || '',
-        thumbnailUrl: snippet.thumbnails?.high?.url || snippet.thumbnails?.default?.url || '',
+        thumbnailUrl: getBestThumbnailFromApiResponse(snippet.thumbnails),
         publishedAt: snippet.publishedAt || '',
         url: `https://www.youtube.com/watch?v=${videoId}`,
         embedUrl: `https://www.youtube.com/embed/${videoId}`,
@@ -109,7 +110,7 @@ export async function getVideoDetails(videoId: string): Promise<YouTubeVideo | n
       id: videoId,
       title: video.snippet.title || '',
       description: video.snippet.description || '',
-      thumbnailUrl: video.snippet.thumbnails?.high?.url || video.snippet.thumbnails?.default?.url || '',
+      thumbnailUrl: getBestThumbnailFromApiResponse(video.snippet.thumbnails),
       publishedAt: video.snippet.publishedAt || '',
       url: `https://www.youtube.com/watch?v=${videoId}`,
       embedUrl: `https://www.youtube.com/embed/${videoId}`,

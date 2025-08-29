@@ -2,6 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react'
 import Image from 'next/image'
+import { extractYouTubeVideoId } from '@/lib/youtube-thumbnail'
+import YouTubeThumbnail from './YouTubeThumbnail'
 
 interface LazyImageProps {
   src: string
@@ -52,6 +54,34 @@ export default function LazyImage({
   }, [priority, hasLoaded])
 
   const shouldLoad = priority || isIntersecting
+  
+  // Check if this is a YouTube thumbnail URL
+  const isYouTubeThumbnail = src.includes('ytimg.com') || src.includes('img.youtube.com')
+  const youtubeVideoIdMatch = src.match(/\/vi\/([a-zA-Z0-9_-]{11})\//)
+  const youtubeVideoId = youtubeVideoIdMatch ? youtubeVideoIdMatch[1] : null
+  
+  // Use YouTube thumbnail component for YouTube images
+  if (isYouTubeThumbnail && youtubeVideoId) {
+    return (
+      <div ref={ref} className={`relative ${className}`}>
+        {shouldLoad ? (
+          <YouTubeThumbnail
+            videoId={youtubeVideoId}
+            alt={alt}
+            fill={fill}
+            width={width}
+            height={height}
+            sizes={sizes}
+            className={className}
+            priority={priority}
+            onLoad={() => setHasLoaded(true)}
+          />
+        ) : (
+          <div className="absolute inset-0 bg-gray-200 animate-pulse" />
+        )}
+      </div>
+    )
+  }
 
   // For markdown images, we don't know dimensions, so use regular img with lazy loading
   if (!fill && !width && !height) {
