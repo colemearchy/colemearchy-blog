@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import PostEditor from '@/components/PostEditor'
+import ThreadsContentGenerator from '@/components/ThreadsContentGenerator'
 
 interface Post {
   title: string
@@ -68,6 +69,17 @@ export default function EditPostClient({ id }: { id: string }) {
     <div>
       <h1 className="text-2xl font-semibold text-gray-900 mb-6">Edit Post</h1>
       <PostEditor initialData={post} onSubmit={handleSubmit} isEdit />
+      
+      {/* Threads content generator - only visible in admin */}
+      <div className="mt-8">
+        <ThreadsContentGenerator post={{
+          title: post.title,
+          excerpt: post.excerpt || null,
+          content: post.content,
+          tags: post.tags || [],
+          slug: post.slug
+        }} />
+      </div>
     </div>
   )
 }

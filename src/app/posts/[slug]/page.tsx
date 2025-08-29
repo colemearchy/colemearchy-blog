@@ -9,7 +9,6 @@ import RelatedPosts from '@/components/RelatedPosts'
 import TableOfContents from '@/components/TableOfContents'
 import Breadcrumb from '@/components/Breadcrumb'
 import YouTubeEmbed from '@/components/YouTubeEmbed'
-import ThreadsContentGenerator from '@/components/ThreadsContentGenerator'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 
 interface PostPageProps {
@@ -302,14 +301,6 @@ export default async function PostPage({ params }: PostPageProps) {
           )}
 
               <MarkdownContent content={content} />
-              
-              <ThreadsContentGenerator post={{
-                title: post.title,
-                excerpt: post.excerpt,
-                content: content,
-                tags: post.tags,
-                slug: post.slug
-              }} />
               
               <RelatedPosts postId={post.id} />
 
