@@ -11,6 +11,8 @@ interface YouTubeVideo {
   thumbnailUrl: string
   publishedAt: string
   url: string
+  duration?: string
+  isShort?: boolean
 }
 
 export default function YouTubeManagerPage() {
@@ -130,22 +132,40 @@ This post is based on our YouTube video. Watch it for more details!
             <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="relative aspect-video bg-gray-100">
                 <img
-                  src={video.thumbnailUrl || `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
+                  src={video.thumbnailUrl || `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`}
                   alt={video.title}
                   className="w-full h-full object-cover"
                   onError={(e) => {
-                    e.currentTarget.src = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`
+                    const target = e.currentTarget;
+                    if (target.src.includes('maxresdefault')) {
+                      target.src = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
+                    } else if (target.src.includes('hqdefault')) {
+                      target.src = `https://img.youtube.com/vi/${video.id}/mqdefault.jpg`;
+                    }
                   }}
                 />
+                {video.isShort && (
+                  <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs font-semibold">
+                    SHORTS
+                  </div>
+                )}
                 <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity" />
               </div>
               
               <div className="p-4">
                 <h3 className="font-semibold text-lg mb-2 line-clamp-2">{video.title}</h3>
                 <p className="text-sm text-gray-600 mb-3 line-clamp-2">{video.description}</p>
-                <p className="text-xs text-gray-500 mb-4">
-                  {new Date(video.publishedAt).toLocaleDateString()}
-                </p>
+                <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
+                  <span>{new Date(video.publishedAt).toLocaleDateString()}</span>
+                  {video.duration && (
+                    <>
+                      <span>•</span>
+                      <span className={video.isShort ? 'text-purple-600 font-semibold' : ''}>
+                        {video.isShort ? 'Shorts' : 'Video'}
+                      </span>
+                    </>
+                  )}
+                </div>
                 
                 <div className="flex gap-2">
                   <button

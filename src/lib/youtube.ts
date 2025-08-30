@@ -1,6 +1,20 @@
 import { google } from 'googleapis';
 import { getBestThumbnailFromApiResponse } from './youtube-thumbnail';
 
+// ISO 8601 duration을 초 단위로 변환하는 함수
+function parseDuration(duration: string): number {
+  if (!duration) return 0;
+  
+  const match = duration.match(/PT(?:(\d+)H)?(?:(\d+)M)?(?:(\d+)S)?/);
+  if (!match) return 0;
+  
+  const hours = parseInt(match[1] || '0');
+  const minutes = parseInt(match[2] || '0');
+  const seconds = parseInt(match[3] || '0');
+  
+  return hours * 3600 + minutes * 60 + seconds;
+}
+
 // YouTube API 클라이언트를 함수로 변경하여 런타임에 환경 변수 로드
 function getYouTubeClient() {
   return google.youtube({
@@ -17,6 +31,8 @@ export interface YouTubeVideo {
   publishedAt: string;
   url: string;
   embedUrl: string;
+  duration?: string;
+  isShort?: boolean;
 }
 
 // 채널의 최신 동영상 가져오기
@@ -62,7 +78,32 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
     } as any);
 
     const videos: YouTubeVideo[] = [];
+    const videoIds: string[] = [];
     
+    // 먼저 비디오 ID들을 수집
+    for (const item of playlistResponse.data.items || []) {
+      const videoId = item.snippet?.resourceId?.videoId;
+      if (videoId) {
+        videoIds.push(videoId);
+      }
+    }
+    
+    // 비디오 상세 정보 가져오기 (duration 포함)
+    let videoDetails = new Map();
+    if (videoIds.length > 0) {
+      const videoResponse = await youtube.videos.list({
+        part: ['contentDetails', 'snippet'],
+        id: videoIds,
+      } as any);
+      
+      for (const video of videoResponse.data.items || []) {
+        if (video.id) {
+          videoDetails.set(video.id, video);
+        }
+      }
+    }
+    
+    // 비디오 정보 조합
     for (const item of playlistResponse.data.items || []) {
       const snippet = item.snippet;
       if (!snippet) continue;
@@ -70,14 +111,21 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
       const videoId = snippet.resourceId?.videoId;
       if (!videoId) continue;
       
+      const details = videoDetails.get(videoId);
+      const duration = details?.contentDetails?.duration || '';
+      const durationInSeconds = parseDuration(duration);
+      const isShort = durationInSeconds > 0 && durationInSeconds <= 60;
+      
       videos.push({
         id: videoId,
         title: snippet.title || '',
         description: snippet.description || '',
-        thumbnailUrl: getBestThumbnailFromApiResponse(snippet.thumbnails),
+        thumbnailUrl: getBestThumbnailFromApiResponse(snippet.thumbnails) || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
         publishedAt: snippet.publishedAt || '',
         url: `https://www.youtube.com/watch?v=${videoId}`,
         embedUrl: `https://www.youtube.com/embed/${videoId}`,
+        duration,
+        isShort,
       });
     }
 

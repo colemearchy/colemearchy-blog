@@ -13,6 +13,7 @@ import Breadcrumb from '@/components/Breadcrumb'
 import YouTubeEmbed from '@/components/YouTubeEmbed'
 import CommentSection from '@/components/comments/CommentSection'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
+import ViewCounter from '@/components/ViewCounter'
 
 interface PostPageProps {
   params: Promise<{ slug: string }>
@@ -124,11 +125,7 @@ export default async function PostPage({ params }: PostPageProps) {
     notFound()
   }
 
-  // Increment view count
-  await prisma.post.update({
-    where: { id: post.id },
-    data: { views: { increment: 1 } },
-  })
+  // View count is now tracked client-side via ViewCounter component
   
   // Parse content if it's in JSON format
   let content = post.content
@@ -262,7 +259,7 @@ export default async function PostPage({ params }: PostPageProps) {
                   <span>•</span>
                   <span>{formatReadingTime(readingTime)}</span>
                   <span>•</span>
-                  <span>{post.views} views</span>
+                  <ViewCounter postId={post.id} initialViews={post.views} />
                   {post.author && (
                     <>
                       <span>•</span>

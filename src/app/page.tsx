@@ -92,7 +92,7 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-center py-8">
             <Link href="/" className="text-3xl font-serif italic">
-              Colemearchy's Newsletter
+              Cole IT AI
             </Link>
           </div>
           {/* Navigation */}
@@ -273,7 +273,7 @@ export default async function HomePage() {
       {/* Newsletter Signup */}
       <section className="bg-gray-50 py-16 mt-20">
         <div className="max-w-2xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Colemearchy's Newsletter</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">Cole IT AI</h2>
           <p className="text-gray-600 mb-8">
             A weekly advice column about building product, driving growth, and accelerating your career.
           </p>
@@ -302,7 +302,7 @@ export default async function HomePage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">Colemearchy's Newsletter</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">Cole IT AI</h3>
             </div>
             <div>
               <ul className="space-y-2">
