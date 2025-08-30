@@ -120,7 +120,7 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
         id: videoId,
         title: snippet.title || '',
         description: snippet.description || '',
-        thumbnailUrl: getBestThumbnailFromApiResponse(snippet.thumbnails) || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
+        thumbnailUrl: getBestThumbnailFromApiResponse(details?.snippet?.thumbnails || snippet.thumbnails) || `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
         publishedAt: snippet.publishedAt || '',
         url: `https://www.youtube.com/watch?v=${videoId}`,
         embedUrl: `https://www.youtube.com/embed/${videoId}`,

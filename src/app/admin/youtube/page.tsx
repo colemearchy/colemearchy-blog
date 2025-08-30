@@ -34,6 +34,7 @@ export default function YouTubeManagerPage() {
       }
       
       const data = await response.json()
+      console.log('YouTube videos:', data) // Debug log
       setVideos(data)
     } catch (err) {
       setError('YouTube API 키를 설정해주세요. YOUTUBE_API_SETUP.md 파일을 확인하세요.')
@@ -131,16 +132,21 @@ This post is based on our YouTube video. Watch it for more details!
           {videos.map((video) => (
             <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden">
               <div className="relative aspect-video bg-gray-100">
+                {/* 기본 YouTube 썸네일 URL 사용 */}
                 <img
-                  src={video.thumbnailUrl || `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`}
+                  src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
                   alt={video.title}
                   className="w-full h-full object-cover"
+                  loading="lazy"
                   onError={(e) => {
+                    console.log('Thumbnail load error for:', video.id, e.currentTarget.src);
                     const target = e.currentTarget;
-                    if (target.src.includes('maxresdefault')) {
-                      target.src = `https://img.youtube.com/vi/${video.id}/hqdefault.jpg`;
-                    } else if (target.src.includes('hqdefault')) {
+                    // hqdefault가 실패하면 mqdefault로 폴백
+                    if (target.src.includes('hqdefault')) {
                       target.src = `https://img.youtube.com/vi/${video.id}/mqdefault.jpg`;
+                    } else if (target.src.includes('mqdefault')) {
+                      // mqdefault도 실패하면 default로 폴백
+                      target.src = `https://img.youtube.com/vi/${video.id}/default.jpg`;
                     }
                   }}
                 />
