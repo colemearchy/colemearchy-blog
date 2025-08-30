@@ -114,7 +114,7 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
       const details = videoDetails.get(videoId);
       const duration = details?.contentDetails?.duration || '';
       const durationInSeconds = parseDuration(duration);
-      const isShort = durationInSeconds > 0 && durationInSeconds <= 60;
+      const isShort = durationInSeconds > 0 && durationInSeconds < 120; // 2분 미만을 쇼츠로 분류
       
       videos.push({
         id: videoId,
