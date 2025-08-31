@@ -3,8 +3,8 @@ import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { NewsletterAnalytics } from '@/components/NewsletterAnalytics'
 
-export const dynamic = 'force-dynamic' // 동적 렌더링으로 변경
-export const revalidate = 0 // Disable caching temporarily
+// Static generation with ISR (Incremental Static Regeneration)
+export const revalidate = 3600 // Revalidate every hour
 
 interface Post {
   id: string
@@ -96,7 +96,7 @@ export default async function HomePage() {
             </Link>
           </div>
           {/* Navigation */}
-          <nav className="flex justify-center items-center gap-6 pb-4">
+          <nav className="flex justify-center items-center gap-6 pb-4" aria-label="Main navigation">
             <Link href="/" className="text-sm font-medium text-gray-900 pb-2 border-b-2 border-gray-900">Home</Link>
             <Link href="/podcast" className="text-sm font-medium text-gray-600 hover:text-gray-900 pb-2">Podcast</Link>
             <Link href="/how-i-ai" className="text-sm font-medium text-gray-600 hover:text-gray-900 pb-2">How I AI</Link>
@@ -125,6 +125,8 @@ export default async function HomePage() {
                             priority
                             className="object-cover"
                             sizes="(max-width: 768px) 100vw, 50vw"
+                            placeholder="blur"
+                            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxQf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                           />
                         </div>
                       )}
@@ -252,7 +254,7 @@ export default async function HomePage() {
                 <div className="mt-12 text-center">
                   <Link href="/archive" className="inline-flex items-center gap-2 text-sm font-medium text-gray-900 hover:text-gray-700">
                     See all
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </Link>
@@ -271,7 +273,7 @@ export default async function HomePage() {
       </main>
 
       {/* Newsletter Signup */}
-      <section className="bg-gray-50 py-16 mt-20">
+      <section className="bg-gray-50 py-16 mt-20" aria-label="Newsletter signup">
         <div className="max-w-2xl mx-auto px-4 text-center">
           <h2 className="text-2xl font-bold text-gray-900 mb-4">Cole IT AI</h2>
           <p className="text-gray-600 mb-8">
@@ -283,12 +285,13 @@ export default async function HomePage() {
                 type="email"
                 name="email"
                 placeholder="Type your email..."
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+                aria-label="Email address for newsletter"
+                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-600 focus:border-transparent"
                 required
               />
               <button
                 type="submit"
-                className="px-6 py-3 bg-orange-500 text-white font-medium rounded-lg hover:bg-orange-600 transition-colors"
+                className="px-6 py-3 bg-orange-600 text-white font-medium rounded-lg hover:bg-orange-700 transition-colors"
               >
                 Subscribe
               </button>
@@ -298,7 +301,7 @@ export default async function HomePage() {
       </section>
 
       {/* Footer */}
-      <footer className="bg-white py-12">
+      <footer className="bg-white py-12" role="contentinfo">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
@@ -319,8 +322,8 @@ export default async function HomePage() {
           </div>
           <div className="border-t border-gray-200 pt-8 text-center text-sm text-gray-500">
             <p>© {new Date().getFullYear()} Colemearchy • 
-              <Link href="/privacy" className="hover:text-gray-900"> Privacy</Link> • 
-              <Link href="/terms" className="hover:text-gray-900"> Terms</Link>
+              <Link href="/privacy" className="hover:text-gray-900 underline underline-offset-2"> Privacy</Link> • 
+              <Link href="/terms" className="hover:text-gray-900 underline underline-offset-2"> Terms</Link>
             </p>
           </div>
         </div>
