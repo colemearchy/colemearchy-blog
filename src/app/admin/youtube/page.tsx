@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-// import { extractContentFromDescription } from '@/lib/youtube'
 
 interface YouTubeVideo {
   id: string
@@ -13,34 +12,74 @@ interface YouTubeVideo {
   url: string
   duration?: string
   isShort?: boolean
+  isPosted?: boolean
+  postDetails?: {
+    id: string
+    slug: string
+    status: string
+  } | null
 }
+
+interface VideoResponse {
+  videos: YouTubeVideo[]
+  nextPageToken?: string
+}
+
+type FilterType = 'all' | 'shorts' | 'regular'
+type PostedFilter = 'all' | 'posted' | 'not-posted'
 
 export default function YouTubeManagerPage() {
   const router = useRouter()
   const [videos, setVideos] = useState<YouTubeVideo[]>([])
   const [loading, setLoading] = useState(false)
+  const [loadingMore, setLoadingMore] = useState(false)
   const [error, setError] = useState('')
   const [selectedVideo, setSelectedVideo] = useState<YouTubeVideo | null>(null)
   const [isCreating, setIsCreating] = useState(false)
+  const [nextPageToken, setNextPageToken] = useState<string | undefined>()
+  
+  // Filters
+  const [filterType, setFilterType] = useState<FilterType>('all')
+  const [postedFilter, setPostedFilter] = useState<PostedFilter>('all')
 
-  const fetchVideos = async () => {
-    setLoading(true)
+  const fetchVideos = async (pageToken?: string) => {
+    if (!pageToken) {
+      setLoading(true)
+      setVideos([])
+    } else {
+      setLoadingMore(true)
+    }
+    
     setError('')
     
     try {
-      const response = await fetch('/api/youtube/videos?limit=20')
+      const url = new URL('/api/youtube/videos', window.location.origin)
+      url.searchParams.set('limit', '50')
+      if (pageToken) {
+        url.searchParams.set('pageToken', pageToken)
+      }
+      
+      const response = await fetch(url.toString())
       if (!response.ok) {
         throw new Error('Failed to fetch videos')
       }
       
-      const data = await response.json()
-      console.log('YouTube videos:', data) // Debug log
-      setVideos(data)
+      const data: VideoResponse = await response.json()
+      console.log('YouTube videos:', data)
+      
+      if (pageToken) {
+        setVideos(prev => [...prev, ...data.videos])
+      } else {
+        setVideos(data.videos)
+      }
+      
+      setNextPageToken(data.nextPageToken)
     } catch (err) {
       setError('YouTube API 키를 설정해주세요. YOUTUBE_API_SETUP.md 파일을 확인하세요.')
       console.error(err)
     } finally {
       setLoading(false)
+      setLoadingMore(false)
     }
   }
 
@@ -90,7 +129,16 @@ This post is based on our YouTube video. Watch it for more details!
         throw new Error('Failed to create post')
       }
 
-      router.push('/admin')
+      // Update local state to reflect the change
+      setVideos(prevVideos => 
+        prevVideos.map(v => 
+          v.id === video.id 
+            ? { ...v, isPosted: true } 
+            : v
+        )
+      )
+
+      router.refresh()
     } catch (err) {
       console.error('Error creating post:', err)
       alert('포스트 생성 실패')
@@ -104,17 +152,65 @@ This post is based on our YouTube video. Watch it for more details!
     fetchVideos()
   }, [])
 
+  // Apply filters
+  const filteredVideos = videos.filter(video => {
+    // Type filter
+    if (filterType === 'shorts' && !video.isShort) return false
+    if (filterType === 'regular' && video.isShort) return false
+    
+    // Posted filter
+    if (postedFilter === 'posted' && !video.isPosted) return false
+    if (postedFilter === 'not-posted' && video.isPosted) return false
+    
+    return true
+  })
+
   return (
     <div className="max-w-6xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold">YouTube 동영상 관리</h1>
         <button
-          onClick={fetchVideos}
+          onClick={() => fetchVideos()}
           disabled={loading}
           className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
         >
           {loading ? '로딩중...' : '새로고침'}
         </button>
+      </div>
+
+      {/* Filters */}
+      <div className="bg-white p-4 rounded-lg shadow mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">영상 타입</label>
+            <select
+              value={filterType}
+              onChange={(e) => setFilterType(e.target.value as FilterType)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">전체</option>
+              <option value="shorts">쇼츠 (2분 미만)</option>
+              <option value="regular">일반 영상</option>
+            </select>
+          </div>
+          
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">포스트 상태</label>
+            <select
+              value={postedFilter}
+              onChange={(e) => setPostedFilter(e.target.value as PostedFilter)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="all">전체</option>
+              <option value="posted">포스트 작성됨</option>
+              <option value="not-posted">포스트 미작성</option>
+            </select>
+          </div>
+        </div>
+        
+        <div className="mt-4 text-sm text-gray-600">
+          총 {videos.length}개 영상 중 {filteredVideos.length}개 표시 중
+        </div>
       </div>
 
       {error && (
@@ -128,71 +224,108 @@ This post is based on our YouTube video. Watch it for more details!
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {videos.map((video) => (
-            <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden">
-              <div className="relative aspect-video bg-gray-100">
-                {/* 기본 YouTube 썸네일 URL 사용 */}
-                <img
-                  src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
-                  alt={video.title}
-                  className="w-full h-full object-cover"
-                  loading="lazy"
-                  onError={(e) => {
-                    console.log('Thumbnail load error for:', video.id, e.currentTarget.src);
-                    const target = e.currentTarget;
-                    // hqdefault가 실패하면 mqdefault로 폴백
-                    if (target.src.includes('hqdefault')) {
-                      target.src = `https://img.youtube.com/vi/${video.id}/mqdefault.jpg`;
-                    } else if (target.src.includes('mqdefault')) {
-                      // mqdefault도 실패하면 default로 폴백
-                      target.src = `https://img.youtube.com/vi/${video.id}/default.jpg`;
-                    }
-                  }}
-                />
-                {video.isShort && (
-                  <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs font-semibold">
-                    SHORTS
-                  </div>
-                )}
-                <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity" />
-              </div>
-              
-              <div className="p-4">
-                <h3 className="font-semibold text-lg mb-2 line-clamp-2">{video.title}</h3>
-                <p className="text-sm text-gray-600 mb-3 line-clamp-2">{video.description}</p>
-                <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
-                  <span>{new Date(video.publishedAt).toLocaleDateString()}</span>
-                  {video.duration && (
-                    <>
-                      <span>•</span>
-                      <span className={video.isShort ? 'text-purple-600 font-semibold' : ''}>
-                        {video.isShort ? 'Shorts' : 'Video'}
-                      </span>
-                    </>
+        <>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {filteredVideos.map((video) => (
+              <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+                <div className="relative aspect-video bg-gray-100">
+                  {/* 기본 YouTube 썸네일 URL 사용 */}
+                  <img
+                    src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
+                    alt={video.title}
+                    className="w-full h-full object-cover"
+                    loading="lazy"
+                    onError={(e) => {
+                      console.log('Thumbnail load error for:', video.id, e.currentTarget.src);
+                      const target = e.currentTarget;
+                      // hqdefault가 실패하면 mqdefault로 폴백
+                      if (target.src.includes('hqdefault')) {
+                        target.src = `https://img.youtube.com/vi/${video.id}/mqdefault.jpg`;
+                      } else if (target.src.includes('mqdefault')) {
+                        // mqdefault도 실패하면 default로 폴백
+                        target.src = `https://img.youtube.com/vi/${video.id}/default.jpg`;
+                      }
+                    }}
+                  />
+                  {video.isShort && (
+                    <div className="absolute top-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 rounded text-xs font-semibold">
+                      SHORTS
+                    </div>
                   )}
+                  {video.isPosted && (
+                    <div className="absolute top-2 left-2 bg-green-600 bg-opacity-90 text-white px-2 py-1 rounded text-xs font-semibold">
+                      포스트 작성됨
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-black bg-opacity-0 hover:bg-opacity-10 transition-opacity" />
                 </div>
                 
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setSelectedVideo(video)}
-                    className="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700"
-                  >
-                    포스트 생성
-                  </button>
-                  <a
-                    href={video.url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300"
-                  >
-                    보기
-                  </a>
+                <div className="p-4">
+                  <h3 className="font-semibold text-lg mb-2 line-clamp-2">{video.title}</h3>
+                  <p className="text-sm text-gray-600 mb-3 line-clamp-2">{video.description}</p>
+                  <div className="flex items-center gap-2 text-xs text-gray-500 mb-4">
+                    <span>{new Date(video.publishedAt).toLocaleDateString()}</span>
+                    {video.duration && (
+                      <>
+                        <span>•</span>
+                        <span className={video.isShort ? 'text-purple-600 font-semibold' : ''}>
+                          {video.isShort ? 'Shorts' : 'Video'}
+                        </span>
+                      </>
+                    )}
+                  </div>
+                  
+                  <div className="flex gap-2">
+                    {!video.isPosted ? (
+                      <button
+                        onClick={() => setSelectedVideo(video)}
+                        className="flex-1 px-3 py-2 bg-green-600 text-white text-sm rounded hover:bg-green-700"
+                      >
+                        포스트 생성
+                      </button>
+                    ) : (
+                      <button
+                        onClick={() => router.push(`/admin/edit/${video.postDetails?.id}`)}
+                        className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
+                        disabled={!video.postDetails?.id}
+                      >
+                        포스트 편집
+                      </button>
+                    )}
+                    <a
+                      href={video.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="px-3 py-2 bg-gray-200 text-gray-700 text-sm rounded hover:bg-gray-300"
+                    >
+                      보기
+                    </a>
+                  </div>
                 </div>
               </div>
+            ))}
+          </div>
+
+          {/* Load More Button */}
+          {nextPageToken && (
+            <div className="text-center mt-8">
+              <button
+                onClick={() => fetchVideos(nextPageToken)}
+                disabled={loadingMore}
+                className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50"
+              >
+                {loadingMore ? (
+                  <>
+                    <span className="inline-block animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></span>
+                    로딩중...
+                  </>
+                ) : (
+                  '더 보기'
+                )}
+              </button>
             </div>
-          ))}
-        </div>
+          )}
+        </>
       )}
 
       {/* 포스트 생성 확인 모달 */}

@@ -36,7 +36,7 @@ export interface YouTubeVideo {
 }
 
 // 채널의 최신 동영상 가져오기
-export async function getChannelVideos(maxResults: number = 10): Promise<YouTubeVideo[]> {
+export async function getChannelVideos(maxResults: number = 10, pageToken?: string): Promise<{ videos: YouTubeVideo[], nextPageToken?: string }> {
   try {
     const channelId = process.env.YOUTUBE_CHANNEL_ID;
     const apiKey = process.env.YOUTUBE_API_KEY;
@@ -75,6 +75,7 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
       part: ['snippet'],
       playlistId: uploadsPlaylistId,
       maxResults,
+      pageToken,
     } as any);
 
     const videos: YouTubeVideo[] = [];
@@ -129,7 +130,10 @@ export async function getChannelVideos(maxResults: number = 10): Promise<YouTube
       });
     }
 
-    return videos;
+    return {
+      videos,
+      nextPageToken: playlistResponse.data.nextPageToken || undefined
+    };
   } catch (error: any) {
     console.error('Error fetching YouTube videos:', error);
     console.error('Error details:', {

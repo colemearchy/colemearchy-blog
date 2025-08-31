@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { getChannelVideos } from '@/lib/youtube';
+import { prisma } from '@/lib/prisma';
 
 export async function GET(request: Request) {
   try {
@@ -34,11 +35,43 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const limit = parseInt(searchParams.get('limit') || '10');
+    const limit = parseInt(searchParams.get('limit') || '50');
+    const pageToken = searchParams.get('pageToken') || undefined;
 
-    const videos = await getChannelVideos(limit);
+    const { videos, nextPageToken } = await getChannelVideos(limit, pageToken);
     
-    return NextResponse.json(videos);
+    // Check which videos are already posted
+    const videoIds = videos.map(v => v.id);
+    const existingPosts = await prisma.post.findMany({
+      where: {
+        youtubeVideoId: {
+          in: videoIds
+        }
+      },
+      select: {
+        youtubeVideoId: true,
+        id: true,
+        slug: true,
+        status: true
+      }
+    });
+    
+    // Create a map for quick lookup
+    const postedVideosMap = new Map(
+      existingPosts.map(post => [post.youtubeVideoId, post])
+    );
+    
+    // Add posted status to videos
+    const videosWithStatus = videos.map(video => ({
+      ...video,
+      isPosted: postedVideosMap.has(video.id),
+      postDetails: postedVideosMap.get(video.id) || null
+    }));
+    
+    return NextResponse.json({
+      videos: videosWithStatus,
+      nextPageToken
+    });
   } catch (error: any) {
     console.error('Error in YouTube API:', error);
     
