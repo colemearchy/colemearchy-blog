@@ -1,6 +1,15 @@
 import type { NextConfig } from 'next'
 
 const nextConfig: NextConfig = {
+  // Target modern browsers only to reduce polyfills
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  experimental: {
+    optimizeCss: true,
+  },
+  // Disable legacy browser support
+  swcMinify: true,
   images: {
     remotePatterns: [
       {
