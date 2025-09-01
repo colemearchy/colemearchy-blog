@@ -65,7 +65,10 @@ export default function EditPostClient({ id }: { id: string }) {
     })
 
     if (response.ok) {
+      alert('저장이 완료되었습니다!')
       router.push('/admin')
+    } else {
+      alert('저장 중 오류가 발생했습니다.')
     }
   }
 
@@ -145,7 +148,18 @@ export default function EditPostClient({ id }: { id: string }) {
   return (
     <div>
       <div className="flex justify-between items-center mb-6">
-        <h1 className="text-2xl font-semibold text-gray-900">Edit Post</h1>
+        <div className="flex items-center gap-4">
+          <button
+            onClick={() => router.push('/admin')}
+            className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            <svg className="mr-2 -ml-0.5 h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+            </svg>
+            목록으로
+          </button>
+          <h1 className="text-2xl font-semibold text-gray-900">Edit Post</h1>
+        </div>
         
         <div className="flex items-center gap-4">
           {/* 언어 탭 */}
