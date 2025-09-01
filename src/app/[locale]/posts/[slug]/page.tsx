@@ -101,8 +101,9 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   const translation = post.translations?.[0]
   const displayTitle = locale === 'en' && translation?.title ? translation.title : post.title
   const displayExcerpt = locale === 'en' && translation?.excerpt ? translation.excerpt : post.excerpt
+  const displayCoverImage = translation?.coverImage || post.coverImage
   
-  const ogImageUrl = post.coverImage || 
+  const ogImageUrl = displayCoverImage || 
     `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(displayTitle)}&author=${encodeURIComponent(post.author || 'Cole IT AI')}&date=${encodeURIComponent(post.publishedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(post.tags.join(','))}`
 
   return {

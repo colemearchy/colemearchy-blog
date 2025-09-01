@@ -101,6 +101,7 @@ model PostTranslation {
   title          String
   content        String
   excerpt        String?
+  coverImage     String?
   seoTitle       String?
   seoDescription String?
   createdAt      DateTime  @default(now())
