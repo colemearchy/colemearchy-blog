@@ -65,7 +65,8 @@ export default function YouTubeManagerPage() {
       }
       
       const data: VideoResponse = await response.json()
-      console.log('YouTube videos:', data)
+      console.log('YouTube videos response:', data)
+      console.log('Sample video with post details:', data.videos.find(v => v.isPosted))
       
       if (pageToken) {
         setVideos(prev => [...prev, ...data.videos])
@@ -285,9 +286,15 @@ This post is based on our YouTube video. Watch it for more details!
                       </button>
                     ) : (
                       <button
-                        onClick={() => router.push(`/admin/edit/${video.postDetails?.id}`)}
+                        onClick={() => {
+                          console.log('Post details:', video.postDetails);
+                          if (video.postDetails?.id) {
+                            router.push(`/admin/edit/${video.postDetails.id}`);
+                          } else {
+                            alert('포스트 ID를 찾을 수 없습니다. 페이지를 새로고침해주세요.');
+                          }
+                        }}
                         className="flex-1 px-3 py-2 bg-blue-600 text-white text-sm rounded hover:bg-blue-700"
-                        disabled={!video.postDetails?.id}
                       >
                         포스트 편집
                       </button>

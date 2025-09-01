@@ -42,6 +42,8 @@ export async function GET(request: Request) {
     
     // Check which videos are already posted
     const videoIds = videos.map(v => v.id);
+    console.log('Checking videos:', videoIds.length, 'videos');
+    
     const existingPosts = await prisma.post.findMany({
       where: {
         youtubeVideoId: {
@@ -55,6 +57,8 @@ export async function GET(request: Request) {
         status: true
       }
     });
+    
+    console.log('Found existing posts:', existingPosts.length);
     
     // Create a map for quick lookup
     const postedVideosMap = new Map(
