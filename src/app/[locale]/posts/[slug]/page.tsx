@@ -16,7 +16,7 @@ import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 import ViewCounter from '@/components/ViewCounter'
 
 interface PostPageProps {
-  params: Promise<{ slug: string }>
+  params: Promise<{ slug: string; locale: string }>
 }
 
 // Static generation for better performance
@@ -35,9 +35,13 @@ export async function generateStaticParams() {
       }
     })
     
-    return posts.map((post) => ({
-      slug: post.slug,
-    }))
+    const locales = ['ko', 'en']
+    return posts.flatMap((post) => 
+      locales.map((locale) => ({
+        slug: post.slug,
+        locale,
+      }))
+    )
   } catch (error) {
     console.error('Error generating static params:', error)
     return []
@@ -45,9 +49,16 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
-  const { slug } = await params
+  const { slug, locale } = await params
   const post = await prisma.post.findUnique({
     where: { slug },
+    include: {
+      translations: {
+        where: {
+          locale: locale === 'en' ? 'en' : 'ko'
+        }
+      }
+    }
   })
 
   if (!post || !post.publishedAt) {
@@ -86,37 +97,47 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
   const readingTime = calculateReadingTime(content)
   
+  // Use translated content if available
+  const translation = post.translations?.[0]
+  const displayTitle = locale === 'en' && translation?.title ? translation.title : post.title
+  const displayExcerpt = locale === 'en' && translation?.excerpt ? translation.excerpt : post.excerpt
+  
   const ogImageUrl = post.coverImage || 
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}&date=${encodeURIComponent(post.publishedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(post.tags.join(','))}`
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(displayTitle)}&author=${encodeURIComponent(post.author || 'Colemearchy')}&date=${encodeURIComponent(post.publishedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(post.tags.join(','))}`
 
   return {
-    title: post.seoTitle || post.title,
-    description: post.seoDescription || post.excerpt || undefined,
+    title: post.seoTitle || displayTitle,
+    description: post.seoDescription || displayExcerpt || undefined,
+    alternates: {
+      languages: {
+        'ko': `/ko/posts/${post.slug}`,
+        'en': `/en/posts/${post.slug}`,
+      }
+    },
     openGraph: {
-      title: post.seoTitle || post.title,
-      description: post.seoDescription || post.excerpt || undefined,
+      title: post.seoTitle || displayTitle,
+      description: post.seoDescription || displayExcerpt || undefined,
       type: 'article',
       publishedTime: post.publishedAt.toISOString(),
       modifiedTime: post.updatedAt.toISOString(),
       tags: post.tags,
       images: [{ url: ogImageUrl }],
+      locale: locale === 'en' ? 'en_US' : 'ko_KR',
     },
     twitter: {
       card: 'summary_large_image',
-      title: post.seoTitle || post.title,
-      description: post.seoDescription || post.excerpt || undefined,
+      title: post.seoTitle || displayTitle,
+      description: post.seoDescription || displayExcerpt || undefined,
       images: [ogImageUrl],
     },
   }
 }
 
 export default async function PostPage({ 
-  params,
-  searchParams 
-}: PostPageProps & { searchParams: Promise<{ lang?: string }> }) {
-  const { slug } = await params
-  const sp = await searchParams
-  const lang = sp.lang === 'en' ? 'en' : 'ko'
+  params
+}: PostPageProps) {
+  const { slug, locale } = await params
+  const lang = locale === 'en' ? 'en' : 'ko'
   
   const post = await prisma.post.findUnique({
     where: { slug },
@@ -232,7 +253,7 @@ export default async function PostPage({
     articleSection: post.tags[0] || 'Blog',
     wordCount: content.split(/\s+/).length,
     timeRequired: `PT${readingTime}M`,
-    inLanguage: 'ko-KR',
+    inLanguage: lang === 'en' ? 'en-US' : 'ko-KR',
   }
   
   const breadcrumbJsonLd = {
@@ -275,19 +296,19 @@ export default async function PostPage({
         <header className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-6">
-              <Link href="/" className="text-3xl font-bold text-gray-900">
+              <Link href={`/${locale}`} className="text-3xl font-bold text-gray-900">
                 Cole IT AI
               </Link>
               <nav className="flex items-center gap-4">
                 <div className="flex gap-2">
                   <Link
-                    href={`?lang=ko`}
+                    href={`/ko/posts/${slug}`}
                     className={`px-3 py-1 rounded text-sm ${lang === 'ko' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                   >
                     한국어
                   </Link>
                   <Link
-                    href={`?lang=en`}
+                    href={`/en/posts/${slug}`}
                     className={`px-3 py-1 rounded text-sm ${lang === 'en' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                   >
                     English

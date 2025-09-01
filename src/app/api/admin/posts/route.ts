@@ -18,6 +18,12 @@ export async function GET(request: NextRequest) {
         createdAt: true,
         coverImage: true,
         views: true,
+        translations: {
+          select: {
+            locale: true,
+            title: true,
+          }
+        }
       }
     })
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { createPostTranslation } from '@/lib/translation'
 
 export async function GET() {
   try {
@@ -53,6 +54,27 @@ export async function POST(request: NextRequest) {
         status: data.publishedAt ? 'PUBLISHED' : 'DRAFT',
       },
     })
+    
+    // Create English translation automatically
+    try {
+      const translation = await createPostTranslation({
+        title: data.title,
+        content: data.content,
+        excerpt: data.excerpt,
+        seoTitle: data.seoTitle,
+        seoDescription: data.seoDescription,
+      })
+      
+      await prisma.postTranslation.create({
+        data: {
+          postId: post.id,
+          ...translation,
+        },
+      })
+    } catch (translationError) {
+      console.error('Translation failed:', translationError)
+      // Continue without translation - don't fail the entire post creation
+    }
     
     // If post is published, trigger sitemap update
     if (post.status === 'PUBLISHED' && post.publishedAt) {

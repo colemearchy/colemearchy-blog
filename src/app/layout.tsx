@@ -66,7 +66,11 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://colemearchy.com"
+    canonical: "https://colemearchy.com",
+    languages: {
+      'ko': '/ko',
+      'en': '/en',
+    }
   }
 };
 

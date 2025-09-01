@@ -30,6 +30,7 @@ model Post {
   socialLinks    Json?      // { threads: string[], youtube: string[] }
   
   comments       Comment[]
+  translations   PostTranslation[]
 
   @@index([slug])
   @@index([publishedAt])
@@ -90,4 +91,23 @@ model Comment {
 enum PostStatus {
   DRAFT
   PUBLISHED
+}
+
+model PostTranslation {
+  id             String    @id @default(cuid())
+  postId         String
+  locale         String
+  title          String
+  content        String
+  excerpt        String?
+  seoTitle       String?
+  seoDescription String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+  
+  post           Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  @@unique([postId, locale])
+  @@index([postId])
+  @@index([locale])
 }

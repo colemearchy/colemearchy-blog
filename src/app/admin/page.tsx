@@ -6,6 +6,11 @@ import { AdminPostsTable } from '@/components/admin/AdminPostsTable'
 
 export const dynamic = 'force-dynamic'
 
+interface Translation {
+  locale: string
+  title: string
+}
+
 interface Post {
   id: string
   title: string
@@ -13,6 +18,7 @@ interface Post {
   publishedAt: Date | null
   views: number
   coverImage: string | null
+  translations?: Translation[]
 }
 
 export default async function AdminPage() {
@@ -25,6 +31,12 @@ export default async function AdminPage() {
       publishedAt: true,
       views: true,
       coverImage: true,
+      translations: {
+        select: {
+          locale: true,
+          title: true,
+        }
+      }
     }
   })
 

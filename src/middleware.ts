@@ -1,8 +1,24 @@
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
+import { defaultLocale, locales } from '@/lib/i18n'
 
 export async function middleware(request: NextRequest) {
   try {
+    const pathname = request.nextUrl.pathname
+    
+    // Check if the pathname already has a locale
+    const pathnameHasLocale = locales.some(
+      (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
+    )
+    
+    // Redirect to default locale if no locale is present
+    if (!pathnameHasLocale && !pathname.startsWith('/api') && !pathname.startsWith('/admin') && !pathname.startsWith('/_next')) {
+      const locale = request.cookies.get('locale')?.value || defaultLocale
+      return NextResponse.redirect(
+        new URL(`/${locale}${pathname}`, request.url)
+      )
+    }
+    
     if (request.nextUrl.pathname.startsWith('/admin')) {
       const authHeader = request.headers.get('authorization')
       
@@ -39,5 +55,11 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: '/admin/:path*'
+  matcher: [
+    // Skip all internal paths (_next)
+    '/((?!_next|api|favicon.ico).*)',
+    // Optional: only run on root (/) and /posts/* URLs
+    // '/',
+    // '/posts/:path*'
+  ]
 }
