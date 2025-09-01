@@ -113,15 +113,30 @@ export default function EditPostClient({ id }: { id: string }) {
       const result = await response.json()
       
       if (response.ok) {
-        alert('번역이 완료되었습니다!')
-        // Refresh the page to show the translation
-        window.location.reload()
+        const successCount = result.results?.filter((r: any) => r.status === 'success').length || 0
+        const errorCount = result.results?.filter((r: any) => r.status === 'error').length || 0
+        
+        if (successCount > 0) {
+          alert('번역이 완료되었습니다!')
+          // Refresh the page to show the translation
+          window.location.reload()
+        } else if (errorCount > 0) {
+          const errorMessages = result.results
+            ?.filter((r: any) => r.status === 'error')
+            .map((r: any) => r.message)
+            .join('\n')
+          throw new Error(errorMessages || 'Translation failed')
+        }
       } else {
         throw new Error(result.error || 'Translation failed')
       }
     } catch (error) {
       console.error('Error translating post:', error)
-      alert('번역 중 오류가 발생했습니다.')
+      if (error instanceof Error) {
+        alert(`번역 중 오류가 발생했습니다:\n${error.message}`)
+      } else {
+        alert('번역 중 오류가 발생했습니다.')
+      }
     } finally {
       setIsTranslating(false)
     }

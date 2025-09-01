@@ -37,6 +37,7 @@ export async function POST(request: NextRequest) {
       
       try {
         // Create translation
+        console.log(`Translating post ${post.id} to ${targetLang}...`)
         const translation = await createPostTranslation({
           title: post.title,
           content: post.content,
@@ -45,12 +46,21 @@ export async function POST(request: NextRequest) {
           seoDescription: post.seoDescription,
         }, targetLang as 'en' | 'ko')
         
-        await prisma.postTranslation.create({
+        console.log(`Translation result for ${post.id}:`, {
+          locale: translation.locale,
+          titleLength: translation.title.length,
+          contentLength: translation.content.length,
+          hasExcerpt: !!translation.excerpt
+        })
+        
+        const created = await prisma.postTranslation.create({
           data: {
             postId: post.id,
             ...translation,
           },
         })
+        
+        console.log(`PostTranslation created with id: ${created.id}`)
         
         translationResults.push({
           postId: post.id,
@@ -59,10 +69,22 @@ export async function POST(request: NextRequest) {
         })
       } catch (error) {
         console.error(`Failed to translate post ${post.id}:`, error)
+        let errorMessage = 'Translation failed'
+        
+        if (error instanceof Error) {
+          if (error.message.includes('API_KEY_INVALID')) {
+            errorMessage = 'Gemini API key is invalid. Please check your API key in .env file.'
+          } else if (error.message.includes('Failed to translate')) {
+            errorMessage = error.message
+          } else {
+            errorMessage = `Translation error: ${error.message}`
+          }
+        }
+        
         translationResults.push({
           postId: post.id,
           status: 'error',
-          message: error instanceof Error ? error.message : 'Translation failed'
+          message: errorMessage
         })
       }
     }

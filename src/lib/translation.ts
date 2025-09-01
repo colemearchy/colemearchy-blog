@@ -1,7 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
-
 export function detectLanguage(text: string): 'ko' | 'en' {
   // Simple language detection based on character ranges
   const koreanRegex = /[\u3131-\uD79D]/
@@ -14,7 +12,12 @@ export function detectLanguage(text: string): 'ko' | 'en' {
 
 export async function translate(text: string, targetLang: 'en' | 'ko', context: 'title' | 'content' | 'excerpt' = 'content'): Promise<string> {
   try {
-    const model = genAI.getGenerativeModel({ model: 'gemini-pro' })
+    if (!process.env.GEMINI_API_KEY) {
+      throw new Error('GEMINI_API_KEY is not set in environment variables')
+    }
+    
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY)
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
     
     let prompt = ''
     
