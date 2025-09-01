@@ -11,8 +11,20 @@ export async function middleware(request: NextRequest) {
       (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
     )
     
+    // Skip locale redirect for special routes
+    const skipLocaleRedirect = [
+      '/api',
+      '/admin',
+      '/_next',
+      '/icon',
+      '/apple-icon',
+      '/favicon.ico',
+      '/robots.txt',
+      '/sitemap.xml'
+    ].some(path => pathname.startsWith(path))
+    
     // Redirect to default locale if no locale is present
-    if (!pathnameHasLocale && !pathname.startsWith('/api') && !pathname.startsWith('/admin') && !pathname.startsWith('/_next')) {
+    if (!pathnameHasLocale && !skipLocaleRedirect) {
       const locale = request.cookies.get('locale')?.value || defaultLocale
       return NextResponse.redirect(
         new URL(`/${locale}${pathname}`, request.url)
@@ -56,10 +68,7 @@ export async function middleware(request: NextRequest) {
 
 export const config = {
   matcher: [
-    // Skip all internal paths (_next)
-    '/((?!_next|api|favicon.ico).*)',
-    // Optional: only run on root (/) and /posts/* URLs
-    // '/',
-    // '/posts/:path*'
+    // Match all pathnames except static files and api routes
+    '/((?!api|_next/static|_next/image|favicon.ico|icon|apple-icon|robots.txt|sitemap.xml).*)',
   ]
 }

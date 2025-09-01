@@ -24,7 +24,7 @@ interface AdminPostsTableProps {
 }
 
 export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
-  const [posts, setPosts] = useState<Post[]>([])
+  const [posts, setPosts] = useState<Post[]>(initialPosts)
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [copiedTitle, setCopiedTitle] = useState<string | null>(null)
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null)
@@ -33,7 +33,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
   const [languageFilter, setLanguageFilter] = useState<'all' | 'ko' | 'en' | 'no-en' | 'no-ko'>('all')
   const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set())
   const [isTranslating, setIsTranslating] = useState(false)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
     fetchPosts()
