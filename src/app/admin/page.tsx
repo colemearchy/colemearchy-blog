@@ -18,6 +18,7 @@ interface Post {
   publishedAt: Date | null
   views: number
   coverImage: string | null
+  originalLanguage?: string
   translations?: Translation[]
 }
 
@@ -31,6 +32,7 @@ export default async function AdminPage() {
       publishedAt: true,
       views: true,
       coverImage: true,
+      originalLanguage: true,
       translations: {
         select: {
           locale: true,

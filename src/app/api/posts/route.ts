@@ -38,6 +38,9 @@ export async function POST(request: NextRequest) {
       )
     }
     
+    // Detect source language
+    const sourceLang = detectLanguage(data.title + ' ' + data.content)
+    
     const post = await prisma.post.create({
       data: {
         title: data.title,
@@ -50,14 +53,14 @@ export async function POST(request: NextRequest) {
         seoDescription: data.seoDescription || data.excerpt,
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
         youtubeVideoId: data.youtubeVideoId || null,
+        originalLanguage: sourceLang,
         // If publishedAt is set, automatically set status to PUBLISHED
         status: data.publishedAt ? 'PUBLISHED' : 'DRAFT',
       },
     })
     
-    // Detect source language and create translation
+    // Create translation
     try {
-      const sourceLang = detectLanguage(data.title + ' ' + data.content)
       const targetLang = sourceLang === 'ko' ? 'en' : 'ko'
       
       // Create translation for the opposite language

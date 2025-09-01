@@ -15,6 +15,7 @@ interface Post {
   publishedAt: Date | null
   views: number
   coverImage: string | null
+  originalLanguage?: string
   translations?: Translation[]
 }
 
@@ -380,15 +381,27 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
                   </td>
                   <td className="px-3 py-4 text-sm text-center">
                     <div className="flex justify-center gap-1">
-                      {hasKoreanTranslation ? (
-                        <span className="text-sm" title="한국어 번역 있음">🇰🇷</span>
+                      {/* 원본 언어 표시 */}
+                      {post.originalLanguage === 'ko' ? (
+                        <span className="text-sm font-bold" title="한국어 원본">🇰🇷</span>
+                      ) : post.originalLanguage === 'en' ? (
+                        <span className="text-sm font-bold" title="영어 원본">🇬🇧</span>
                       ) : (
-                        <span className="text-sm text-gray-300" title="한국어 번역 없음">🇰🇷</span>
+                        <span className="text-sm" title="한국어 (기본)">🇰🇷</span>
                       )}
-                      {hasEnglishTranslation ? (
+                      
+                      {/* 번역 상태 표시 */}
+                      {post.originalLanguage === 'ko' && !hasEnglishTranslation && (
+                        <span className="text-sm text-gray-300" title="영어 번역 필요">🇬🇧</span>
+                      )}
+                      {post.originalLanguage === 'en' && !hasKoreanTranslation && (
+                        <span className="text-sm text-gray-300" title="한국어 번역 필요">🇰🇷</span>
+                      )}
+                      {hasEnglishTranslation && post.originalLanguage === 'ko' && (
                         <span className="text-sm" title="영어 번역 있음">🇬🇧</span>
-                      ) : (
-                        <span className="text-sm text-gray-300" title="영어 번역 없음">🇬🇧</span>
+                      )}
+                      {hasKoreanTranslation && post.originalLanguage === 'en' && (
+                        <span className="text-sm" title="한국어 번역 있음">🇰🇷</span>
                       )}
                     </div>
                   </td>

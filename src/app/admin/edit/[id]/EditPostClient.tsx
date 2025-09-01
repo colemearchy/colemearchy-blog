@@ -24,6 +24,7 @@ interface Post {
   seoDescription?: string
   publishedAt?: string | null
   youtubeVideoId?: string
+  originalLanguage?: string
   translations?: Translation[]
 }
 
@@ -77,15 +78,22 @@ export default function EditPostClient({ id }: { id: string }) {
   }
 
   const hasEnglishTranslation = post.translations?.some(t => t.locale === 'en')
+  const hasKoreanTranslation = post.translations?.some(t => t.locale === 'ko')
   const englishTranslation = post.translations?.find(t => t.locale === 'en')
+  const koreanTranslation = post.translations?.find(t => t.locale === 'ko')
+  
+  const isOriginalEnglish = post.originalLanguage === 'en'
+  const needsTranslation = isOriginalEnglish ? !hasKoreanTranslation : !hasEnglishTranslation
+  const targetLang = isOriginalEnglish ? 'ko' : 'en'
+  const targetLangName = isOriginalEnglish ? '한국어' : '영어'
 
   const handleTranslate = async () => {
-    if (hasEnglishTranslation) {
-      alert('이미 영어 번역이 있습니다.')
+    if (!needsTranslation) {
+      alert(`이미 ${targetLangName} 번역이 있습니다.`)
       return
     }
 
-    if (!confirm('이 포스트를 영어로 번역하시겠습니까?')) {
+    if (!confirm(`이 포스트를 ${targetLangName}로 번역하시겠습니까?`)) {
       return
     }
 
@@ -97,7 +105,8 @@ export default function EditPostClient({ id }: { id: string }) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          postIds: [id]
+          postIds: [id],
+          targetLang
         })
       })
 
@@ -135,7 +144,7 @@ export default function EditPostClient({ id }: { id: string }) {
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
               }`}
             >
-              한국어 🇰🇷
+              한국어 🇰🇷{post.originalLanguage === 'ko' && ' (원본)'}
             </button>
             <button
               type="button"
@@ -146,12 +155,12 @@ export default function EditPostClient({ id }: { id: string }) {
                   : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
               }`}
             >
-              English 🇬🇧 {!hasEnglishTranslation && '(번역 필요)'}
+              English 🇬🇧{post.originalLanguage === 'en' ? ' (원본)' : (!hasEnglishTranslation && ' (번역 필요)')}
             </button>
           </div>
           
           {/* 번역 버튼 */}
-          {!hasEnglishTranslation && (
+          {needsTranslation && (
             <button
               onClick={handleTranslate}
               disabled={isTranslating}
@@ -166,18 +175,42 @@ export default function EditPostClient({ id }: { id: string }) {
                   번역 중...
                 </>
               ) : (
-                '영어로 번역하기'
+                `${targetLangName}로 번역하기`
               )}
             </button>
           )}
         </div>
       </div>
       
-      {activeTab === 'ko' ? (
+      {/* 원본 언어의 탭에서는 편집 가능, 번역 언어의 탭에서는 읽기 전용 */}
+      {(activeTab === 'ko' && post.originalLanguage !== 'en') || (activeTab === 'en' && post.originalLanguage === 'en') ? (
         <PostEditor initialData={post} onSubmit={handleSubmit} isEdit />
       ) : (
         <div>
-          {hasEnglishTranslation && englishTranslation ? (
+          {/* 번역된 콘텐츠 표시 */}
+          {activeTab === 'ko' && hasKoreanTranslation && koreanTranslation ? (
+            <div className="bg-gray-50 rounded-lg p-6">
+              <h2 className="text-lg font-semibold mb-4">Korean Translation</h2>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                  <p className="text-gray-900 bg-white p-3 rounded border border-gray-200">{koreanTranslation.title}</p>
+                </div>
+                {koreanTranslation.excerpt && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Excerpt</label>
+                    <p className="text-gray-900 bg-white p-3 rounded border border-gray-200">{koreanTranslation.excerpt}</p>
+                  </div>
+                )}
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                  <div className="text-gray-900 bg-white p-3 rounded border border-gray-200 max-h-96 overflow-y-auto whitespace-pre-wrap">
+                    {koreanTranslation.content}
+                  </div>
+                </div>
+              </div>
+            </div>
+          ) : activeTab === 'en' && hasEnglishTranslation && englishTranslation ? (
             <div className="bg-gray-50 rounded-lg p-6">
               <h2 className="text-lg font-semibold mb-4">English Translation</h2>
               <div className="space-y-4">
@@ -201,7 +234,7 @@ export default function EditPostClient({ id }: { id: string }) {
             </div>
           ) : (
             <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 text-center">
-              <p className="text-yellow-800 mb-4">영어 번역이 아직 없습니다.</p>
+              <p className="text-yellow-800 mb-4">{targetLangName} 번역이 아직 없습니다.</p>
               <button
                 onClick={handleTranslate}
                 disabled={isTranslating}

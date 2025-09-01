@@ -28,6 +28,7 @@ model Post {
   status         PostStatus @default(DRAFT)
   youtubeVideoId String?
   socialLinks    Json?      // { threads: string[], youtube: string[] }
+  originalLanguage String   @default("ko")
   
   comments       Comment[]
   translations   PostTranslation[]
