@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
-import { createPostTranslation } from '@/lib/translation'
+import { createPostTranslation, detectLanguage } from '@/lib/translation'
 
 export async function GET() {
   try {
@@ -55,20 +55,37 @@ export async function POST(request: NextRequest) {
       },
     })
     
-    // Create English translation automatically
+    // Detect source language and create translation
     try {
+      const sourceLang = detectLanguage(data.title + ' ' + data.content)
+      const targetLang = sourceLang === 'ko' ? 'en' : 'ko'
+      
+      // Create translation for the opposite language
       const translation = await createPostTranslation({
         title: data.title,
         content: data.content,
         excerpt: data.excerpt,
         seoTitle: data.seoTitle,
         seoDescription: data.seoDescription,
-      })
+      }, targetLang)
       
       await prisma.postTranslation.create({
         data: {
           postId: post.id,
           ...translation,
+        },
+      })
+      
+      // Also create a "translation" for the source language (for consistent data structure)
+      await prisma.postTranslation.create({
+        data: {
+          postId: post.id,
+          locale: sourceLang,
+          title: data.title,
+          content: data.content,
+          excerpt: data.excerpt || null,
+          seoTitle: data.seoTitle || null,
+          seoDescription: data.seoDescription || null,
         },
       })
     } catch (translationError) {

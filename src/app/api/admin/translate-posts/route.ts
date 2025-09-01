@@ -4,7 +4,7 @@ import { createPostTranslation } from '@/lib/translation'
 
 export async function POST(request: NextRequest) {
   try {
-    const { postIds } = await request.json()
+    const { postIds, targetLang = 'en' } = await request.json()
     
     if (!postIds || !Array.isArray(postIds) || postIds.length === 0) {
       return NextResponse.json({ error: 'Invalid post IDs' }, { status: 400 })
@@ -18,23 +18,19 @@ export async function POST(request: NextRequest) {
         }
       },
       include: {
-        translations: {
-          where: {
-            locale: 'en'
-          }
-        }
+        translations: true
       }
     })
     
     const translationResults = []
     
     for (const post of posts) {
-      // Skip if already has English translation
-      if (post.translations.length > 0) {
+      // Skip if already has translation for target language
+      if (post.translations.some(t => t.locale === targetLang)) {
         translationResults.push({
           postId: post.id,
           status: 'skipped',
-          message: 'Already has English translation'
+          message: `Already has ${targetLang === 'en' ? 'English' : 'Korean'} translation`
         })
         continue
       }
@@ -47,7 +43,7 @@ export async function POST(request: NextRequest) {
           excerpt: post.excerpt,
           seoTitle: post.seoTitle,
           seoDescription: post.seoDescription,
-        })
+        }, targetLang as 'en' | 'ko')
         
         await prisma.postTranslation.create({
           data: {

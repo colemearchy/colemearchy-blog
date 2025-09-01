@@ -212,12 +212,12 @@ export default async function PostPage({
     dateModified: post.updatedAt.toISOString(),
     author: {
       '@type': 'Person',
-      name: post.author || 'Colemearchy Blog',
+      name: post.author || 'Cole IT AI',
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/about`,
     },
     publisher: {
       '@type': 'Organization',
-      name: 'Colemearchy Blog',
+      name: 'Cole IT AI',
       logo: {
         '@type': 'ImageObject',
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`,
@@ -402,7 +402,7 @@ export default async function PostPage({
         <footer className="bg-gray-50 mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <p className="text-center text-gray-500 text-sm">
-              © {new Date().getFullYear()} Colemearchy Blog. All rights reserved.
+              © {new Date().getFullYear()} Cole IT AI. All rights reserved.
             </p>
           </div>
         </footer>

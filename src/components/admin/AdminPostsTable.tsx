@@ -29,7 +29,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null)
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
-  const [languageFilter, setLanguageFilter] = useState<'all' | 'ko' | 'en' | 'no-en'>('all')
+  const [languageFilter, setLanguageFilter] = useState<'all' | 'ko' | 'en' | 'no-en' | 'no-ko'>('all')
   const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set())
   const [isTranslating, setIsTranslating] = useState(false)
   const [loading, setLoading] = useState(true)
@@ -129,7 +129,10 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
       return
     }
 
-    if (!confirm(`${selectedPosts.size}개의 포스트를 영어로 번역하시겠습니까?`)) {
+    const targetLang = languageFilter === 'no-ko' ? 'ko' : 'en'
+    const targetLangName = targetLang === 'ko' ? '한국어' : '영어'
+
+    if (!confirm(`${selectedPosts.size}개의 포스트를 ${targetLangName}로 번역하시겠습니까?`)) {
       return
     }
 
@@ -141,7 +144,8 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          postIds: Array.from(selectedPosts)
+          postIds: Array.from(selectedPosts),
+          targetLang
         })
       })
 
@@ -171,13 +175,15 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
   // Filter posts based on language
   const filteredPosts = posts.filter(post => {
     if (languageFilter === 'all') return true
-    if (languageFilter === 'ko') return true // All posts are in Korean by default
+    if (languageFilter === 'ko') return post.translations?.some(t => t.locale === 'ko')
     if (languageFilter === 'en') return post.translations?.some(t => t.locale === 'en')
     if (languageFilter === 'no-en') return !post.translations?.some(t => t.locale === 'en')
+    if (languageFilter === 'no-ko') return !post.translations?.some(t => t.locale === 'ko')
     return true
   })
 
   const postsWithoutEnglish = posts.filter(post => !post.translations?.some(t => t.locale === 'en'))
+  const postsWithoutKorean = posts.filter(post => !post.translations?.some(t => t.locale === 'ko'))
 
   if (loading) {
     return (
@@ -207,6 +213,11 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
                   {' '}(영어 번역 필요: {postsWithoutEnglish.length}개)
                 </span>
               )}
+              {postsWithoutKorean.length > 0 && (
+                <span className="text-blue-600 font-medium">
+                  {' '}(한국어 번역 필요: {postsWithoutKorean.length}개)
+                </span>
+              )}
             </p>
           </div>
           
@@ -221,13 +232,14 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
               className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
             >
               <option value="all">모든 언어</option>
-              <option value="ko">한국어만</option>
+              <option value="ko">한국어 번역 있음</option>
               <option value="en">영어 번역 있음</option>
               <option value="no-en">영어 번역 없음</option>
+              <option value="no-ko">한국어 번역 없음</option>
             </select>
             
             {/* 일괄 번역 버튼 */}
-            {languageFilter === 'no-en' && selectedPosts.size > 0 && (
+            {(languageFilter === 'no-en' || languageFilter === 'no-ko') && selectedPosts.size > 0 && (
               <button
                 onClick={handleBulkTranslate}
                 disabled={isTranslating}
@@ -242,7 +254,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
                     번역 중...
                   </>
                 ) : (
-                  <>영어로 번역 ({selectedPosts.size}개)</>
+                  <>{languageFilter === 'no-ko' ? '한국어' : '영어'}로 번역 ({selectedPosts.size}개)</>
                 )}
               </button>
             )}
@@ -254,7 +266,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
         <table className="min-w-full">
           <thead className="bg-gray-50">
             <tr>
-              {(languageFilter === 'no-en' || languageFilter === 'all') && (
+              {(languageFilter === 'no-en' || languageFilter === 'no-ko' || languageFilter === 'all') && (
                 <th className="w-4 px-3 py-3.5">
                   <input
                     type="checkbox"
@@ -308,12 +320,15 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
             {filteredPosts.map((post, index) => {
               const postNumber = sortOrder === 'asc' ? index + 1 : filteredPosts.length - index
               const hasEnglishTranslation = post.translations?.some(t => t.locale === 'en')
+              const hasKoreanTranslation = post.translations?.some(t => t.locale === 'ko')
               
               return (
                 <tr key={post.id} className="hover:bg-gray-50">
-                  {(languageFilter === 'no-en' || languageFilter === 'all') && (
+                  {(languageFilter === 'no-en' || languageFilter === 'no-ko' || languageFilter === 'all') && (
                     <td className="px-3 py-4">
-                      {!hasEnglishTranslation && (
+                      {((languageFilter === 'no-en' && !hasEnglishTranslation) || 
+                        (languageFilter === 'no-ko' && !hasKoreanTranslation) ||
+                        (languageFilter === 'all' && (!hasEnglishTranslation || !hasKoreanTranslation))) && (
                         <input
                           type="checkbox"
                           checked={selectedPosts.has(post.id)}
@@ -365,7 +380,11 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
                   </td>
                   <td className="px-3 py-4 text-sm text-center">
                     <div className="flex justify-center gap-1">
-                      <span className="text-sm" title="한국어">🇰🇷</span>
+                      {hasKoreanTranslation ? (
+                        <span className="text-sm" title="한국어 번역 있음">🇰🇷</span>
+                      ) : (
+                        <span className="text-sm text-gray-300" title="한국어 번역 없음">🇰🇷</span>
+                      )}
                       {hasEnglishTranslation ? (
                         <span className="text-sm" title="영어 번역 있음">🇬🇧</span>
                       ) : (
