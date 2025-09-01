@@ -76,6 +76,13 @@ export default function EditPostClient({ id }: { id: string }) {
     }
   }
 
+  // 원본 언어에 따라 초기 탭 설정 - hooks는 조건문 전에 호출되어야 함
+  useEffect(() => {
+    if (post?.originalLanguage) {
+      setActiveTab(post.originalLanguage as 'ko' | 'en')
+    }
+  }, [post?.originalLanguage])
+
   if (loading) {
     return <div>Loading...</div>
   }
@@ -91,13 +98,6 @@ export default function EditPostClient({ id }: { id: string }) {
   
   const isOriginalKorean = post.originalLanguage === 'ko'
   const isOriginalEnglish = post.originalLanguage === 'en'
-  
-  // 원본 언어에 따라 초기 탭 설정
-  useEffect(() => {
-    if (post.originalLanguage) {
-      setActiveTab(post.originalLanguage as 'ko' | 'en')
-    }
-  }, [post.originalLanguage])
   
   const needsKoreanTranslation = isOriginalEnglish && !hasKoreanTranslation
   const needsEnglishTranslation = isOriginalKorean && !hasEnglishTranslation
