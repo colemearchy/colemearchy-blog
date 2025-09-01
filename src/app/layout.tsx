@@ -23,35 +23,39 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://colemearchy.com'),
   title: {
-    default: "Colemearchy - Biohacking, Tech Leadership, and Sovereign Living",
-    template: "%s | Colemearchy"
+    default: "Cole IT AI - Tech & AI Blog",
+    template: "%s | Cole IT AI"
   },
-  description: "Raw insights on biohacking, tech leadership, and building a sovereign life. From a tech director who refuses to follow the script.",
-  keywords: ["biohacking", "tech leadership", "startup growth", "SEO", "AI", "personal freedom", "investing"],
-  authors: [{ name: "Colemearchy" }],
-  creator: "Colemearchy",
-  publisher: "Colemearchy",
+  description: "AI, technology, and software development insights from Cole IT AI.",
+  keywords: ["AI", "technology", "software development", "machine learning", "programming"],
+  authors: [{ name: "Cole IT AI" }],
+  creator: "Cole IT AI",
+  publisher: "Cole IT AI",
+  icons: {
+    icon: '/icon',
+    apple: '/apple-icon',
+  },
   openGraph: {
     type: "website",
     locale: "en_US",
     url: "https://colemearchy.com",
-    siteName: "Colemearchy",
-    title: "Colemearchy - Biohacking, Tech Leadership, and Sovereign Living",
-    description: "Raw insights on biohacking, tech leadership, and building a sovereign life.",
+    siteName: "Cole IT AI",
+    title: "Cole IT AI - Tech & AI Blog",
+    description: "AI, technology, and software development insights from Cole IT AI.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Colemearchy"
+        alt: "Cole IT AI"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Colemearchy",
-    description: "Raw insights on biohacking, tech leadership, and building a sovereign life.",
-    creator: "@colemearchy",
+    title: "Cole IT AI",
+    description: "AI, technology, and software development insights from Cole IT AI.",
+    creator: "@coleitai",
     images: ["/og-image.png"]
   },
   robots: {
@@ -82,12 +86,12 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Colemearchy',
+    name: 'Cole IT AI',
     url: 'https://colemearchy.com',
-    description: 'Raw insights on biohacking, tech leadership, and building a sovereign life.',
+    description: 'AI, technology, and software development insights from Cole IT AI.',
     publisher: {
-      '@type': 'Person',
-      name: 'Colemearchy'
+      '@type': 'Organization',
+      name: 'Cole IT AI'
     },
     potentialAction: {
       '@type': 'SearchAction',
@@ -102,6 +106,8 @@ export default function RootLayout({
   return (
     <html lang="en">
       <head>
+        <link rel="icon" href="/icon" sizes="any" />
+        <link rel="apple-touch-icon" href="/apple-icon" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
         <script
