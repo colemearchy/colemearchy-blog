@@ -19,13 +19,8 @@ export async function generateMetadata({
       ? 'A blog about AI, technology, and software development'
       : 'AI, 기술, 소프트웨어 개발에 관한 블로그',
     icons: {
-      icon: [
-        { url: '/favicon.svg', type: 'image/svg+xml' },
-        { url: '/favicon.ico', sizes: 'any' }
-      ],
-      apple: [
-        { url: '/favicon.svg' }
-      ]
+      icon: '/icon',
+      apple: '/apple-icon',
     },
     openGraph: {
       title: locale === 'en' ? 'Cole IT AI - Tech & AI Blog' : 'Cole IT AI - 기술 및 AI 블로그',
