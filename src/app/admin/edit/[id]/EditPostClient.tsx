@@ -93,7 +93,7 @@ export default function EditPostClient({ id }: { id: string }) {
   const isOriginalEnglish = post.originalLanguage === 'en'
   
   // 원본 언어에 따라 초기 탭 설정
-  React.useEffect(() => {
+  useEffect(() => {
     if (post.originalLanguage) {
       setActiveTab(post.originalLanguage as 'ko' | 'en')
     }
@@ -243,7 +243,7 @@ export default function EditPostClient({ id }: { id: string }) {
           {(activeTab === 'ko' && hasKoreanTranslation) || (activeTab === 'en' && hasEnglishTranslation) ? (
             <TranslationEditor
               postId={id}
-              translation={activeTab === 'ko' ? koreanTranslation : englishTranslation}
+              translation={activeTab === 'ko' ? (koreanTranslation || null) : (englishTranslation || null)}
               locale={activeTab}
               onSave={() => window.location.reload()}
             />

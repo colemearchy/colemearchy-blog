@@ -1,7 +1,8 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import ImageUpload from './ImageUpload'
+import { PostImageUpload } from './post-editor/PostImageUpload'
+import { PostFormData } from '@/types'
 
 interface Translation {
   id: string
@@ -122,16 +123,25 @@ export default function TranslationEditor({ postId, translation, locale, onSave 
         />
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">
-          썸네일 이미지
-        </label>
-        <ImageUpload
-          value={coverImage}
-          onChange={setCoverImage}
-          onRemove={() => setCoverImage('')}
-        />
-      </div>
+      <PostImageUpload
+        formData={{
+          title: '',
+          slug: '',
+          content: '',
+          excerpt: '',
+          coverImage: coverImage,
+          tags: '',
+          seoTitle: '',
+          seoDescription: '',
+          publishedAt: null,
+          youtubeVideoId: ''
+        }}
+        onChange={(data: Partial<PostFormData>) => {
+          if (data.coverImage !== undefined) {
+            setCoverImage(data.coverImage)
+          }
+        }}
+      />
 
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">
