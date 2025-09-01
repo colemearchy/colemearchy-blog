@@ -16,6 +16,27 @@ export async function POST(request: NextRequest) {
   try {
     const data = await request.json()
     
+    console.log('Creating post with data:', {
+      title: data.title,
+      slug: data.slug,
+      youtubeVideoId: data.youtubeVideoId,
+      tags: data.tags,
+      publishedAt: data.publishedAt
+    })
+    
+    // Check if slug already exists
+    const existingPost = await prisma.post.findUnique({
+      where: { slug: data.slug }
+    })
+    
+    if (existingPost) {
+      console.error('Post with slug already exists:', data.slug)
+      return NextResponse.json(
+        { error: 'Post with this slug already exists' },
+        { status: 400 }
+      )
+    }
+    
     const post = await prisma.post.create({
       data: {
         title: data.title,
@@ -23,7 +44,7 @@ export async function POST(request: NextRequest) {
         content: data.content,
         excerpt: data.excerpt,
         coverImage: data.coverImage,
-        tags: data.tags,
+        tags: data.tags || [],
         seoTitle: data.seoTitle || data.title,
         seoDescription: data.seoDescription || data.excerpt,
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
@@ -46,6 +67,11 @@ export async function POST(request: NextRequest) {
     
     return NextResponse.json(post)
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create post' }, { status: 500 })
+    console.error('Error creating post:', error)
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    return NextResponse.json(
+      { error: 'Failed to create post', details: errorMessage },
+      { status: 500 }
+    )
   }
 }

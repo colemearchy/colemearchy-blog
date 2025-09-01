@@ -109,16 +109,27 @@ This post is based on our YouTube video. Watch it for more details!
 
 *Originally published on YouTube: ${new Date(video.publishedAt).toLocaleDateString()}*`
 
+      // Create a unique slug from video title and ID
+      const baseSlug = video.title
+        .toLowerCase()
+        .replace(/[^\w\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .slice(0, 50); // Limit slug length
+      
+      const uniqueSlug = `${baseSlug}-${video.id}`;
+      
       const postData = {
         title: video.title,
-        slug: video.title.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-'),
+        slug: uniqueSlug,
         content: postContent,
         excerpt: excerpt || video.title,
-        coverImage: video.thumbnailUrl,
+        coverImage: video.thumbnailUrl || `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`,
         youtubeVideoId: video.id,
         tags: hashtags.length > 0 ? hashtags : ['youtube', 'video'],
         publishedAt: new Date().toISOString(),
       }
+      
+      console.log('Creating post with data:', postData);
 
       const response = await fetch('/api/posts', {
         method: 'POST',
