@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 
 interface Translation {
   locale: string
@@ -35,11 +35,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
   const [isTranslating, setIsTranslating] = useState(false)
   const [loading, setLoading] = useState(false)
 
-  useEffect(() => {
-    fetchPosts()
-  }, [])
-
-  const fetchPosts = async () => {
+  const fetchPosts = useCallback(async () => {
     setLoading(true)
     try {
       const response = await fetch('/api/admin/posts?orderBy=publishedAt&order=asc')
@@ -50,7 +46,11 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
     } finally {
       setLoading(false)
     }
-  }
+  }, [])
+
+  useEffect(() => {
+    fetchPosts()
+  }, [fetchPosts])
 
   const handleSort = () => {
     const newOrder = sortOrder === 'asc' ? 'desc' : 'asc'

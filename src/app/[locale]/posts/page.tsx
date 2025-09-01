@@ -46,18 +46,15 @@ export default async function PostsPage({
       },
       // 언어별 필터링: 정확한 언어 매칭
       ...(lang === 'ko' ? {
-        // 한국어 페이지: originalLanguage가 'ko'이거나 null인 경우만
-        OR: [
-          { originalLanguage: 'ko' },
-          { originalLanguage: null }  // 레거시 포스트
-        ]
+        // 한국어 페이지: originalLanguage가 'ko'인 경우만
+        originalLanguage: 'ko'
       } : {
         // 영어 페이지: originalLanguage가 'en'이거나 영어 번역이 있는 경우만
         OR: [
           { originalLanguage: 'en' },
           {
             AND: [
-              { originalLanguage: { in: ['ko', null] } },
+              { originalLanguage: 'ko' },
               {
                 translations: {
                   some: {
@@ -65,8 +62,8 @@ export default async function PostsPage({
                   }
                 }
               }
-            }
-          ]
+            ]
+          }
         ]
       })
     },
