@@ -21,6 +21,8 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
   const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc')
   const [copiedTitle, setCopiedTitle] = useState<string | null>(null)
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null)
+  const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
 
   const handleSort = () => {
     const newOrder = sortOrder === 'asc' ? 'desc' : 'asc'
@@ -48,6 +50,31 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
       setTimeout(() => setCopiedUrl(null), 2000)
     } catch (err) {
       console.error('Failed to copy URL:', err)
+    }
+  }
+
+  const handleDelete = async (postId: string) => {
+    if (!confirm('정말로 이 글을 삭제하시겠습니까? 이 작업은 되돌릴 수 없습니다.')) {
+      return
+    }
+
+    setDeletingPostId(postId)
+    try {
+      const response = await fetch(`/api/admin/posts/${postId}`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to delete post')
+      }
+
+      // Remove the post from the local state
+      setPosts(posts.filter(post => post.id !== postId))
+    } catch (error) {
+      console.error('Error deleting post:', error)
+      alert('글 삭제에 실패했습니다.')
+    } finally {
+      setDeletingPostId(null)
     }
   }
 
@@ -192,6 +219,24 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                       </Link>
+                      
+                      {/* 삭제 */}
+                      <button
+                        onClick={() => handleDelete(post.id)}
+                        disabled={deletingPostId === post.id}
+                        className="text-red-600 hover:text-red-900 font-medium disabled:opacity-50"
+                        title="삭제"
+                      >
+                        {deletingPostId === post.id ? (
+                          <svg className="w-4 h-4 animate-spin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                          </svg>
+                        ) : (
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                          </svg>
+                        )}
+                      </button>
                     </div>
                   </td>
                 </tr>

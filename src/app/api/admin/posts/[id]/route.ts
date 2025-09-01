@@ -36,3 +36,31 @@ export async function PATCH(
     return NextResponse.json({ error: 'Failed to update post' }, { status: 500 })
   }
 }
+
+export async function DELETE(
+  request: NextRequest,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  try {
+    const { id } = await params
+    
+    // Delete the post
+    await prisma.post.delete({
+      where: { id },
+    })
+    
+    // Trigger sitemap update after deletion
+    try {
+      await fetch(`${process.env.NEXT_PUBLIC_SITE_URL}/api/sitemap/update`, {
+        method: 'POST',
+      })
+    } catch (error) {
+      console.error('Failed to trigger sitemap update:', error)
+    }
+    
+    return NextResponse.json({ message: 'Post deleted successfully' })
+  } catch (error) {
+    console.error('Error deleting post:', error)
+    return NextResponse.json({ error: 'Failed to delete post' }, { status: 500 })
+  }
+}
