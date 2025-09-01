@@ -3,6 +3,7 @@ import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 import { NewsletterAnalytics } from '@/components/NewsletterAnalytics'
 import { Metadata } from 'next'
+import { navigationItems } from '@/lib/navigation'
 
 // Static generation with ISR (Incremental Static Regeneration)
 export const revalidate = 3600 // Revalidate every hour
@@ -88,7 +89,18 @@ export default async function HomePage({
         publishedAt: { 
           not: null,
           lte: new Date() // Only show posts that should be published by now
-        } 
+        },
+        // 언어별 포스트 필터링: 원본 언어가 해당 언어이거나 번역이 있는 경우만
+        OR: [
+          { originalLanguage: lang },
+          {
+            translations: {
+              some: {
+                locale: lang
+              }
+            }
+          }
+        ]
       },
       orderBy: { publishedAt: 'desc' },
       include: {
@@ -121,26 +133,33 @@ export default async function HomePage({
             <div className="flex gap-2">
               <Link
                 href="/ko"
-                className={`px-3 py-1 rounded ${lang === 'ko' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                className={`px-3 py-1 rounded font-medium ${lang === 'ko' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
               >
-                한국어
+                KOR
               </Link>
               <Link
                 href="/en"
-                className={`px-3 py-1 rounded ${lang === 'en' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                className={`px-3 py-1 rounded font-medium ${lang === 'en' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
               >
-                English
+                ENG
               </Link>
             </div>
           </div>
           {/* Navigation */}
           <nav className="flex justify-center items-center gap-6 pb-4" aria-label="Main navigation">
-            <Link href={`/${locale}`} className="text-sm font-medium text-gray-900 pb-2 border-b-2 border-gray-900">Home</Link>
-            <Link href={`/${locale}/podcast`} className="text-sm font-medium text-gray-600 hover:text-gray-900 pb-2">Podcast</Link>
-            <Link href={`/${locale}/how-i-ai`} className="text-sm font-medium text-gray-600 hover:text-gray-900 pb-2">How I AI</Link>
-            <Link href={`/${locale}/reads`} className="text-sm font-medium text-gray-600 hover:text-gray-900 pb-2">Reads</Link>
-            <Link href={`/${locale}/community`} className="text-sm font-medium text-gray-600 hover:text-gray-900 pb-2">Community</Link>
-            <Link href={`/${locale}/about`} className="text-sm font-medium text-gray-600 hover:text-gray-900 pb-2">About</Link>
+            {navigationItems[lang].map((item, index) => (
+              <Link
+                key={item.href}
+                href={`/${locale}${item.href === '/' ? '' : item.href}`}
+                className={`text-sm font-medium pb-2 ${
+                  index === 0 
+                    ? 'text-gray-900 border-b-2 border-gray-900' 
+                    : 'text-gray-600 hover:text-gray-900'
+                }`}
+              >
+                {item.label}
+              </Link>
+            ))}
           </nav>
         </div>
       </header>

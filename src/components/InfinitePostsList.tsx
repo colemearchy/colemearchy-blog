@@ -5,6 +5,14 @@ import Link from 'next/link'
 import LazyImage from './LazyImage'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 
+interface Translation {
+  id: string
+  locale: string
+  title: string
+  excerpt: string | null
+  coverImage: string | null
+}
+
 interface Post {
   id: string
   title: string
@@ -15,17 +23,21 @@ interface Post {
   content: string
   publishedAt: Date | null
   author: string | null
+  translations?: Translation[]
 }
 
 interface InfinitePostsListProps {
   initialPosts: Post[]
   postsPerPage?: number
+  locale?: string
 }
 
 export default function InfinitePostsList({ 
   initialPosts, 
-  postsPerPage = 9 
+  postsPerPage = 9,
+  locale = 'ko'
 }: InfinitePostsListProps) {
+  const lang = locale === 'en' ? 'en' : 'ko'
   const [posts, setPosts] = useState(initialPosts.slice(0, postsPerPage))
   const [page, setPage] = useState(1)
   const [hasMore, setHasMore] = useState(initialPosts.length > postsPerPage)
@@ -81,17 +93,25 @@ export default function InfinitePostsList({
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
         {posts.map((post) => {
           const readingTime = calculateReadingTime(post.content)
+          const title = lang === 'en' && post.translations?.[0]?.title
+            ? post.translations[0].title
+            : post.title
+          const excerpt = lang === 'en' && post.translations?.[0]?.excerpt
+            ? post.translations[0].excerpt
+            : post.excerpt
+          const coverImage = post.translations?.[0]?.coverImage || post.coverImage
+          
           return (
             <article 
               key={post.id} 
               className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
             >
-              {post.coverImage && (
-                <Link href={`/posts/${post.slug}`}>
+              {coverImage && (
+                <Link href={`/${locale}/posts/${post.slug}`}>
                   <div className="relative h-48 w-full">
                     <LazyImage
-                      src={post.coverImage}
-                      alt={post.title}
+                      src={coverImage}
+                      alt={title}
                       fill
                       sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
                       className="object-cover"
@@ -102,7 +122,7 @@ export default function InfinitePostsList({
               <div className="p-6">
                 <div className="flex items-center gap-2 text-sm text-gray-600 mb-2">
                   <time dateTime={post.publishedAt?.toISOString()}>
-                    {post.publishedAt?.toLocaleDateString('en-US', {
+                    {post.publishedAt?.toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', {
                       year: 'numeric',
                       month: 'short',
                       day: 'numeric',
@@ -112,13 +132,13 @@ export default function InfinitePostsList({
                   <span>{formatReadingTime(readingTime)}</span>
                 </div>
                 <h2 className="text-xl font-bold text-gray-900 mb-2">
-                  <Link href={`/posts/${post.slug}`} className="hover:text-blue-600">
-                    {post.title}
+                  <Link href={`/${locale}/posts/${post.slug}`} className="hover:text-blue-600">
+                    {title}
                   </Link>
                 </h2>
-                {post.excerpt && (
+                {excerpt && (
                   <p className="text-gray-600 mb-4 line-clamp-3">
-                    {post.excerpt}
+                    {excerpt}
                   </p>
                 )}
                 {post.tags.length > 0 && (
