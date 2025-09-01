@@ -96,7 +96,7 @@ const nextConfig: NextConfig = {
         },
         {
           key: 'Content-Security-Policy',
-          value: "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;",
+          value: "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://googleads.g.doubleclick.net https://*.googleusercontent.com https://ep2.adtrafficquality.google https://www.google.com https://tpc.googlesyndication.com;",
         },
       ],
     },

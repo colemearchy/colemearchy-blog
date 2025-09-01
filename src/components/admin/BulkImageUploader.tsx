@@ -102,11 +102,16 @@ export function BulkImageUploader({ onUploadComplete }: BulkImageUploaderProps) 
 
     try {
       // 1. 발행일 순으로 게시물 목록 가져오기
-      const postsResponse = await fetch('/api/admin/posts?orderBy=publishedAt&order=asc')
-      const posts = await postsResponse.json()
+      const postsResponse = await fetch('/api/admin/posts?orderBy=createdAt&order=asc')
+      const allPosts = await postsResponse.json()
+      
+      // 커버 이미지가 없는 게시물만 필터링
+      const posts = allPosts.filter((post: any) => !post.coverImage)
+      
+      console.log(`커버 이미지가 없는 게시물: ${posts.length}개`)
 
       if (!posts || posts.length === 0) {
-        alert('게시물이 없습니다.')
+        alert('커버 이미지가 없는 게시물이 없습니다.')
         return
       }
 
