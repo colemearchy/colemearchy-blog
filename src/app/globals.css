@@ -1,7 +1,5 @@
 /* Critical CSS for above-the-fold content */
-@import "tailwindcss/base";
-@import "tailwindcss/components";
-@import "tailwindcss/utilities";
+@import "tailwindcss";
 
 @layer base {
   :root {

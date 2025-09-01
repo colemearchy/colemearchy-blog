@@ -6,10 +6,8 @@ const nextConfig: NextConfig = {
     removeConsole: process.env.NODE_ENV === 'production',
   },
   experimental: {
-    optimizeCss: true,
+    optimizeCss: false, // Disable to avoid critters error
   },
-  // Disable legacy browser support
-  swcMinify: true,
   images: {
     remotePatterns: [
       {
