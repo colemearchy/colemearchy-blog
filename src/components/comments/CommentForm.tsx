@@ -8,9 +8,11 @@ interface CommentFormProps {
   parentId?: string | null
   onSuccess?: () => void
   onCancel?: () => void
+  locale?: string
 }
 
-export default function CommentForm({ postSlug, parentId, onSuccess, onCancel }: CommentFormProps) {
+export default function CommentForm({ postSlug, parentId, onSuccess, onCancel, locale = 'ko' }: CommentFormProps) {
+  const isEnglish = locale === 'en'
   const router = useRouter()
   const [formData, setFormData] = useState({
     authorName: '',
@@ -38,7 +40,7 @@ export default function CommentForm({ postSlug, parentId, onSuccess, onCancel }:
       })
 
       if (!response.ok) {
-        throw new Error('댓글 작성에 실패했습니다.')
+        throw new Error(isEnglish ? 'Failed to post comment.' : '댓글 작성에 실패했습니다.')
       }
 
       // 폼 초기화
@@ -56,7 +58,7 @@ export default function CommentForm({ postSlug, parentId, onSuccess, onCancel }:
       // 페이지 새로고침
       router.refresh()
     } catch (err) {
-      setError(err instanceof Error ? err.message : '댓글 작성에 실패했습니다.')
+      setError(err instanceof Error ? err.message : (isEnglish ? 'Failed to post comment.' : '댓글 작성에 실패했습니다.'))
     } finally {
       setIsSubmitting(false)
     }
@@ -67,7 +69,7 @@ export default function CommentForm({ postSlug, parentId, onSuccess, onCancel }:
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label htmlFor="authorName" className="block text-sm font-medium text-gray-700 mb-1">
-            이름 <span className="text-red-500">*</span>
+            {isEnglish ? 'Name' : '이름'} <span className="text-red-500">*</span>
           </label>
           <input
             type="text"
@@ -76,12 +78,12 @@ export default function CommentForm({ postSlug, parentId, onSuccess, onCancel }:
             value={formData.authorName}
             onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
             className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="홍길동"
+            placeholder={isEnglish ? "John Doe" : "홍길동"}
           />
         </div>
         <div>
           <label htmlFor="authorEmail" className="block text-sm font-medium text-gray-700 mb-1">
-            이메일 (선택사항)
+            {isEnglish ? 'Email (optional)' : '이메일 (선택사항)'}
           </label>
           <input
             type="email"
@@ -96,7 +98,7 @@ export default function CommentForm({ postSlug, parentId, onSuccess, onCancel }:
 
       <div>
         <label htmlFor="content" className="block text-sm font-medium text-gray-700 mb-1">
-          댓글 내용 <span className="text-red-500">*</span>
+          {isEnglish ? 'Comment' : '댓글 내용'} <span className="text-red-500">*</span>
         </label>
         <textarea
           id="content"
@@ -105,7 +107,7 @@ export default function CommentForm({ postSlug, parentId, onSuccess, onCancel }:
           value={formData.content}
           onChange={(e) => setFormData({ ...formData, content: e.target.value })}
           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          placeholder="의견을 남겨주세요..."
+          placeholder={isEnglish ? "Leave your comment..." : "의견을 남겨주세요..."}
         />
       </div>
 
@@ -121,7 +123,7 @@ export default function CommentForm({ postSlug, parentId, onSuccess, onCancel }:
           disabled={isSubmitting}
           className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          {isSubmitting ? '작성 중...' : '댓글 작성'}
+          {isSubmitting ? (isEnglish ? 'Posting...' : '작성 중...') : (isEnglish ? 'Post Comment' : '댓글 작성')}
         </button>
         {onCancel && (
           <button
@@ -129,7 +131,7 @@ export default function CommentForm({ postSlug, parentId, onSuccess, onCancel }:
             onClick={onCancel}
             className="px-4 py-2 bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300"
           >
-            취소
+            {isEnglish ? 'Cancel' : '취소'}
           </button>
         )}
       </div>

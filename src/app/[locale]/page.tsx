@@ -90,17 +90,31 @@ export default async function HomePage({
           not: null,
           lte: new Date() // Only show posts that should be published by now
         },
-        // 언어별 포스트 필터링: 원본 언어가 해당 언어이거나 번역이 있는 경우만
-        OR: [
-          { originalLanguage: lang },
-          {
-            translations: {
-              some: {
-                locale: lang
-              }
+        // 언어별 포스트 필터링: 정확한 언어 매칭
+        ...(lang === 'ko' ? {
+          // 한국어 페이지: originalLanguage가 'ko'이거나 null인 경우만
+          OR: [
+            { originalLanguage: 'ko' },
+            { originalLanguage: null }  // 레거시 포스트
+          ]
+        } : {
+          // 영어 페이지: originalLanguage가 'en'이거나 영어 번역이 있는 경우만
+          OR: [
+            { originalLanguage: 'en' },
+            {
+              AND: [
+                { originalLanguage: { in: ['ko', null] } },
+                {
+                  translations: {
+                    some: {
+                      locale: 'en'
+                    }
+                  }
+                }
+              ]
             }
-          }
-        ]
+          ]
+        })
       },
       orderBy: { publishedAt: 'desc' },
       include: {

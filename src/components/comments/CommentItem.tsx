@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { formatDistanceToNow } from 'date-fns'
-import { ko } from 'date-fns/locale'
+import { ko, enUS } from 'date-fns/locale'
 import CommentForm from './CommentForm'
 import { useRouter } from 'next/navigation'
 
@@ -22,9 +22,11 @@ interface Comment {
 interface CommentItemProps {
   comment: Comment
   postSlug: string
+  locale?: string
 }
 
-export default function CommentItem({ comment, postSlug }: CommentItemProps) {
+export default function CommentItem({ comment, postSlug, locale = 'ko' }: CommentItemProps) {
+  const isEnglish = locale === 'en'
   const router = useRouter()
   const [showReplyForm, setShowReplyForm] = useState(false)
   const [hasVoted, setHasVoted] = useState(false)
@@ -61,7 +63,7 @@ export default function CommentItem({ comment, postSlug }: CommentItemProps) {
           <div className="flex items-center gap-2 mb-2">
             <span className="font-semibold text-gray-900">{comment.authorName}</span>
             <span className="text-sm text-gray-500">
-              {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: ko })}
+              {formatDistanceToNow(new Date(comment.createdAt), { addSuffix: true, locale: isEnglish ? enUS : ko })}
             </span>
           </div>
           
@@ -73,7 +75,7 @@ export default function CommentItem({ comment, postSlug }: CommentItemProps) {
                 <span className="text-purple-600 font-semibold">🤖 AI Devil's Advocate</span>
                 {comment.aiGeneratedAt && (
                   <span className="text-sm text-gray-500">
-                    {formatDistanceToNow(new Date(comment.aiGeneratedAt), { addSuffix: true, locale: ko })}
+                    {formatDistanceToNow(new Date(comment.aiGeneratedAt), { addSuffix: true, locale: isEnglish ? enUS : ko })}
                   </span>
                 )}
               </div>
@@ -81,7 +83,7 @@ export default function CommentItem({ comment, postSlug }: CommentItemProps) {
               
               {/* 투표 시스템 */}
               <div className="mt-4">
-                <p className="text-sm text-gray-600 mb-2">누구의 의견에 더 동의하시나요?</p>
+                <p className="text-sm text-gray-600 mb-2">{isEnglish ? "Whose opinion do you agree with more?" : "누구의 의견에 더 동의하시나요?"}</p>
                 <div className="flex gap-2">
                   <button
                     onClick={() => handleVote('user')}
@@ -92,7 +94,7 @@ export default function CommentItem({ comment, postSlug }: CommentItemProps) {
                         : 'bg-blue-100 text-blue-700 hover:bg-blue-200'
                     }`}
                   >
-                    사용자 ({comment.agreeWithUser}표)
+                    {isEnglish ? `User (${comment.agreeWithUser} votes)` : `사용자 (${comment.agreeWithUser}표)`}
                   </button>
                   <button
                     onClick={() => handleVote('ai')}
@@ -103,7 +105,7 @@ export default function CommentItem({ comment, postSlug }: CommentItemProps) {
                         : 'bg-purple-100 text-purple-700 hover:bg-purple-200'
                     }`}
                   >
-                    AI ({comment.agreeWithAI}표)
+                    {isEnglish ? `AI (${comment.agreeWithAI} votes)` : `AI (${comment.agreeWithAI}표)`}
                   </button>
                 </div>
                 
@@ -131,7 +133,7 @@ export default function CommentItem({ comment, postSlug }: CommentItemProps) {
               onClick={() => setShowReplyForm(!showReplyForm)}
               className="text-sm text-gray-600 hover:text-gray-900"
             >
-              답글 달기
+              {isEnglish ? 'Reply' : '답글 달기'}
             </button>
           </div>
         </div>
@@ -145,6 +147,7 @@ export default function CommentItem({ comment, postSlug }: CommentItemProps) {
             parentId={comment.id}
             onSuccess={() => setShowReplyForm(false)}
             onCancel={() => setShowReplyForm(false)}
+            locale={locale}
           />
         </div>
       )}
@@ -153,7 +156,7 @@ export default function CommentItem({ comment, postSlug }: CommentItemProps) {
       {comment.replies && comment.replies.length > 0 && (
         <div className="ml-8 mt-4 space-y-4">
           {comment.replies.map((reply) => (
-            <CommentItem key={reply.id} comment={reply} postSlug={postSlug} />
+            <CommentItem key={reply.id} comment={reply} postSlug={postSlug} locale={locale} />
           ))}
         </div>
       )}

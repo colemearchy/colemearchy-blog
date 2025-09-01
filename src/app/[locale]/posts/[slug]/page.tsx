@@ -403,7 +403,7 @@ export default async function PostPage({
 
               <MarkdownContent content={content} />
               
-              <CommentSection postSlug={post.slug} />
+              <CommentSection postSlug={post.slug} locale={locale} />
               
               <RelatedPosts postId={post.id} />
 
