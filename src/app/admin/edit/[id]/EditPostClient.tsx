@@ -51,6 +51,7 @@ export default function EditPostClient({ id }: { id: string }) {
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'ko' | 'en'>('ko')
   const [isTranslating, setIsTranslating] = useState(false)
+  const [copiedUrl, setCopiedUrl] = useState<string | null>(null)
 
   useEffect(() => {
     fetch(`/api/posts/${id}`)
@@ -181,6 +182,49 @@ export default function EditPostClient({ id }: { id: string }) {
           }`}>
             {isOriginalKorean ? '🇰🇷 한국어 원본' : '🇬🇧 영어 원본'}
           </span>
+        </div>
+        
+        {/* URL 정보 섹션 */}
+        <div className="bg-gray-50 rounded-lg p-4 mb-4">
+          <h3 className="text-sm font-medium text-gray-700 mb-2">게시물 URL</h3>
+          <div className="space-y-2">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">한국어:</span>
+              <div className="flex items-center gap-2">
+                <code className="text-sm bg-white px-2 py-1 rounded border border-gray-200">
+                  https://colemearchy.com/ko/posts/{post.slug}
+                </code>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`https://colemearchy.com/ko/posts/${post.slug}`)
+                    setCopiedUrl('ko')
+                    setTimeout(() => setCopiedUrl(null), 2000)
+                  }}
+                  className="text-sm text-indigo-600 hover:text-indigo-700"
+                >
+                  {copiedUrl === 'ko' ? '✓ 복사됨' : '복사'}
+                </button>
+              </div>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">영어:</span>
+              <div className="flex items-center gap-2">
+                <code className="text-sm bg-white px-2 py-1 rounded border border-gray-200">
+                  https://colemearchy.com/en/posts/{post.slug}
+                </code>
+                <button
+                  onClick={() => {
+                    navigator.clipboard.writeText(`https://colemearchy.com/en/posts/${post.slug}`)
+                    setCopiedUrl('en')
+                    setTimeout(() => setCopiedUrl(null), 2000)
+                  }}
+                  className="text-sm text-indigo-600 hover:text-indigo-700"
+                >
+                  {copiedUrl === 'en' ? '✓ 복사됨' : '복사'}
+                </button>
+              </div>
+            </div>
+          </div>
         </div>
         
         <div className="flex items-center gap-4">

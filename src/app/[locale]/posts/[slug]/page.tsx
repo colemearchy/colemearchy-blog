@@ -301,18 +301,26 @@ export default async function PostPage({
                 Cole IT AI
               </Link>
               <nav className="flex items-center gap-4">
-                <div className="flex gap-2">
+                <div className="flex rounded-lg shadow-sm" role="group">
                   <Link
                     href={`/ko/posts/${slug}`}
-                    className={`px-3 py-1 rounded text-sm ${lang === 'ko' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    className={`px-4 py-2 text-sm font-medium rounded-l-lg border ${
+                      lang === 'ko'
+                        ? 'bg-indigo-600 text-white border-indigo-600 z-10'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
                   >
-                    한국어
+                    한국어 🇰🇷
                   </Link>
                   <Link
                     href={`/en/posts/${slug}`}
-                    className={`px-3 py-1 rounded text-sm ${lang === 'en' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                    className={`px-4 py-2 text-sm font-medium rounded-r-lg border-l-0 border ${
+                      lang === 'en'
+                        ? 'bg-indigo-600 text-white border-indigo-600 z-10'
+                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    }`}
                   >
-                    English
+                    English 🇬🇧
                   </Link>
                 </div>
                 <Link href="/about" className="text-gray-600 hover:text-gray-900">About</Link>

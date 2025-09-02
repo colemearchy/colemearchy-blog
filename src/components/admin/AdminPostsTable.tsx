@@ -307,7 +307,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
                 상태
               </th>
               <th className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">
-                번역
+                번역 여부
               </th>
               <th className="px-3 py-3.5 text-center text-sm font-semibold text-gray-900">
                 조회수
@@ -380,29 +380,27 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
                     )}
                   </td>
                   <td className="px-3 py-4 text-sm text-center">
-                    <div className="flex justify-center gap-1">
-                      {/* 원본 언어 표시 */}
-                      {post.originalLanguage === 'ko' ? (
-                        <span className="text-sm font-bold" title="한국어 원본">🇰🇷</span>
-                      ) : post.originalLanguage === 'en' ? (
-                        <span className="text-sm font-bold" title="영어 원본">🇬🇧</span>
-                      ) : (
-                        <span className="text-sm" title="한국어 (기본)">🇰🇷</span>
-                      )}
-                      
-                      {/* 번역 상태 표시 */}
-                      {post.originalLanguage === 'ko' && !hasEnglishTranslation && (
-                        <span className="text-sm text-gray-300" title="영어 번역 필요">🇬🇧</span>
-                      )}
-                      {post.originalLanguage === 'en' && !hasKoreanTranslation && (
-                        <span className="text-sm text-gray-300" title="한국어 번역 필요">🇰🇷</span>
-                      )}
-                      {hasEnglishTranslation && post.originalLanguage === 'ko' && (
-                        <span className="text-sm" title="영어 번역 있음">🇬🇧</span>
-                      )}
-                      {hasKoreanTranslation && post.originalLanguage === 'en' && (
-                        <span className="text-sm" title="한국어 번역 있음">🇰🇷</span>
-                      )}
+                    <div className="space-y-1">
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-xs font-medium text-gray-600">한:</span>
+                        <span className={`font-bold ${
+                          post.originalLanguage === 'ko' ? 'text-green-600' : 
+                          hasKoreanTranslation ? 'text-blue-600' : 'text-gray-400'
+                        }`}>
+                          {post.originalLanguage === 'ko' ? 'O(원본)' : 
+                           hasKoreanTranslation ? 'O' : 'X'}
+                        </span>
+                      </div>
+                      <div className="flex items-center justify-center gap-2">
+                        <span className="text-xs font-medium text-gray-600">영:</span>
+                        <span className={`font-bold ${
+                          post.originalLanguage === 'en' ? 'text-green-600' : 
+                          hasEnglishTranslation ? 'text-blue-600' : 'text-gray-400'
+                        }`}>
+                          {post.originalLanguage === 'en' ? 'O(원본)' : 
+                           hasEnglishTranslation ? 'O' : 'X'}
+                        </span>
+                      </div>
                     </div>
                   </td>
                   <td className="px-3 py-4 text-sm text-gray-900 text-center font-medium">
