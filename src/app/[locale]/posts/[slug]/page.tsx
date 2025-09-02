@@ -14,6 +14,7 @@ import YouTubeEmbed from '@/components/YouTubeEmbed'
 import CommentSection from '@/components/comments/CommentSection'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 import ViewCounter from '@/components/ViewCounter'
+import { navigationItems } from '@/lib/navigation'
 
 interface PostPageProps {
   params: Promise<{ slug: string; locale: string }>
@@ -294,39 +295,43 @@ export default async function PostPage({
       />
       
       <div className="min-h-screen bg-white">
-        <header className="bg-white shadow-sm">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="flex justify-between items-center py-6">
-              <Link href={`/${locale}`} className="text-3xl font-bold text-gray-900">
+        <header className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="border-b border-gray-100">
+            <div className="flex justify-between items-center py-8">
+              <Link href={`/${locale}`} className="text-3xl font-serif italic">
                 Cole IT AI
               </Link>
-              <nav className="flex items-center gap-4">
-                <div className="flex rounded-lg shadow-sm" role="group">
-                  <Link
-                    href={`/ko/posts/${slug}`}
-                    className={`px-4 py-2 text-sm font-medium rounded-l-lg border ${
-                      lang === 'ko'
-                        ? 'bg-indigo-600 text-white border-indigo-600 z-10'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    한국어 🇰🇷
-                  </Link>
-                  <Link
-                    href={`/en/posts/${slug}`}
-                    className={`px-4 py-2 text-sm font-medium rounded-r-lg border-l-0 border ${
-                      lang === 'en'
-                        ? 'bg-indigo-600 text-white border-indigo-600 z-10'
-                        : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
-                    }`}
-                  >
-                    English 🇬🇧
-                  </Link>
-                </div>
-                <Link href="/about" className="text-gray-600 hover:text-gray-900">About</Link>
-                <Link href="/contact" className="text-gray-600 hover:text-gray-900">Contact</Link>
-              </nav>
+              <div className="flex gap-2">
+                <Link
+                  href={`/ko/posts/${slug}`}
+                  className={`px-3 py-1 rounded font-medium ${lang === 'ko' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                >
+                  KOR
+                </Link>
+                <Link
+                  href={`/en/posts/${slug}`}
+                  className={`px-3 py-1 rounded font-medium ${lang === 'en' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                >
+                  ENG
+                </Link>
+              </div>
             </div>
+            {/* Navigation */}
+            <nav className="flex justify-center items-center gap-6 pb-4" aria-label="Main navigation">
+              {navigationItems[lang].map((item, index) => (
+                <Link
+                  key={item.href}
+                  href={`/${locale}${item.href === '/' ? '' : item.href}`}
+                  className={`text-sm font-medium pb-2 ${
+                    item.href === '/posts' 
+                      ? 'text-gray-900 border-b-2 border-gray-900' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              ))}
+            </nav>
           </div>
         </header>
 
