@@ -13,10 +13,6 @@
     {
       "path": "/api/generate-daily-posts",
       "schedule": "0 6 * * *"
-    },
-    {
-      "path": "/api/youtube-to-posts-ai",
-      "schedule": "0 12 * * *"
     }
   ]
 }
