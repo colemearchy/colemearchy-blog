@@ -41,8 +41,8 @@ export default function LazyImage({
         }
       },
       {
-        // Start loading when image is 50px away from viewport
-        rootMargin: '50px',
+        // Start loading when image is 250px away from viewport for better performance
+        rootMargin: '250px',
       }
     )
 

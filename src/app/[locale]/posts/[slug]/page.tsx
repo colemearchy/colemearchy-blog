@@ -5,13 +5,13 @@ import { extractYouTubeVideoId } from '@/lib/youtube-thumbnail'
 import YouTubeThumbnail from '@/components/YouTubeThumbnail'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
-import { BlogPostAnalytics } from '@/components/BlogPostAnalytics'
+import LazyBlogPostAnalytics from '@/components/LazyBlogPostAnalytics'
 import MarkdownContent from '@/components/MarkdownContent'
 import RelatedPosts from '@/components/RelatedPosts'
 import TableOfContents from '@/components/TableOfContents'
 import Breadcrumb from '@/components/Breadcrumb'
 import YouTubeEmbed from '@/components/YouTubeEmbed'
-import CommentSection from '@/components/comments/CommentSection'
+import LazyCommentSection from '@/components/LazyCommentSection'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 import ViewCounter from '@/components/ViewCounter'
 import { navigationItems } from '@/lib/navigation'
@@ -416,11 +416,11 @@ export default async function PostPage({
 
               <MarkdownContent content={content} />
               
-              <CommentSection postSlug={post.slug} locale={locale} />
+              <LazyCommentSection postSlug={post.slug} locale={locale} />
               
               <RelatedPosts postId={post.id} />
 
-              <BlogPostAnalytics 
+              <LazyBlogPostAnalytics 
                 title={post.title} 
                 slug={post.slug} 
                 author={post.author || undefined}

@@ -110,16 +110,16 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/apple-icon" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+        {/* YouTube preconnect hints for performance */}
+        <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+        <link rel="preconnect" href="https://i.ytimg.com" />
+        <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
+        <link rel="dns-prefetch" href="https://i.ytimg.com" />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
         />
-        {/* Google AdSense */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-6256509279584947"
-          crossOrigin="anonymous"
-        />
+        {/* Google AdSense - Removed due to deprecated API usage */}
       </head>
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}

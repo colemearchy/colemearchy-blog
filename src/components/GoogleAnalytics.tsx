@@ -14,10 +14,21 @@ function GoogleAnalyticsInner() {
   useEffect(() => {
     if (!GA_MEASUREMENT_ID) return
 
-    // Load gtag script
+    // Check if script already exists
+    const existingScript = document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)
+    if (existingScript) return
+
+    // Load gtag script with proper attributes
     const script = document.createElement('script')
     script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`
     script.async = true
+    script.defer = true
+    
+    // Add error handling
+    script.onerror = () => {
+      console.warn('Failed to load Google Analytics')
+    }
+    
     document.head.appendChild(script)
 
     // Initialize gtag
@@ -29,15 +40,9 @@ function GoogleAnalyticsInner() {
     window.gtag('config', GA_MEASUREMENT_ID, {
       page_title: document.title,
       page_location: window.location.href,
+      cookie_flags: 'SameSite=None;Secure',
+      anonymize_ip: true
     })
-
-    return () => {
-      // Cleanup script on unmount
-      const existingScript = document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)
-      if (existingScript) {
-        existingScript.remove()
-      }
-    }
   }, [])
 
   useEffect(() => {

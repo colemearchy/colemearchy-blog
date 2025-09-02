@@ -7,7 +7,10 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizeCss: false, // Disable to avoid critters error
+    optimizePackageImports: ['@prisma/client', 'react-markdown', 'prismjs'],
   },
+  // Enable SWC minification for better performance
+  swcMinify: true,
   images: {
     remotePatterns: [
       {
@@ -42,7 +45,7 @@ const nextConfig: NextConfig = {
     formats: ['image/avif', 'image/webp'],
     deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 3840],
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
-    minimumCacheTTL: 60,
+    minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year
   },
   serverExternalPackages: ['sharp'],
   compress: true,
@@ -96,7 +99,7 @@ const nextConfig: NextConfig = {
         },
         {
           key: 'Content-Security-Policy',
-          value: "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com https://googleads.g.doubleclick.net https://*.googleusercontent.com https://ep2.adtrafficquality.google https://www.google.com https://tpc.googlesyndication.com;",
+          value: "frame-src 'self' https://www.youtube.com https://www.youtube-nocookie.com;",
         },
       ],
     },

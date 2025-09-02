@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
-import { NewsletterAnalytics } from '@/components/NewsletterAnalytics'
+import LazyNewsletterAnalytics from '@/components/LazyNewsletterAnalytics'
 import { Metadata } from 'next'
 import { navigationItems } from '@/lib/navigation'
 
@@ -195,6 +195,7 @@ export default async function HomePage({
                             sizes="(max-width: 768px) 100vw, 50vw"
                             placeholder="blur"
                             blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxQf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                            fetchPriority="high"
                           />
                         </div>
                       )}
@@ -251,6 +252,8 @@ export default async function HomePage({
                                 loading="lazy"
                                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                                placeholder="blur"
+                                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxQf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
                               />
                             </div>
                           )}
@@ -357,7 +360,7 @@ export default async function HomePage({
           <p className="text-gray-600 mb-8">
             A weekly advice column about building product, driving growth, and accelerating your career.
           </p>
-          <NewsletterAnalytics>
+          <LazyNewsletterAnalytics>
             <div className="flex gap-4 max-w-md mx-auto">
               <input
                 type="email"
@@ -374,7 +377,7 @@ export default async function HomePage({
                 Subscribe
               </button>
             </div>
-          </NewsletterAnalytics>
+          </LazyNewsletterAnalytics>
         </div>
       </section>
 

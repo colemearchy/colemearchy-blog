@@ -57,6 +57,10 @@ export default async function LocaleLayout({
   
   return (
     <>
+      <link rel="preconnect" href="https://www.youtube-nocookie.com" />
+      <link rel="preconnect" href="https://i.ytimg.com" />
+      <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
+      <link rel="dns-prefetch" href="https://i.ytimg.com" />
       {children}
     </>
   )

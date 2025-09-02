@@ -78,6 +78,8 @@ export default function YouTubeThumbnail({
         sizes={sizes}
         className={className}
         priority={priority}
+        loading={priority ? 'eager' : 'lazy'}
+        fetchPriority={priority ? 'high' : 'auto'}
         onError={handleError}
         onLoad={handleLoad}
       />
@@ -93,6 +95,8 @@ export default function YouTubeThumbnail({
       height={height || 360}
       className={className}
       priority={priority}
+      loading={priority ? 'eager' : 'lazy'}
+      fetchPriority={priority ? 'high' : 'auto'}
       onError={handleError}
       onLoad={handleLoad}
     />
