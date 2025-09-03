@@ -9,8 +9,6 @@ const nextConfig: NextConfig = {
     optimizeCss: false, // Disable to avoid critters error
     optimizePackageImports: ['@prisma/client', 'react-markdown', 'prismjs'],
   },
-  // Enable SWC minification for better performance
-  swcMinify: true,
   images: {
     remotePatterns: [
       {
