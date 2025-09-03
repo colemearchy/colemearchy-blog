@@ -45,7 +45,8 @@ export async function getChannelVideos(maxResults: number = 10, pageToken?: stri
       hasApiKey: !!apiKey,
       apiKeyLength: apiKey?.length,
       hasChannelId: !!channelId,
-      channelId: channelId
+      channelId: channelId,
+      timestamp: new Date().toISOString()
     });
     
     if (!apiKey) {
