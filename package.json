@@ -3,9 +3,10 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "postinstall": "node postinstall.js",
+    "postinstall": "prisma generate",
     "dev": "next dev --turbopack",
-    "build": "npx prisma generate --schema=./prisma/schema.prisma && next build && next-sitemap",
+    "build": "prisma generate && next build && next-sitemap",
+    "vercel-build": "prisma generate && prisma db push && next build && next-sitemap",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
@@ -38,6 +39,7 @@
     "zod": "^4.1.5"
   },
   "devDependencies": {
+    "@prisma/nextjs-monorepo-workaround-plugin": "^6.15.0",
     "@tailwindcss/postcss": "^4",
     "@types/node": "^20",
     "@types/react": "^19",

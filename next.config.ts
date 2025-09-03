@@ -1,6 +1,13 @@
 import type { NextConfig } from 'next'
+const { PrismaPlugin } = require('@prisma/nextjs-monorepo-workaround-plugin')
 
 const nextConfig: NextConfig = {
+  webpack: (config, { isServer }) => {
+    if (isServer) {
+      config.plugins = [...config.plugins, new PrismaPlugin()]
+    }
+    return config
+  },
   // Target modern browsers only to reduce polyfills
   compiler: {
     removeConsole: process.env.NODE_ENV === 'production',
