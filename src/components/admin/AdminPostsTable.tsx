@@ -39,10 +39,22 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
     setLoading(true)
     try {
       const response = await fetch('/api/admin/posts?orderBy=publishedAt&order=asc')
+      if (!response.ok) {
+        console.error('Failed to fetch posts:', response.status)
+        setPosts([])
+        return
+      }
       const data = await response.json()
-      setPosts(data)
+      // Ensure data is an array before setting
+      if (Array.isArray(data)) {
+        setPosts(data)
+      } else {
+        console.error('Unexpected response format:', data)
+        setPosts([])
+      }
     } catch (error) {
       console.error('Failed to fetch posts:', error)
+      setPosts([])
     } finally {
       setLoading(false)
     }
