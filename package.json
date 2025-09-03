@@ -5,7 +5,7 @@
   "scripts": {
     "postinstall": "node postinstall.js",
     "dev": "next dev --turbopack",
-    "build": "prisma generate && next build && next-sitemap",
+    "build": "npx prisma generate --schema=./prisma/schema.prisma && next build && next-sitemap",
     "start": "next start",
     "lint": "next lint",
     "type-check": "tsc --noEmit",
