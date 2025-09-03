@@ -33,3 +33,5 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: 'Failed to fetch posts' }, { status: 500 })
   }
 }
+
+// Trigger redeploy at Wed Sep 3 14:39:25 KST 2025
