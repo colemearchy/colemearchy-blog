@@ -1,4 +1,3 @@
-import { prisma } from '@/lib/prisma'
 import Link from 'next/link'
 import { BulkImageUrlUploader } from '@/components/admin/BulkImageUrlUploader'
 import { BulkImageUploader } from '@/components/admin/BulkImageUploader'
@@ -6,41 +5,8 @@ import { AdminPostsTable } from '@/components/admin/AdminPostsTable'
 
 export const dynamic = 'force-dynamic'
 
-interface Translation {
-  locale: string
-  title: string
-}
-
-interface Post {
-  id: string
-  title: string
-  slug: string
-  publishedAt: Date | null
-  views: number
-  coverImage: string | null
-  originalLanguage?: string
-  translations?: Translation[]
-}
-
-export default async function AdminPage() {
-  const posts: Post[] = await prisma.post.findMany({
-    orderBy: { publishedAt: 'asc' },  // 발행일 순으로 변경
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      publishedAt: true,
-      views: true,
-      coverImage: true,
-      originalLanguage: true,
-      translations: {
-        select: {
-          locale: true,
-          title: true,
-        }
-      }
-    }
-  })
+export default function AdminPage() {
+  // AdminPostsTable 컴포넌트가 자체적으로 API를 통해 posts를 가져옴
 
   return (
     <div className="space-y-8">
@@ -89,7 +55,7 @@ export default async function AdminPage() {
       </div>
 
       {/* 게시물 목록 섹션 - Client Component로 분리 */}
-      <AdminPostsTable posts={posts} />
+      <AdminPostsTable posts={[]} />
     </div>
   )
 }
