@@ -7,7 +7,7 @@ interface NewsletterAnalyticsProps {
   onSubmit?: (email: string) => void
 }
 
-export function NewsletterAnalytics({ children, onSubmit }: NewsletterAnalyticsProps) {
+export default function NewsletterAnalytics({ children, onSubmit }: NewsletterAnalyticsProps) {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
     
