@@ -10,7 +10,8 @@ export async function GET(request: Request) {
       apiKeyLength: process.env.YOUTUBE_API_KEY?.length || 0,
       hasChannelId: !!process.env.YOUTUBE_CHANNEL_ID,
       channelId: process.env.YOUTUBE_CHANNEL_ID || 'NOT_SET',
-      nodeEnv: process.env.NODE_ENV
+      nodeEnv: process.env.NODE_ENV,
+      timestamp: new Date().toISOString()
     });
 
     if (!process.env.YOUTUBE_API_KEY || !process.env.YOUTUBE_CHANNEL_ID) {
