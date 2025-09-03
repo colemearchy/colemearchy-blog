@@ -79,6 +79,7 @@ export async function GET(request: Request) {
     });
   } catch (error: any) {
     console.error('Error in YouTube API:', error);
+    console.error('Error stack:', error?.stack);
     
     // 더 상세한 에러 정보 반환
     const errorMessage = error instanceof Error ? error.message : 'Unknown error';
@@ -86,13 +87,18 @@ export async function GET(request: Request) {
       message: errorMessage,
       type: error?.constructor?.name || 'UnknownError',
       // Google API 에러의 경우 추가 정보
-      ...(error?.response?.data && { apiError: error.response.data })
+      ...(error?.response?.data && { apiError: error.response.data }),
+      // 환경변수 상태 확인 (프로덕션에서도 디버깅을 위해 임시로 표시)
+      env: {
+        hasApiKey: !!process.env.YOUTUBE_API_KEY,
+        hasChannelId: !!process.env.YOUTUBE_CHANNEL_ID
+      }
     };
     
     return NextResponse.json(
       { 
         error: 'Failed to fetch YouTube videos',
-        details: process.env.NODE_ENV === 'development' ? errorDetails : undefined
+        details: errorDetails
       },
       { status: 500 }
     );
