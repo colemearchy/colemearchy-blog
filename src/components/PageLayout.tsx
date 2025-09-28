@@ -56,6 +56,31 @@ export default function PageLayout({ locale, currentPath, children }: PageLayout
       <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {children}
       </main>
+
+      {/* Footer */}
+      <footer className="border-t border-gray-200 bg-gray-50 mt-20">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
+            <div className="text-sm text-gray-600">
+              © 2024 Cole IT AI. All rights reserved.
+            </div>
+            <div className="flex gap-4">
+              <Link
+                href={`/${locale}/privacy`}
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                {lang === 'ko' ? '개인정보처리방침' : 'Privacy Policy'}
+              </Link>
+              <Link
+                href={`/${locale}/terms`}
+                className="text-sm text-gray-600 hover:text-gray-900"
+              >
+                {lang === 'ko' ? '이용약관' : 'Terms of Service'}
+              </Link>
+            </div>
+          </div>
+        </div>
+      </footer>
     </div>
   )
 }
