@@ -1,0 +1,844 @@
+
+> colemearchy-blog@0.1.0 dev
+> next dev --turbopack
+
+ ⚠ Port 3000 is in use by process 26739, using available port 3001 instead.
+   ▲ Next.js 15.4.3 (Turbopack)
+   - Local:        http://localhost:3001
+   - Network:      http://192.168.0.24:3001
+   - Environments: .env
+   - Experiments (use with caution):
+     · optimizePackageImports
+
+ ✓ Starting...
+ ✓ Compiled middleware in 79ms
+ ✓ Ready in 967ms
+ ⚠ Webpack is configured while Turbopack is not, which may cause problems.
+ ⚠ See instructions if you need to configure Turbopack:
+  https://nextjs.org/docs/app/api-reference/next-config-js/turbopack
+
+ ○ Compiling /api/generate-content ...
+ ✓ Compiled /api/generate-content in 560ms
+DATABASE_URL exists: true
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 37238ms
+ ✓ Compiled /api/posts in 66ms
+Creating post with data: {
+  title: 'Claude AI로 코드 리뷰 자동화하여 개발 생산성 3배 높인 방법. PR 리뷰 시간을 하루 3시간에서 3',
+  slug: 'claude-ai-3-pr-3-3-1759036096737-1759036098309',
+  youtubeVideoId: undefined,
+  tags: [ 'claude ai', 'code review', '개발 생산성', 'automation', 'pr review' ],
+  publishedAt: '2025-09-28T05:08:18.309Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+Translation error: Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at async translate (src/lib/translation.ts:87:19)
+    at async createPostTranslation (src/lib/translation.ts:112:66)
+    at async POST (src/app/api/posts/route.ts:67:26)
+  85 |     }
+  86 |     
+> 87 |     const result = await model.generateContent(prompt)
+     |                   ^
+  88 |     const response = await result.response
+  89 |     return response.text().trim()
+  90 |   } catch (error) { {
+  status: 404,
+  statusText: 'Not Found',
+  errorDetails: undefined
+}
+Translation failed: Error: Failed to translate content
+    at translate (src/lib/translation.ts:92:10)
+    at async createPostTranslation (src/lib/translation.ts:112:66)
+    at async POST (src/app/api/posts/route.ts:67:26)
+  90 |   } catch (error) {
+  91 |     console.error('Translation error:', error)
+> 92 |     throw new Error('Failed to translate content')
+     |          ^
+  93 |   }
+  94 | }
+  95 |
+Translation error: Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at async translate (src/lib/translation.ts:87:19)
+  85 |     }
+  86 |     
+> 87 |     const result = await model.generateContent(prompt)
+     |                   ^
+  88 |     const response = await result.response
+  89 |     return response.text().trim()
+  90 |   } catch (error) { {
+  status: 404,
+  statusText: 'Not Found',
+  errorDetails: undefined
+}
+Translation error: Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at async translate (src/lib/translation.ts:87:19)
+  85 |     }
+  86 |     
+> 87 |     const result = await model.generateContent(prompt)
+     |                   ^
+  88 |     const response = await result.response
+  89 |     return response.text().trim()
+  90 |   } catch (error) { {
+  status: 404,
+  statusText: 'Not Found',
+  errorDetails: undefined
+}
+ POST /api/posts 200 in 3137ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 30175ms
+Creating post with data: {
+  title: '불면증 극복기: 수면제 없이 자연스럽게 잠드는 7가지 바이오해킹. Magnesium, L-theanine, ',
+  slug: '7-magnesium-l-theanine-1759036133028-1759036133644',
+  youtubeVideoId: undefined,
+  tags: [ '불면증', '수면', '바이오해킹', 'magnesium', 'sleep optimization' ],
+  publishedAt: '2025-09-28T05:08:53.644Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+Translation error: Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at async translate (src/lib/translation.ts:87:19)
+    at async createPostTranslation (src/lib/translation.ts:112:66)
+    at async POST (src/app/api/posts/route.ts:67:26)
+  85 |     }
+  86 |     
+> 87 |     const result = await model.generateContent(prompt)
+     |                   ^
+  88 |     const response = await result.response
+  89 |     return response.text().trim()
+  90 |   } catch (error) { {
+  status: 404,
+  statusText: 'Not Found',
+  errorDetails: undefined
+}
+Translation failed: Error: Failed to translate content
+    at translate (src/lib/translation.ts:92:10)
+    at async createPostTranslation (src/lib/translation.ts:112:66)
+    at async POST (src/app/api/posts/route.ts:67:26)
+  90 |   } catch (error) {
+  91 |     console.error('Translation error:', error)
+> 92 |     throw new Error('Failed to translate content')
+     |          ^
+  93 |   }
+  94 | }
+  95 |
+Translation error: Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at async translate (src/lib/translation.ts:87:19)
+  85 |     }
+  86 |     
+> 87 |     const result = await model.generateContent(prompt)
+     |                   ^
+  88 |     const response = await result.response
+  89 |     return response.text().trim()
+  90 |   } catch (error) { {
+  status: 404,
+  statusText: 'Not Found',
+  errorDetails: undefined
+}
+Translation error: Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent: [404 Not Found] models/gemini-1.5-flash is not found for API version v1beta, or is not supported for generateContent. Call ListModels to see the list of available models and their supported methods.
+    at async translate (src/lib/translation.ts:87:19)
+  85 |     }
+  86 |     
+> 87 |     const result = await model.generateContent(prompt)
+     |                   ^
+  88 |     const response = await result.response
+  89 |     return response.text().trim()
+  90 |   } catch (error) { {
+  status: 404,
+  statusText: 'Not Found',
+  errorDetails: undefined
+}
+ POST /api/posts 200 in 1304ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+ POST /api/generate-content 200 in 33801ms
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query SELECT 1
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 39523ms
+DATABASE_URL exists: true
+Creating post with data: {
+  title: 'Claude AI로 코드 리뷰 자동화하여 개발 생산성 3배 높인 방법. PR 리뷰 시간을 하루 3시간에서 3',
+  slug: 'claude-ai-3-pr-3-3-1759036231265-1759036231888',
+  youtubeVideoId: undefined,
+  tags: [ 'claude ai', 'code review', '개발 생산성', 'automation', 'pr review' ],
+  publishedAt: '2025-09-28T05:10:31.888Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+ POST /api/posts 200 in 29952ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 32227ms
+Creating post with data: {
+  title: '불면증 극복기: 수면제 없이 자연스럽게 잠드는 7가지 바이오해킹. Magnesium, L-theanine, ',
+  slug: '7-magnesium-l-theanine-1759036295252-1759036296089',
+  youtubeVideoId: undefined,
+  tags: [ '불면증', '수면', '바이오해킹', 'magnesium', 'sleep optimization' ],
+  publishedAt: '2025-09-28T05:11:36.089Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/posts 200 in 15997ms
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+ GET /api/posts 200 in 10103ms
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE 1=1 ORDER BY "public"."Post"."createdAt" DESC OFFSET $1
+prisma:query SELECT 1
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE 1=1 ORDER BY "public"."Post"."createdAt" DESC OFFSET $1
+ GET /api/posts 200 in 5820ms
+ ✓ Compiled /api/posts/[id] in 72ms
+DATABASE_URL exists: true
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38sk6t000b8jek0rteay1p 200 in 2482ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38r6sm00058jeke3f402ww 200 in 457ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38pzdu00048jeknohs0o0w 200 in 450ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38p2zy00028jekqgbn6ptm 200 in 241ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38oazx00008jekiq2ir6sx 200 in 460ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38jlnf000c8jueq12u7fmt 200 in 447ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38ioae000b8juerbn7y1rf 200 in 258ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38i243000a8juew0ggkzfb 200 in 499ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg311hwj00098juev6kc297h 200 in 250ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg310qh700088jueyc7epfp3 200 in 460ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30zw1r00078jueh65wa25t 200 in 969ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30zcbf00068juelkmikatj 200 in 503ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30yp2r00058juejnq4gxc6 200 in 461ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30y08a00048jue4jgguaxk 200 in 454ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30x3q900038jue500eov29 200 in 443ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30wdqr00028jueea4psjgr 200 in 454ms
+DATABASE_URL exists: true
+prisma:query SELECT 1
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30volo00018jue7ecz26op 200 in 655ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30v0ez00008juenik4nctr 200 in 466ms
+ ✓ Compiled /api/sitemap/update in 80ms
+Successfully pinged Google about sitemap update
+ POST /api/sitemap/update 200 in 807ms
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 27596ms
+Creating post with data: {
+  title: 'React 19의 새로운 기능들: Server Components와 Concurrent Features 완벽',
+  slug: 'react-19-server-components-concurrent-features-1759101540232-1759101541077',
+  youtubeVideoId: undefined,
+  tags: [
+    'react 19',
+    'server components',
+    'concurrent features',
+    'react',
+    'performance'
+  ],
+  publishedAt: '2025-09-28T23:19:01.077Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+ POST /api/posts 200 in 31426ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 29289ms
+Creating post with data: {
+  title: '불안 장애 약물 없이 극복한 방법: CBT, 명상, 운동의 시너지 효과. 3개월간의 상세한 회복 과정 기록.',
+  slug: 'cbt-3-1759101603223-1759101603825',
+  youtubeVideoId: undefined,
+  tags: [ '불안장애', 'cbt', '명상', 'mental health', 'anxiety' ],
+  publishedAt: '2025-09-28T23:20:03.825Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/posts 200 in 29230ms
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+prisma:query SELECT 1
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE 1=1 ORDER BY "public"."Post"."createdAt" DESC OFFSET $1
+ GET /api/posts 200 in 2082ms
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4boc4b000n8jektwj4sk8e 200 in 411ms
+DATABASE_URL exists: true
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4bmzil000h8jekzh06b0la 200 in 232ms
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38sk6t000b8jek0rteay1p 200 in 228ms
+DATABASE_URL exists: true
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38r6sm00058jeke3f402ww 200 in 234ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38pzdu00048jeknohs0o0w 200 in 243ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38p2zy00028jekqgbn6ptm 200 in 239ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38oazx00008jekiq2ir6sx 200 in 234ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38jlnf000c8jueq12u7fmt 200 in 427ms
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38ioae000b8juerbn7y1rf 200 in 226ms
+DATABASE_URL exists: true
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38i243000a8juew0ggkzfb 200 in 424ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg311hwj00098juev6kc297h 200 in 431ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg310qh700088jueyc7epfp3 200 in 454ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30zw1r00078jueh65wa25t 200 in 427ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30zcbf00068juelkmikatj 200 in 402ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30yp2r00058juejnq4gxc6 200 in 413ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30y08a00048jue4jgguaxk 200 in 427ms
+DATABASE_URL exists: true
+prisma:query SELECT 1
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30x3q900038jue500eov29 200 in 624ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30wdqr00028jueea4psjgr 200 in 430ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30volo00018jue7ecz26op 200 in 429ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30v0ez00008juenik4nctr 200 in 424ms
+Successfully pinged Google about sitemap update
+ POST /api/sitemap/update 200 in 431ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 34796ms
+Creating post with data: {
+  title: 'Supabase vs Firebase: 스타트업이 선택해야 할 백엔드 서비스 비교 분석. 실제 마이그레이션 ',
+  slug: 'supabase-vs-firebase-1759101872412-1759101873234',
+  youtubeVideoId: undefined,
+  tags: [ 'supabase', 'firebase', 'backend', 'baas', 'startup' ],
+  publishedAt: '2025-09-28T23:24:33.234Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+ POST /api/posts 200 in 25989ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 25316ms
+Creating post with data: {
+  title: '크레아틴 복용 6개월 후기: 근력, 인지 능력, 그리고 예상치 못한 부작용들. 혈액 검사 결과와 함께.',
+  slug: '6-1759101926952-1759101927557',
+  youtubeVideoId: undefined,
+  tags: [ '크레아틴', 'creatine', 'supplement', '근력', 'cognitive' ],
+  publishedAt: '2025-09-28T23:25:27.557Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+ POST /api/posts 200 in 29577ms
+prisma:query SELECT 1
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE 1=1 ORDER BY "public"."Post"."createdAt" DESC OFFSET $1
+ GET /api/posts 200 in 1867ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4bv9wt000z8jeklkg7laqz 200 in 414ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4bu3u4000t8jekhpqycpo0 200 in 240ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4boc4b000n8jektwj4sk8e 200 in 238ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4bmzil000h8jekzh06b0la 200 in 229ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38sk6t000b8jek0rteay1p 200 in 240ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38r6sm00058jeke3f402ww 200 in 231ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38pzdu00048jeknohs0o0w 200 in 246ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38p2zy00028jekqgbn6ptm 200 in 238ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38oazx00008jekiq2ir6sx 200 in 243ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38jlnf000c8jueq12u7fmt 200 in 437ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38ioae000b8juerbn7y1rf 200 in 227ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38i243000a8juew0ggkzfb 200 in 445ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg311hwj00098juev6kc297h 200 in 441ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg310qh700088jueyc7epfp3 200 in 436ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30zw1r00078jueh65wa25t 200 in 437ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30zcbf00068juelkmikatj 200 in 437ms
+DATABASE_URL exists: true
+prisma:query SELECT 1
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30yp2r00058juejnq4gxc6 200 in 629ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30y08a00048jue4jgguaxk 200 in 439ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30x3q900038jue500eov29 200 in 450ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30wdqr00028jueea4psjgr 200 in 452ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30volo00018jue7ecz26op 200 in 436ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30v0ez00008juenik4nctr 200 in 426ms
+Successfully pinged Google about sitemap update
+ POST /api/sitemap/update 200 in 434ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 29901ms
+Creating post with data: {
+  title: '리눅스에서 맥으로 갈아탄 개발자의 1년 후기. 생산성 도구와 워크플로우 최적화 팁. Homebrew부터 Ra',
+  slug: '1-homebrew-ra-1759102186323-1759102187126-986',
+  youtubeVideoId: undefined,
+  tags: [ 'mac', 'macos', 'linux', '개발환경', 'productivity' ],
+  publishedAt: '2025-09-28T23:29:47.126Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+ POST /api/posts 200 in 32680ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 27436ms
+Creating post with data: {
+  title: '콜드 플런지와 사우나 교대욕의 효과: 면역력 강화와 스트레스 해소. 6개월간의 데이터와 체감 변화.',
+  slug: '6-1759102249547-1759102250254-714',
+  youtubeVideoId: undefined,
+  tags: [ 'cold plunge', '사우나', '면역력', '스트레스', 'biohacking' ],
+  publishedAt: '2025-09-28T23:30:50.254Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+ POST /api/posts 200 in 20163ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+ POST /api/generate-content 200 in 3462ms
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+prisma:error Error in PostgreSQL connection: Error { kind: Closed, cause: None }
+Generating embedding for prompt...
+Error in generate-content handler: Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent: [503 Service Unavailable] The service is currently unavailable.
+    at async generateEmbedding (src/app/api/generate-content/route.ts:11:17)
+    at async POST (src/app/api/generate-content/route.ts:59:28)
+   9 | async function generateEmbedding(text: string): Promise<number[]> {
+  10 |   const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+> 11 |   const result = await model.embedContent(text);
+     |                 ^
+  12 |   return result.embedding.values;
+  13 | }
+  14 | {
+  status: 503,
+  statusText: 'Service Unavailable',
+  errorDetails: undefined
+}
+ POST /api/generate-content 500 in 1015ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+Error in generate-content handler: Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent: [503 Service Unavailable] The service is currently unavailable.
+    at async POST (src/app/api/generate-content/route.ts:78:19)
+  76 |
+  77 |     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+> 78 |     const result = await model.generateContent({
+     |                   ^
+  79 |       contents: [{
+  80 |         role: 'user',
+  81 |         parts: [{ text: fullPrompt }] {
+  status: 503,
+  statusText: 'Service Unavailable',
+  errorDetails: undefined
+}
+ POST /api/generate-content 500 in 5188ms
+Generating embedding for prompt...
+Error in generate-content handler: Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent: [503 Service Unavailable] The service is currently unavailable.
+    at async generateEmbedding (src/app/api/generate-content/route.ts:11:17)
+    at async POST (src/app/api/generate-content/route.ts:59:28)
+   9 | async function generateEmbedding(text: string): Promise<number[]> {
+  10 |   const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
+> 11 |   const result = await model.embedContent(text);
+     |                 ^
+  12 |   return result.embedding.values;
+  13 | }
+  14 | {
+  status: 503,
+  statusText: 'Service Unavailable',
+  errorDetails: undefined
+}
+ POST /api/generate-content 500 in 323ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+Error in generate-content handler: Error: [GoogleGenerativeAI Error]: Error fetching from https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-exp:generateContent: [503 Service Unavailable] The service is currently unavailable.
+    at async POST (src/app/api/generate-content/route.ts:78:19)
+  76 |
+  77 |     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+> 78 |     const result = await model.generateContent({
+     |                   ^
+  79 |       contents: [{
+  80 |         role: 'user',
+  81 |         parts: [{ text: fullPrompt }] {
+  status: 503,
+  statusText: 'Service Unavailable',
+  errorDetails: undefined
+}
+ POST /api/generate-content 500 in 1944ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 28365ms
+Creating post with data: {
+  title: 'Turborepo로 모노레포 구축하기: 스타트업에서 대규모 프로젝트까지. Nx와의 비교 분석.',
+  slug: 'turborepo-nx-1759114531845-1759114532713-6827',
+  youtubeVideoId: undefined,
+  tags: [
+    'turborepo',
+    'monorepo',
+    'nx',
+    'project management',
+    'development'
+  ],
+  publishedAt: '2025-09-29T02:55:32.714Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+ POST /api/posts 200 in 26302ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ POST /api/generate-content 200 in 25712ms
+Creating post with data: {
+  title: '단식과 오토파지: 72시간 단식 경험과 세포 재생 효과. 케톤 수치와 정신적 명료함의 상관관계.',
+  slug: '72-1759114587023-1759114587747-1603',
+  youtubeVideoId: undefined,
+  tags: [ 'fasting', 'autophagy', '단식', '오토파지', 'ketosis' ],
+  publishedAt: '2025-09-29T02:56:27.747Z'
+}
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE ("public"."Post"."slug" = $1 AND 1=1) LIMIT $2 OFFSET $3
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","publishedAt","createdAt","updatedAt","tags","seoTitle","seoDescription","views","status","youtubeVideoId","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,CAST($13::text AS "public"."PostStatus"),$14,$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+prisma:query INSERT INTO "public"."PostTranslation" ("id","postId","locale","title","content","excerpt","seoTitle","seoDescription","createdAt","updatedAt") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING "public"."PostTranslation"."id", "public"."PostTranslation"."postId", "public"."PostTranslation"."locale", "public"."PostTranslation"."title", "public"."PostTranslation"."content", "public"."PostTranslation"."excerpt", "public"."PostTranslation"."coverImage", "public"."PostTranslation"."seoTitle", "public"."PostTranslation"."seoDescription", "public"."PostTranslation"."createdAt", "public"."PostTranslation"."updatedAt"
+ POST /api/posts 200 in 20495ms
+Generating embedding for prompt...
+Searching for similar knowledge...
+prisma:query 
+    SELECT id, content, source, 
+           1 - (embedding <=> $1::vector) as similarity
+    FROM "Knowledge"
+    ORDER BY embedding <=> $2::vector
+    LIMIT $3
+  
+ POST /api/generate-content 200 in 4146ms
+prisma:query SELECT 1
+prisma:query INSERT INTO "public"."Post" ("id","title","slug","content","excerpt","createdAt","updatedAt","author","tags","seoTitle","seoDescription","views","scheduledAt","status","originalLanguage") VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,CAST($14::text AS "public"."PostStatus"),$15) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+prisma:query SELECT "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage" FROM "public"."Post" WHERE 1=1 ORDER BY "public"."Post"."createdAt" DESC OFFSET $1
+ GET /api/posts 200 in 2606ms
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4jfs6r001u8jekv08gwvm3 200 in 477ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4jemhx001o8jekmn5exjcg 200 in 294ms
+DATABASE_URL exists: true
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4jdfx4001i8jek9dx3cfk3 200 in 272ms
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4c35ky001h8jekhlcy5zqo 200 in 234ms
+DATABASE_URL exists: true
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4c26wq001b8jek3f4a6121 200 in 272ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4c0u1m00158jeks4t729n2 200 in 237ms
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4bv9wt000z8jeklkg7laqz 200 in 235ms
+DATABASE_URL exists: true
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4bu3u4000t8jekhpqycpo0 200 in 443ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4boc4b000n8jektwj4sk8e 200 in 661ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg4bmzil000h8jekzh06b0la 200 in 760ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38sk6t000b8jek0rteay1p 200 in 603ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38r6sm00058jeke3f402ww 200 in 470ms
+DATABASE_URL exists: true
+prisma:query SELECT 1
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38pzdu00048jeknohs0o0w 200 in 713ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38p2zy00028jekqgbn6ptm 200 in 538ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38oazx00008jekiq2ir6sx 200 in 437ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38jlnf000c8jueq12u7fmt 200 in 461ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38ioae000b8juerbn7y1rf 200 in 435ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg38i243000a8juew0ggkzfb 200 in 431ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg311hwj00098juev6kc297h 200 in 439ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg310qh700088jueyc7epfp3 200 in 570ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30zw1r00078jueh65wa25t 200 in 439ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30zcbf00068juelkmikatj 200 in 435ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30yp2r00058juejnq4gxc6 200 in 448ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30y08a00048jue4jgguaxk 200 in 548ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30x3q900038jue500eov29 200 in 458ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30wdqr00028jueea4psjgr 200 in 506ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30volo00018jue7ecz26op 200 in 459ms
+DATABASE_URL exists: true
+prisma:query UPDATE "public"."Post" SET "publishedAt" = $1, "updatedAt" = $2 WHERE ("public"."Post"."id" = $3 AND 1=1) RETURNING "public"."Post"."id", "public"."Post"."title", "public"."Post"."slug", "public"."Post"."content", "public"."Post"."excerpt", "public"."Post"."coverImage", "public"."Post"."publishedAt", "public"."Post"."createdAt", "public"."Post"."updatedAt", "public"."Post"."author", "public"."Post"."tags", "public"."Post"."seoTitle", "public"."Post"."seoDescription", "public"."Post"."views", "public"."Post"."scheduledAt", "public"."Post"."status"::text, "public"."Post"."youtubeVideoId", "public"."Post"."socialLinks", "public"."Post"."originalLanguage"
+ PUT /api/posts/cmg30v0ez00008juenik4nctr 200 in 435ms
+Successfully pinged Google about sitemap update
+ POST /api/sitemap/update 200 in 513ms
