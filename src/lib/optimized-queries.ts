@@ -29,6 +29,7 @@ export const getPostBySlug = unstable_cache(
         seoTitle: true,
         seoDescription: true,
         views: true,
+        status: true,
         youtubeVideoId: true,
         originalLanguage: true,
         translations: {
