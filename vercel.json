@@ -1,16 +1,9 @@
 {
-  "buildCommand": "pnpm install && pnpm build",
-  "installCommand": "corepack enable && corepack prepare pnpm@8.15.0 --activate && pnpm install",
+  "buildCommand": "prisma generate && next build && next-sitemap",
+  "outputDirectory": ".next",
   "framework": "nextjs",
-  "build": {
-    "env": {
-      "NEXT_TELEMETRY_DISABLED": "1",
-      "NODE_ENV": "production"
-    }
-  },
-  "functions": {
-    "src/app/api/**/*.ts": {
-      "maxDuration": 60
-    }
+  "installCommand": "pnpm install",
+  "env": {
+    "NEXT_PUBLIC_NODE_ENV": "production"
   }
 }
