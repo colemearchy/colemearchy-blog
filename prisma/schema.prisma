@@ -11,28 +11,27 @@ datasource db {
 }
 
 model Post {
-  id             String     @id @default(cuid())
-  title          String
-  slug           String     @unique
-  content        String
-  excerpt        String?
-  coverImage     String?
-  publishedAt    DateTime?
-  createdAt      DateTime   @default(now())
-  updatedAt      DateTime   @updatedAt
-  author         String?
-  tags           String[]   @default([])
-  seoTitle       String?
-  seoDescription String?
-  views          Int        @default(0)
-  scheduledAt    DateTime?
-  status         PostStatus @default(DRAFT)
-  youtubeVideoId String?
-  socialLinks    Json?      // { threads: string[], youtube: string[] }
-  originalLanguage String   @default("ko")
-  
-  comments       Comment[]
-  translations   PostTranslation[]
+  id               String            @id @default(cuid())
+  title            String
+  slug             String            @unique
+  content          String
+  excerpt          String?
+  coverImage       String?
+  publishedAt      DateTime?
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+  author           String?
+  tags             String[]          @default([])
+  seoTitle         String?
+  seoDescription   String?
+  views            Int               @default(0)
+  scheduledAt      DateTime?
+  status           PostStatus        @default(DRAFT)
+  socialLinks      Json?
+  youtubeVideoId   String?
+  originalLanguage String            @default("ko")
+  comments         Comment[]
+  translations     PostTranslation[]
 
   @@index([slug])
   @@index([publishedAt])
@@ -56,61 +55,49 @@ model Knowledge {
 }
 
 model Comment {
-  id              String    @id @default(cuid())
-  postId          String
-  post            Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
-  // 댓글 내용
-  authorName      String
-  authorEmail     String?
-  content         String
-  
-  // AI Devil's Advocate
-  aiResponse      String?
-  aiGeneratedAt   DateTime?
-  
-  // 투표 시스템
-  agreeWithUser   Int       @default(0)
-  agreeWithAI     Int       @default(0)
-  
-  // 상태 관리
-  isApproved      Boolean   @default(true) // 자동 승인, 나중에 스팸 필터 추가 가능
-  isDeleted       Boolean   @default(false)
-  
-  createdAt       DateTime  @default(now())
-  updatedAt       DateTime  @updatedAt
-  
-  // 답글 기능을 위한 자기 참조
-  parentId        String?
-  parent          Comment?  @relation("CommentToComment", fields: [parentId], references: [id])
-  replies         Comment[] @relation("CommentToComment")
-  
+  id            String    @id @default(cuid())
+  postId        String
+  authorName    String
+  authorEmail   String?
+  content       String
+  aiResponse    String?
+  aiGeneratedAt DateTime?
+  agreeWithUser Int       @default(0)
+  agreeWithAI   Int       @default(0)
+  isApproved    Boolean   @default(true)
+  isDeleted     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+  parentId      String?
+  parent        Comment?  @relation("CommentToComment", fields: [parentId], references: [id])
+  replies       Comment[] @relation("CommentToComment")
+  post          Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
+
   @@index([postId])
   @@index([createdAt])
   @@index([isApproved, isDeleted])
 }
 
-enum PostStatus {
-  DRAFT
-  PUBLISHED
-}
-
 model PostTranslation {
-  id             String    @id @default(cuid())
+  id             String   @id @default(cuid())
   postId         String
   locale         String
   title          String
   content        String
   excerpt        String?
-  coverImage     String?
   seoTitle       String?
   seoDescription String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-  
-  post           Post      @relation(fields: [postId], references: [id], onDelete: Cascade)
-  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  coverImage     String?
+  post           Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+
   @@unique([postId, locale])
   @@index([postId])
   @@index([locale])
+}
+
+enum PostStatus {
+  DRAFT
+  PUBLISHED
 }

@@ -45,3 +45,14 @@ next-env.d.ts
 # uploaded images
 /public/uploads/
 public/downloads/*.dmg
+
+# scripts (not needed for production)
+/scripts/
+
+# log files
+dev.log
+*.log
+
+# temporary files
+*.tmp
+*.temp
