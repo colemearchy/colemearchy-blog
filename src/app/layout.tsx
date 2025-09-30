@@ -108,22 +108,29 @@ export default function RootLayout({
       <head>
         <link rel="icon" href="/icon" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-icon" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* DNS Prefetch for external resources */}
         <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
-        {/* YouTube preconnect hints for performance */}
-        <link rel="preconnect" href="https://www.youtube-nocookie.com" />
-        <link rel="preconnect" href="https://i.ytimg.com" />
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
         <link rel="dns-prefetch" href="https://i.ytimg.com" />
+        
+        {/* Preconnect for critical resources */}
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
+        
+        {/* Preload critical font */}
+        <link
+          rel="preload"
+          href="https://fonts.gstatic.com/s/geist/v1/0FlLVP2Fm8Znqg-xGx.woff2"
+          as="font"
+          type="font/woff2"
+          crossOrigin="anonymous"
+        />
+        
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
-        {/* Google AdSense */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-9914003663926064"
-          crossOrigin="anonymous"
         />
       </head>
       <body

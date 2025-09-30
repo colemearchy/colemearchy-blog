@@ -14,7 +14,16 @@ const nextConfig: NextConfig = {
   },
   experimental: {
     optimizeCss: false, // Disable to avoid critters error
-    optimizePackageImports: ['@prisma/client', 'react-markdown', 'prismjs'],
+    optimizePackageImports: [
+      '@prisma/client', 
+      'react-markdown', 
+      'prismjs',
+      'date-fns',
+      'lodash-es',
+      'zod',
+      'rehype-raw',
+      'remark-gfm'
+    ],
   },
   images: {
     remotePatterns: [

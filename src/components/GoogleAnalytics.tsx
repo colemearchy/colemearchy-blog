@@ -18,32 +18,47 @@ function GoogleAnalyticsInner() {
     const existingScript = document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)
     if (existingScript) return
 
-    // Load gtag script with proper attributes
-    const script = document.createElement('script')
-    script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`
-    script.async = true
-    script.defer = true
-    
-    // Add error handling
-    script.onerror = () => {
-      console.warn('Failed to load Google Analytics')
-    }
-    
-    document.head.appendChild(script)
+    // Delay loading GA to prioritize content
+    const loadTimeout = setTimeout(() => {
+      // Load gtag script with proper attributes
+      const script = document.createElement('script')
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`
+      script.async = true
+      script.defer = true
+      
+      // Add error handling
+      script.onerror = () => {
+        console.warn('Failed to load Google Analytics')
+      }
+      
+      // Initialize gtag before appending script
+      window.dataLayer = window.dataLayer || []
+      window.gtag = function gtag() {
+        window.dataLayer.push(arguments)
+      }
+      window.gtag('js', new Date())
+      window.gtag('config', GA_MEASUREMENT_ID, {
+        page_title: document.title,
+        page_location: window.location.href,
+        cookie_flags: 'SameSite=None;Secure',
+        anonymize_ip: true,
+        send_page_view: false // Don't send automatic page view
+      })
+      
+      document.head.appendChild(script)
+      
+      // Send initial page view after script loads
+      script.onload = () => {
+        window.gtag('event', 'page_view', {
+          page_title: document.title,
+          page_location: window.location.href,
+          page_path: pathname
+        })
+      }
+    }, 3000) // 3 second delay to prioritize LCP
 
-    // Initialize gtag
-    window.dataLayer = window.dataLayer || []
-    window.gtag = function gtag() {
-      window.dataLayer.push(arguments)
-    }
-    window.gtag('js', new Date())
-    window.gtag('config', GA_MEASUREMENT_ID, {
-      page_title: document.title,
-      page_location: window.location.href,
-      cookie_flags: 'SameSite=None;Secure',
-      anonymize_ip: true
-    })
-  }, [])
+    return () => clearTimeout(loadTimeout)
+  }, [pathname])
 
   useEffect(() => {
     if (!window.gtag) return

@@ -1,10 +1,12 @@
 import { Metadata } from 'next'
 import Image from 'next/image'
 import Link from 'next/link'
+import { Suspense } from 'react'
 import { extractYouTubeVideoId } from '@/lib/youtube-thumbnail'
 import YouTubeThumbnail from '@/components/YouTubeThumbnail'
 import { notFound } from 'next/navigation'
 import { prisma } from '@/lib/prisma'
+import { getPostBySlug, getPostComments } from '@/lib/optimized-queries'
 import LazyBlogPostAnalytics from '@/components/LazyBlogPostAnalytics'
 import MarkdownContent from '@/components/MarkdownContent'
 import RelatedPosts from '@/components/RelatedPosts'
@@ -19,6 +21,11 @@ import { navigationItems } from '@/lib/navigation'
 interface PostPageProps {
   params: Promise<{ slug: string; locale: string }>
 }
+
+// Force static generation with ISR
+export const dynamic = 'force-static'
+export const dynamicParams = true
+export const revalidate = 3600 // 1 hour ISR
 
 // Static generation for better performance
 export async function generateStaticParams() {
@@ -141,16 +148,7 @@ export default async function PostPage({
   const { slug, locale } = await params
   const lang = locale === 'en' ? 'en' : 'ko'
   
-  const post = await prisma.post.findUnique({
-    where: { slug },
-    include: {
-      translations: {
-        where: {
-          locale: lang
-        }
-      }
-    }
-  })
+  const post = await getPostBySlug(slug)
 
   if (!post || !post.publishedAt || post.status !== 'PUBLISHED') {
     notFound()
@@ -164,7 +162,7 @@ export default async function PostPage({
   // View count is now tracked client-side via ViewCounter component
   
   // Use translated content if available
-  const translation = post.translations?.[0]
+  const translation = post.translations?.find(t => t.locale === lang)
   const displayTitle = lang === 'en' && translation?.title ? translation.title : post.title
   const displayContent = lang === 'en' && translation?.content ? translation.content : post.content
   const displayExcerpt = lang === 'en' && translation?.excerpt ? translation.excerpt : post.excerpt
@@ -201,29 +199,8 @@ export default async function PostPage({
   const readingTime = calculateReadingTime(content)
   const youtubeVideoId = extractYouTubeVideoId(post.youtubeVideoId || '')
   
-  // Fetch comments separately
-  const comments = await prisma.comment.findMany({
-    where: {
-      postId: post.id,
-      isApproved: true,
-      isDeleted: false,
-      parentId: null,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    include: {
-      replies: {
-        where: {
-          isApproved: true,
-          isDeleted: false,
-        },
-        orderBy: {
-          createdAt: 'asc',
-        },
-      },
-    },
-  })
+  // Fetch comments separately (no caching for dynamic data)
+  const comments = await getPostComments(post.id)
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -416,16 +393,22 @@ export default async function PostPage({
 
               <MarkdownContent content={content} />
               
-              <LazyCommentSection postSlug={post.slug} locale={locale} />
+              <Suspense fallback={<div className="h-20 animate-pulse bg-gray-100 rounded mt-8" />}>
+                <LazyCommentSection postSlug={post.slug} locale={locale} />
+              </Suspense>
               
-              <RelatedPosts postId={post.id} />
+              <Suspense fallback={<div className="h-32 animate-pulse bg-gray-100 rounded mt-8" />}>
+                <RelatedPosts postId={post.id} />
+              </Suspense>
 
-              <LazyBlogPostAnalytics 
-                title={post.title} 
-                slug={post.slug} 
-                author={post.author || undefined}
-                tags={post.tags}
-              />
+              <Suspense fallback={null}>
+                <LazyBlogPostAnalytics 
+                  title={post.title} 
+                  slug={post.slug} 
+                  author={post.author || undefined}
+                  tags={post.tags}
+                />
+              </Suspense>
             </article>
             
             <aside className="hidden xl:block">
