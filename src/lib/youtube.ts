@@ -152,7 +152,49 @@ export async function getVideoDetails(videoId: string): Promise<YouTubeVideo | n
     const youtube = getYouTubeClient();
     
     const response = await youtube.videos.list({
-      part: ['snippet'],
+      part: ['snippet', 'contentDetails'],
+      id: [videoId],
+    } as any);
+
+    const video = response.data.items?.[0];
+    if (!video || !video.snippet) return null;
+
+    const duration = video.contentDetails?.duration || '';
+    const durationInSeconds = parseDuration(duration);
+    const isShort = durationInSeconds > 0 && durationInSeconds < 120;
+
+    return {
+      id: videoId,
+      title: video.snippet.title || '',
+      description: video.snippet.description || '',
+      thumbnailUrl: getBestThumbnailFromApiResponse(video.snippet.thumbnails),
+      publishedAt: video.snippet.publishedAt || '',
+      url: `https://www.youtube.com/watch?v=${videoId}`,
+      embedUrl: `https://www.youtube.com/embed/${videoId}`,
+      duration,
+      isShort,
+    };
+  } catch (error) {
+    console.error('Error fetching video details:', error);
+    return null;
+  }
+}
+
+// 동영상의 확장된 메타데이터 가져오기 (transcript 서비스와 함께 사용)
+export async function getVideoMetadataForBlog(videoId: string): Promise<{
+  id: string;
+  title: string;
+  description: string;
+  channelTitle: string;
+  publishedAt: string;
+  duration: string;
+  thumbnailUrl: string;
+} | null> {
+  try {
+    const youtube = getYouTubeClient();
+    
+    const response = await youtube.videos.list({
+      part: ['snippet', 'contentDetails'],
       id: [videoId],
     } as any);
 
@@ -163,13 +205,13 @@ export async function getVideoDetails(videoId: string): Promise<YouTubeVideo | n
       id: videoId,
       title: video.snippet.title || '',
       description: video.snippet.description || '',
-      thumbnailUrl: getBestThumbnailFromApiResponse(video.snippet.thumbnails),
+      channelTitle: video.snippet.channelTitle || '',
       publishedAt: video.snippet.publishedAt || '',
-      url: `https://www.youtube.com/watch?v=${videoId}`,
-      embedUrl: `https://www.youtube.com/embed/${videoId}`,
+      duration: video.contentDetails?.duration || '',
+      thumbnailUrl: getBestThumbnailFromApiResponse(video.snippet.thumbnails),
     };
   } catch (error) {
-    console.error('Error fetching video details:', error);
+    console.error('Error fetching video metadata:', error);
     return null;
   }
 }

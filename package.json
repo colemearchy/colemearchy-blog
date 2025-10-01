@@ -35,6 +35,7 @@
     "remark-gfm": "^4.0.1",
     "sharp": "^0.34.3",
     "tsx": "^4.20.3",
+    "youtube-transcript": "^1.2.1",
     "zod": "^4.1.5"
   },
   "devDependencies": {
