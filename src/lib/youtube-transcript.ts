@@ -40,7 +40,12 @@ export class YouTubeTranscriptService {
         YoutubeTranscript.fetchTranscript(videoId)
       );
 
-      return transcript;
+      // Map the response to our TranscriptItem interface
+      return transcript.map((item: any) => ({
+        text: item.text,
+        start: item.start || item.offset || 0,
+        duration: item.duration || item.dur || 0
+      }));
     } catch (error) {
       console.error('Failed to fetch transcript:', error);
       throw new Error('Transcript not available for this video');
