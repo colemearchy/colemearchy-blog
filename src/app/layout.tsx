@@ -119,14 +119,7 @@ export default function RootLayout({
         {/* Preconnect for critical resources */}
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
         
-        {/* Preload critical font */}
-        <link
-          rel="preload"
-          href="https://fonts.gstatic.com/s/geist/v1/0FlLVP2Fm8Znqg-xGx.woff2"
-          as="font"
-          type="font/woff2"
-          crossOrigin="anonymous"
-        />
+        {/* Font preloading is handled automatically by next/font */}
         
         <script
           type="application/ld+json"
