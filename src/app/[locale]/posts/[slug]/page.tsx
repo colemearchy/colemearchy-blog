@@ -14,6 +14,7 @@ import TableOfContents from '@/components/TableOfContents'
 import Breadcrumb from '@/components/Breadcrumb'
 import YouTubeEmbed from '@/components/YouTubeEmbed'
 import LazyCommentSection from '@/components/LazyCommentSection'
+import { LazyAdSense } from '@/components/LazyAdSense'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 import ViewCounter from '@/components/ViewCounter'
 import { navigationItems } from '@/lib/navigation'
@@ -391,7 +392,17 @@ export default async function PostPage({
             />
           )}
 
+              {/* First Ad - After header, before content */}
+              <div className="my-8">
+                <LazyAdSense slot="8561234146" />
+              </div>
+
               <MarkdownContent content={content} />
+              
+              {/* Second Ad - After content, before comments */}
+              <div className="my-12">
+                <LazyAdSense slot="8561234146" />
+              </div>
               
               <Suspense fallback={<div className="h-20 animate-pulse bg-gray-100 rounded mt-8" />}>
                 <LazyCommentSection postSlug={post.slug} locale={locale} />
@@ -413,6 +424,10 @@ export default async function PostPage({
             
             <aside className="hidden xl:block">
               <TableOfContents content={content} />
+              {/* Sidebar Ad - Sticky ad below table of contents */}
+              <div className="mt-8 sticky top-24">
+                <LazyAdSense slot="8561234146" style={{ minHeight: '300px' }} />
+              </div>
             </aside>
           </div>
         </div>

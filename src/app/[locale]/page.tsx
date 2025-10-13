@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import LazyNewsletterAnalytics from '@/components/LazyNewsletterAnalytics'
 import { Metadata } from 'next'
 import { navigationItems } from '@/lib/navigation'
+import { LazyAdSense } from '@/components/LazyAdSense'
 
 // Static generation with ISR (Incremental Static Regeneration)
 export const revalidate = 3600 // Revalidate every hour
@@ -229,6 +230,11 @@ export default async function HomePage({
               </section>
             )}
 
+            {/* Homepage Ad - Between Featured and Most Popular */}
+            <div className="my-12">
+              <LazyAdSense slot="8561234146" />
+            </div>
+
             {/* Most Popular Section */}
             {recentPosts.length > 0 && (
               <section className="mb-16">
@@ -342,6 +348,11 @@ export default async function HomePage({
                 </div>
               </section>
             )}
+
+            {/* Homepage Ad - After Latest Section */}
+            <div className="my-12">
+              <LazyAdSense slot="8561234146" />
+            </div>
           </>
         )}
 
