@@ -20,7 +20,8 @@ export async function middleware(request: NextRequest) {
       '/apple-icon',
       '/favicon.ico',
       '/robots.txt',
-      '/sitemap.xml'
+      '/sitemap.xml',
+      '/ads.txt'
     ].some(path => pathname.startsWith(path))
     
     // Redirect to default locale if no locale is present
@@ -69,6 +70,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Match all pathnames except static files and api routes
-    '/((?!api|_next/static|_next/image|favicon.ico|icon|apple-icon|robots.txt|sitemap.xml).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|icon|apple-icon|robots.txt|sitemap.xml|ads.txt).*)',
   ]
 }
