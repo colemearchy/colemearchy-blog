@@ -113,7 +113,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   const displayCoverImage = translation?.coverImage || post.coverImage
   
   const ogImageUrl = displayCoverImage || 
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(displayTitle)}&author=${encodeURIComponent(post.author || 'Cole IT AI')}&date=${encodeURIComponent(post.publishedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(post.tags.join(','))}`
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(displayTitle)}&author=${encodeURIComponent(post.author || 'Cole IT AI')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(post.tags.join(','))}`
 
   return {
     title: post.seoTitle || displayTitle,
@@ -128,8 +128,8 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       title: post.seoTitle || displayTitle,
       description: post.seoDescription || displayExcerpt || undefined,
       type: 'article',
-      publishedTime: post.publishedAt.toISOString(),
-      modifiedTime: post.updatedAt.toISOString(),
+      publishedTime: new Date(post.publishedAt).toISOString(),
+      modifiedTime: new Date(post.updatedAt).toISOString(),
       tags: post.tags,
       images: [{ url: ogImageUrl }],
       locale: locale === 'en' ? 'en_US' : 'ko_KR',
@@ -208,9 +208,9 @@ export default async function PostPage({
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
-    image: post.coverImage || `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}&date=${encodeURIComponent(post.publishedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(post.tags.join(','))}`,
-    datePublished: post.publishedAt.toISOString(),
-    dateModified: post.updatedAt.toISOString(),
+    image: post.coverImage || `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(post.tags.join(','))}`,
+    datePublished: new Date(post.publishedAt).toISOString(),
+    dateModified: new Date(post.updatedAt).toISOString(),
     author: {
       '@type': 'Person',
       name: post.author || 'Cole IT AI',
@@ -320,7 +320,7 @@ export default async function PostPage({
               <header className="mb-8">
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">{displayTitle}</h1>
                 <div className="flex items-center text-gray-600 space-x-4">
-                  <time dateTime={post.publishedAt.toISOString()}>
+                  <time dateTime={new Date(post.publishedAt).toISOString()}>
                     {new Date(post.publishedAt).toLocaleDateString('en-US', {
                       year: 'numeric',
                       month: 'long',
