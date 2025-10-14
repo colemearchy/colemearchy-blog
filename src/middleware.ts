@@ -34,28 +34,26 @@ export async function middleware(request: NextRequest) {
     let needsRedirect = false
     let newUrl = url.clone()
 
-    // Remove www
-    if (isWww && !skipLocaleRedirect) {
-      newUrl.host = hostname.replace('www.', '')
-      needsRedirect = true
-    }
+    // NOTE: Vercel redirects non-www to www, so we don't handle www removal here
+    // This prevents redirect loops
 
     // Remove trailing slash
     if (hasTrailingSlash) {
       newUrl.pathname = pathname.slice(0, -1)
+      pathname = newUrl.pathname // Update pathname for subsequent checks
       needsRedirect = true
     }
 
     // Add locale
     if (!pathnameHasLocale && !skipLocaleRedirect) {
       const locale = request.cookies.get('locale')?.value || defaultLocale
-      newUrl.pathname = `/${locale}${newUrl.pathname}`
+      newUrl.pathname = `/${locale}${pathname}`
       needsRedirect = true
     }
 
     // If any redirect is needed, do it in one hop
     if (needsRedirect) {
-      return NextResponse.redirect(newUrl, { status: 308 })
+      return NextResponse.redirect(newUrl, { status: 307 })
     }
     
     if (request.nextUrl.pathname.startsWith('/admin')) {
