@@ -2,11 +2,16 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { env } from './env'
 
 export function detectLanguage(text: string): 'ko' | 'en' {
-  // Simple language detection based on character ranges
-  const koreanRegex = /[\u3131-\uD79D]/
-  const koreanChars = (text.match(koreanRegex) || []).length
+  if (!text) return 'ko'
+
+  // Match ALL Korean characters (not just the first one)
+  const koreanRegex = /[가-힣]/g
+  const koreanMatches = text.match(koreanRegex)
+  const koreanChars = koreanMatches ? koreanMatches.length : 0
   const totalChars = text.replace(/\s/g, '').length
-  
+
+  if (totalChars === 0) return 'ko'
+
   // If more than 20% of characters are Korean, consider it Korean
   return koreanChars / totalChars > 0.2 ? 'ko' : 'en'
 }
