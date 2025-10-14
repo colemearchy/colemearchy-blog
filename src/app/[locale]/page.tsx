@@ -15,12 +15,20 @@ export async function generateMetadata({
   params: Promise<{ locale: string }>
 }): Promise<Metadata> {
   const { locale } = await params
-  
+
   return {
     title: locale === 'en' ? 'Cole IT AI - Tech & AI Blog' : 'Cole IT AI - 기술 및 AI 블로그',
-    description: locale === 'en' 
+    description: locale === 'en'
       ? 'A blog about AI, technology, and software development'
       : 'AI, 기술, 소프트웨어 개발에 관한 블로그',
+    alternates: {
+      canonical: `https://colemearchy.com/${locale}`,
+      languages: {
+        'ko': '/ko',
+        'en': '/en',
+        'x-default': '/ko',
+      }
+    },
     other: {
       'naver-site-verification': 'b6f99c40e119f35973da1ab8da181dd5ccf28734'
     }
