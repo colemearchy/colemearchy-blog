@@ -15,6 +15,10 @@ export default async function ArchivePage({
     where: {
       status: 'PUBLISHED',
       publishedAt: { not: null },
+      // 썸네일이 있는 포스트만 노출
+      coverImage: {
+        not: null
+      },
       OR: [
         { originalLanguage: lang },
         {

@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { BulkImageUrlUploader } from '@/components/admin/BulkImageUrlUploader'
 import { BulkImageUploader } from '@/components/admin/BulkImageUploader'
 import { AdminPostsTable } from '@/components/admin/AdminPostsTable'
+import NeedsThumbnailPosts from '@/components/admin/NeedsThumbnailPosts'
 
 export const dynamic = 'force-dynamic'
 
@@ -52,6 +53,11 @@ export default function AdminPage() {
       {/* 대량 이미지 URL 업로드 섹션 */}
       <div className="bg-white rounded-lg shadow p-6">
         <BulkImageUrlUploader />
+      </div>
+
+      {/* 썸네일이 필요한 포스트 섹션 */}
+      <div className="bg-white rounded-lg shadow p-6">
+        <NeedsThumbnailPosts />
       </div>
 
       {/* 게시물 목록 섹션 - Client Component로 분리 */}

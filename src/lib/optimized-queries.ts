@@ -66,6 +66,10 @@ export const getRelatedPosts = unstable_cache(
           not: null,
           lte: new Date()
         },
+        // 썸네일이 있는 포스트만 노출
+        coverImage: {
+          not: null
+        },
         tags: {
           hasSome: tags
         }

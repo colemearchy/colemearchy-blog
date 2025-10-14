@@ -62,7 +62,30 @@ export async function POST(request: NextRequest) {
     console.log('Searching for similar knowledge...');
     const similarKnowledge = await searchSimilarKnowledge(promptEmbedding);
     
-    // Step 3: Create RAG context
+    // Step 3a: Get existing posts for deduplication check
+    console.log('Fetching existing posts for deduplication...');
+    const existingPosts = await prisma.post.findMany({
+      where: {
+        status: 'PUBLISHED'
+      },
+      select: {
+        title: true,
+        slug: true,
+        tags: true
+      },
+      orderBy: {
+        publishedAt: 'desc'
+      },
+      take: 100 // Get recent 100 posts
+    });
+
+    const existingPostsContext = existingPosts.length > 0
+      ? `\n\n**EXISTING POSTS IN DATABASE (for deduplication check):**\n${
+          existingPosts.map(p => `- Title: "${p.title}" | Slug: "${p.slug}" | Tags: [${p.tags.join(', ')}]`).join('\n')
+        }\n\n**IMPORTANT: Do NOT create content that duplicates any of the above topics. If the requested topic is similar to an existing post, create content that extends or provides a new angle on the topic.**\n\n`
+      : '';
+
+    // Step 3b: Create RAG context
     const ragContext = similarKnowledge.length > 0 
       ? `\n\n**과거 기록 컨텍스트 (Past Knowledge Context):**\n${
           similarKnowledge.map((k, i) => 
@@ -71,8 +94,8 @@ export async function POST(request: NextRequest) {
         }\n\n**위 컨텍스트를 참고하여 나의 과거 생각과 스타일을 반영해 글을 작성해주세요.**\n\n`
       : '';
 
-    // Step 4: Generate content with RAG context
-    const fullPrompt = `${MASTER_SYSTEM_PROMPT}\n\n------\n\n${ragContext}**EXECUTE TASK:**\n\n${generateContentPrompt(prompt, keywords, affiliateProducts)}`;
+    // Step 4: Generate content with RAG context and existing posts
+    const fullPrompt = `${MASTER_SYSTEM_PROMPT}\n\n------\n\n${existingPostsContext}${ragContext}**EXECUTE TASK:**\n\n${generateContentPrompt(prompt, keywords, affiliateProducts)}`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
     const result = await model.generateContent({
