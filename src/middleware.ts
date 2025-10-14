@@ -4,15 +4,13 @@ import { defaultLocale, locales } from '@/lib/i18n'
 
 export async function middleware(request: NextRequest) {
   try {
-    let pathname = request.nextUrl.pathname
+    const url = request.nextUrl.clone()
+    let pathname = url.pathname
+    const hostname = request.headers.get('host') || ''
 
-    // Remove trailing slash (except for root) to avoid extra redirects
-    if (pathname !== '/' && pathname.endsWith('/')) {
-      return NextResponse.redirect(
-        new URL(pathname.slice(0, -1) + request.nextUrl.search, request.url),
-        { status: 308 } // Permanent redirect
-      )
-    }
+    // Handle www redirect + other redirects in a single hop
+    const isWww = hostname.startsWith('www.')
+    const hasTrailingSlash = pathname !== '/' && pathname.endsWith('/')
 
     // Check if the pathname already has a locale
     const pathnameHasLocale = locales.some(
@@ -32,14 +30,32 @@ export async function middleware(request: NextRequest) {
       '/ads.txt'
     ].some(path => pathname.startsWith(path))
 
-    // Redirect to default locale if no locale is present
+    // If we need multiple redirects, combine them into one
+    let needsRedirect = false
+    let newUrl = url.clone()
+
+    // Remove www
+    if (isWww && !skipLocaleRedirect) {
+      newUrl.host = hostname.replace('www.', '')
+      needsRedirect = true
+    }
+
+    // Remove trailing slash
+    if (hasTrailingSlash) {
+      newUrl.pathname = pathname.slice(0, -1)
+      needsRedirect = true
+    }
+
+    // Add locale
     if (!pathnameHasLocale && !skipLocaleRedirect) {
       const locale = request.cookies.get('locale')?.value || defaultLocale
-      // Use 307 for temporary redirect (preserves method)
-      return NextResponse.redirect(
-        new URL(`/${locale}${pathname}${request.nextUrl.search}`, request.url),
-        { status: 307 }
-      )
+      newUrl.pathname = `/${locale}${newUrl.pathname}`
+      needsRedirect = true
+    }
+
+    // If any redirect is needed, do it in one hop
+    if (needsRedirect) {
+      return NextResponse.redirect(newUrl, { status: 308 })
     }
     
     if (request.nextUrl.pathname.startsWith('/admin')) {
