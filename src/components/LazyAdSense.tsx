@@ -81,7 +81,7 @@ export function LazyAdSense({ slot, format = 'auto', style }: LazyAdSenseProps) 
     >
       {!isLoaded && (
         <div className="absolute inset-0 bg-gray-50 animate-pulse rounded-lg flex items-center justify-center">
-          <span className="text-xs text-gray-400">Advertisement</span>
+          <span className="text-xs text-gray-500">Advertisement</span>
         </div>
       )}
       <ins
