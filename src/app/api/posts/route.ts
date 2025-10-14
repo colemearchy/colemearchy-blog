@@ -33,8 +33,8 @@ export async function POST(request: NextRequest) {
     if (existingPost) {
       console.error('Post with slug already exists:', data.slug)
       return NextResponse.json(
-        { error: 'Post with this slug already exists' },
-        { status: 400 }
+        { error: 'Slug already exists.' },
+        { status: 409 }
       )
     }
     

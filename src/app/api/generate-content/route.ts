@@ -103,13 +103,28 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 6: Save to database as draft
-    const slug = generateSlug(parsedContent.title || prompt);
+    const baseSlug = generateSlug(parsedContent.title || prompt);
     const scheduledAt = publishDate ? new Date(publishDate) : null;
+    
+    // Generate unique slug by checking for duplicates
+    let slug = baseSlug;
+    let counter = 1;
+    let existingPost = await prisma.post.findUnique({
+      where: { slug }
+    });
+    
+    while (existingPost) {
+      slug = `${baseSlug}-${counter}`;
+      counter++;
+      existingPost = await prisma.post.findUnique({
+        where: { slug }
+      });
+    }
     
     const post = await prisma.post.create({
       data: {
         title: parsedContent.title || prompt,
-        slug: `${slug}-${Date.now()}`, // Ensure unique slug
+        slug,
         content: parsedContent.content || responseText,
         excerpt: parsedContent.excerpt || responseText.substring(0, 160),
         tags: parsedContent.tags || [],

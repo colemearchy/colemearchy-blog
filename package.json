@@ -10,6 +10,7 @@
     "type-check": "tsc --noEmit",
     "db:push": "prisma db push",
     "db:generate": "prisma generate",
+    "db:cleanup-duplicates": "tsx src/scripts/cleanupDuplicates.ts",
     "postinstall": "prisma generate"
   },
   "dependencies": {
