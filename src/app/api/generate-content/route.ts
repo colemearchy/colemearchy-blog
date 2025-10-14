@@ -2,8 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { prisma } from '@/lib/prisma';
 import { MASTER_SYSTEM_PROMPT, generateContentPrompt } from '@/lib/ai-prompts';
+import { env } from '@/lib/env';
+import { withErrorHandler, logger, ApiError } from '@/lib/error-handler';
+import { generateContentSchema } from '@/lib/validations';
+import { generateSlug, generateUniqueSlug } from '@/lib/utils/slug';
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
+const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
 // Generate embedding for a text
 async function generateEmbedding(text: string): Promise<number[]> {
@@ -16,13 +20,13 @@ async function generateEmbedding(text: string): Promise<number[]> {
 async function searchSimilarKnowledge(queryEmbedding: number[], limit: number = 3) {
   // Use pgvector to find similar embeddings
   const results = await prisma.$queryRaw`
-    SELECT id, content, source, 
+    SELECT id, content, source,
            1 - (embedding <=> ${queryEmbedding}::vector) as similarity
     FROM "Knowledge"
     ORDER BY embedding <=> ${queryEmbedding}::vector
     LIMIT ${limit}
   `;
-  
+
   return results as Array<{
     id: string;
     content: string;
@@ -31,39 +35,28 @@ async function searchSimilarKnowledge(queryEmbedding: number[], limit: number = 
   }>;
 }
 
-// Generate slug from title
-function generateSlug(title: string): string {
-  return title
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-+|-+$/g, '')
-    .substring(0, 60);
-}
+export const POST = withErrorHandler(async (request: NextRequest) => {
+  const body = await request.json();
 
-export async function POST(request: NextRequest) {
-  try {
-    const { prompt, keywords, affiliateProducts, publishDate } = await request.json();
+  // Validate input data
+  const validatedData = generateContentSchema.parse(body);
+  const { prompt, keywords, affiliateProducts, publishDate } = validatedData;
 
-    if (!prompt) {
-      return NextResponse.json({ error: 'Prompt is required' }, { status: 400 });
-    }
+  logger.info('Generating content', {
+    promptLength: prompt.length,
+    keywordsCount: keywords?.length || 0
+  });
 
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
+  // Step 1: Generate embedding for the user's prompt
+  logger.info('Generating embedding for prompt');
+  const promptEmbedding = await generateEmbedding(prompt);
 
-    if (!GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
-    }
+  // Step 2: Search for similar knowledge
+  logger.info('Searching for similar knowledge');
+  const similarKnowledge = await searchSimilarKnowledge(promptEmbedding);
 
-    // Step 1: Generate embedding for the user's prompt
-    console.log('Generating embedding for prompt...');
-    const promptEmbedding = await generateEmbedding(prompt);
-    
-    // Step 2: Search for similar knowledge
-    console.log('Searching for similar knowledge...');
-    const similarKnowledge = await searchSimilarKnowledge(promptEmbedding);
-    
-    // Step 3a: Get existing posts for deduplication check
-    console.log('Fetching existing posts for deduplication...');
+  // Step 3a: Get existing posts for deduplication check
+  logger.info('Fetching existing posts for deduplication');
     const existingPosts = await prisma.post.findMany({
       where: {
         status: 'PUBLISHED'
@@ -117,32 +110,23 @@ export async function POST(request: NextRequest) {
       parsedContent = JSON.parse(responseText);
     } catch {
       // If not JSON, wrap in content object
-      parsedContent = { 
+      parsedContent = {
         title: prompt.substring(0, 60),
         content: responseText,
         excerpt: responseText.substring(0, 160),
-        tags: Array.isArray(keywords) ? keywords : (keywords ? keywords.split(',').map((k: string) => k.trim()) : [])
+        tags: keywords || []
       };
     }
 
     // Step 6: Save to database as draft
     const baseSlug = generateSlug(parsedContent.title || prompt);
     const scheduledAt = publishDate ? new Date(publishDate) : null;
-    
+
     // Generate unique slug by checking for duplicates
-    let slug = baseSlug;
-    let counter = 1;
-    let existingPost = await prisma.post.findUnique({
-      where: { slug }
+    const slug = await generateUniqueSlug(baseSlug, async (s) => {
+      const existing = await prisma.post.findUnique({ where: { slug: s } });
+      return !!existing;
     });
-    
-    while (existingPost) {
-      slug = `${baseSlug}-${counter}`;
-      counter++;
-      existingPost = await prisma.post.findUnique({
-        where: { slug }
-      });
-    }
     
     const post = await prisma.post.create({
       data: {
@@ -160,20 +144,18 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    return NextResponse.json({
-      ...parsedContent,
-      id: post.id,
-      slug: post.slug,
-      status: post.status,
-      scheduledAt: post.scheduledAt,
-      ragContextUsed: similarKnowledge.length > 0
-    });
+  logger.info('Content generated and saved', {
+    postId: post.id,
+    slug: post.slug,
+    status: post.status
+  });
 
-  } catch (error) {
-    console.error('Error in generate-content handler:', error);
-    return NextResponse.json({ 
-      error: 'Failed to generate content', 
-      details: error instanceof Error ? error.message : 'Unknown error' 
-    }, { status: 500 });
-  }
-}
+  return NextResponse.json({
+    ...parsedContent,
+    id: post.id,
+    slug: post.slug,
+    status: post.status,
+    scheduledAt: post.scheduledAt,
+    ragContextUsed: similarKnowledge.length > 0
+  });
+});

@@ -1,5 +1,11 @@
 import { google } from 'googleapis';
 import { getBestThumbnailFromApiResponse } from './youtube-thumbnail';
+import { env } from './env';
+import type {
+  YouTubeChannelsResponse,
+  YouTubePlaylistItemsResponse,
+  YouTubeVideosResponse,
+} from '@/types/youtube';
 
 // ISO 8601 duration을 초 단위로 변환하는 함수
 function parseDuration(duration: string): number {
@@ -19,7 +25,7 @@ function parseDuration(duration: string): number {
 function getYouTubeClient() {
   return google.youtube({
     version: 'v3',
-    auth: process.env.YOUTUBE_API_KEY,
+    auth: env.YOUTUBE_API_KEY,
   });
 }
 
@@ -38,24 +44,16 @@ export interface YouTubeVideo {
 // 채널의 최신 동영상 가져오기
 export async function getChannelVideos(maxResults: number = 10, pageToken?: string): Promise<{ videos: YouTubeVideo[], nextPageToken?: string }> {
   try {
-    const channelId = process.env.YOUTUBE_CHANNEL_ID;
-    const apiKey = process.env.YOUTUBE_API_KEY;
-    
+    const channelId = env.YOUTUBE_CHANNEL_ID;
+    const apiKey = env.YOUTUBE_API_KEY;
+
     console.log('YouTube API Config:', {
       hasApiKey: !!apiKey,
-      apiKeyLength: apiKey?.length,
+      apiKeyLength: apiKey.length,
       hasChannelId: !!channelId,
       channelId: channelId,
       timestamp: new Date().toISOString()
     });
-    
-    if (!apiKey) {
-      throw new Error('YouTube API Key not configured. Please set YOUTUBE_API_KEY environment variable.');
-    }
-    
-    if (!channelId) {
-      throw new Error('YouTube Channel ID not configured. Please set YOUTUBE_CHANNEL_ID environment variable.');
-    }
 
     const youtube = getYouTubeClient();
 
@@ -63,7 +61,7 @@ export async function getChannelVideos(maxResults: number = 10, pageToken?: stri
     const channelResponse = await youtube.channels.list({
       part: ['contentDetails'],
       id: [channelId],
-    } as any);
+    });
 
     const uploadsPlaylistId = channelResponse.data.items?.[0]?.contentDetails?.relatedPlaylists?.uploads;
     
@@ -77,7 +75,7 @@ export async function getChannelVideos(maxResults: number = 10, pageToken?: stri
       playlistId: uploadsPlaylistId,
       maxResults,
       pageToken,
-    } as any);
+    }) as { data: YouTubePlaylistItemsResponse };
 
     const videos: YouTubeVideo[] = [];
     const videoIds: string[] = [];
@@ -91,12 +89,12 @@ export async function getChannelVideos(maxResults: number = 10, pageToken?: stri
     }
     
     // 비디오 상세 정보 가져오기 (duration 포함)
-    let videoDetails = new Map();
+    const videoDetails = new Map<string, any>();
     if (videoIds.length > 0) {
       const videoResponse = await youtube.videos.list({
         part: ['contentDetails', 'snippet'],
         id: videoIds,
-      } as any);
+      }) as { data: YouTubeVideosResponse };
       
       for (const video of videoResponse.data.items || []) {
         if (video.id) {
@@ -150,11 +148,11 @@ export async function getChannelVideos(maxResults: number = 10, pageToken?: stri
 export async function getVideoDetails(videoId: string): Promise<YouTubeVideo | null> {
   try {
     const youtube = getYouTubeClient();
-    
+
     const response = await youtube.videos.list({
       part: ['snippet', 'contentDetails'],
       id: [videoId],
-    } as any);
+    }) as { data: YouTubeVideosResponse };
 
     const video = response.data.items?.[0];
     if (!video || !video.snippet) return null;
@@ -192,11 +190,11 @@ export async function getVideoMetadataForBlog(videoId: string): Promise<{
 } | null> {
   try {
     const youtube = getYouTubeClient();
-    
+
     const response = await youtube.videos.list({
       part: ['snippet', 'contentDetails'],
       id: [videoId],
-    } as any);
+    }) as { data: YouTubeVideosResponse };
 
     const video = response.data.items?.[0];
     if (!video || !video.snippet) return null;

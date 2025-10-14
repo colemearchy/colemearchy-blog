@@ -4,78 +4,85 @@ import { MASTER_SYSTEM_PROMPT } from '@/lib/ai-prompts'
 import { getVideoMetadataForBlog } from '@/lib/youtube'
 import { YouTubeTranscriptService } from '@/lib/youtube-transcript'
 import { GoogleGenerativeAI } from '@google/generative-ai'
+import { env } from '@/lib/env'
+import { withErrorHandler, logger, ApiError } from '@/lib/error-handler'
+import { generateUniqueSlugWithTimestamp } from '@/lib/utils/slug'
 
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
+const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
 
-export async function POST(request: NextRequest) {
+export const POST = withErrorHandler(async (request: NextRequest) => {
+  const { videoId, autoPublish = false } = await request.json();
+
+  if (!videoId) {
+    throw new ApiError(400, 'Video ID is required');
+  }
+
+  logger.info('Processing YouTube video', { videoId, autoPublish });
+
+  // Check if video already processed
+  const existingPost = await prisma.post.findFirst({
+    where: { youtubeVideoId: videoId }
+  });
+
+  if (existingPost) {
+    logger.warn('Video already processed', { videoId, postId: existingPost.id });
+    return NextResponse.json({
+      error: 'Video already processed',
+      postId: existingPost.id,
+      slug: existingPost.slug
+    }, { status: 400 });
+  }
+
+  // Initialize services
+  const transcriptService = new YouTubeTranscriptService();
+
+  // Fetch video metadata
+  logger.info('Fetching video metadata', { videoId });
+  const metadata = await getVideoMetadataForBlog(videoId);
+
+  if (!metadata) {
+    throw new ApiError(400, 'Failed to fetch video metadata', { videoId });
+  }
+
+  logger.info('Video metadata fetched', {
+    title: metadata.title,
+    duration: metadata.duration,
+    channelTitle: metadata.channelTitle
+  });
+
+  // Fetch transcript
+  logger.info('Fetching transcript', { videoId });
+  let transcript;
   try {
-    const { videoId, autoPublish = false } = await request.json()
-    
-    if (!videoId) {
-      return NextResponse.json({ error: 'Video ID is required' }, { status: 400 })
-    }
+    transcript = await transcriptService.fetchTranscript(videoId);
+  } catch (error) {
+    logger.error('Transcript fetch error', error, { videoId });
+    throw new ApiError(
+      400,
+      'Transcript not available for this video. Only videos with captions can be processed.',
+      { videoId }
+    );
+  }
 
-    console.log('Processing YouTube video:', videoId)
+  // Process transcript
+  logger.info('Processing transcript', { videoId });
+  const processedTranscript = transcriptService.processTranscript(transcript);
+  logger.info('Transcript processed', {
+    fullLength: processedTranscript.fullText.length,
+    chunks: processedTranscript.chunks.length,
+    duration: processedTranscript.duration
+  });
 
-    // Check if video already processed
-    const existingPost = await prisma.post.findFirst({
-      where: { youtubeVideoId: videoId }
-    })
-
-    if (existingPost) {
-      return NextResponse.json({ 
-        error: 'Video already processed',
-        postId: existingPost.id,
-        slug: existingPost.slug
-      }, { status: 400 })
-    }
-
-    // Initialize services
-    const transcriptService = new YouTubeTranscriptService()
-    
-    // Fetch video metadata
-    console.log('Fetching video metadata...')
-    const metadata = await getVideoMetadataForBlog(videoId)
-    
-    if (!metadata) {
-      return NextResponse.json({ error: 'Failed to fetch video metadata' }, { status: 400 })
-    }
-
-    console.log('Video metadata:', {
-      title: metadata.title,
-      duration: metadata.duration,
-      channelTitle: metadata.channelTitle
-    })
-
-    // Fetch transcript
-    console.log('Fetching transcript...')
-    let transcript
-    try {
-      transcript = await transcriptService.fetchTranscript(videoId)
-    } catch (error) {
-      console.error('Transcript fetch error:', error)
-      return NextResponse.json({ 
-        error: 'Transcript not available for this video. Only videos with captions can be processed.' 
-      }, { status: 400 })
-    }
-
-    // Process transcript
-    console.log('Processing transcript...')
-    const processedTranscript = transcriptService.processTranscript(transcript)
-    console.log('Transcript processed:', {
-      fullLength: processedTranscript.fullText.length,
-      chunks: processedTranscript.chunks.length,
-      duration: processedTranscript.duration
-    })
-
-    // Generate blog content using Gemini
-    console.log('Generating blog content...')
+  // Generate blog content using Gemini
+  logger.info('Generating blog content', { videoId });
     const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
     
-    // Process in chunks if needed
-    let generatedContent = ''
-    if (processedTranscript.chunks.length > 1) {
-      console.log(`Processing ${processedTranscript.chunks.length} chunks...`)
+  // Process in chunks if needed
+  let generatedContent = '';
+  if (processedTranscript.chunks.length > 1) {
+    logger.info('Processing multiple chunks', {
+      chunks: processedTranscript.chunks.length
+    });
       
       // Process each chunk
       for (let i = 0; i < processedTranscript.chunks.length; i++) {
@@ -126,8 +133,8 @@ ${keyMoments.map(moment =>
 [YouTube 영상 임베드 위치]
     `.trim()
 
-    // Generate final blog post structure
-    console.log('Creating blog post structure...')
+  // Generate final blog post structure
+  logger.info('Creating blog post structure', { videoId });
     const blogPrompt = `
 ${MASTER_SYSTEM_PROMPT}
 
@@ -167,17 +174,16 @@ OUTPUT FORMAT:
     const finalResponse = await finalResult.response
     const finalText = finalResponse.text()
     
-    let generatedData
-    try {
-      // Try to parse as JSON
-      const jsonMatch = finalText.match(/\{[\s\S]*\}/)
-      if (jsonMatch) {
-        generatedData = JSON.parse(jsonMatch[0])
-      } else {
-        throw new Error('No JSON found')
-      }
-    } catch (error) {
-      console.error('Failed to parse generated data as JSON:', error)
+  let generatedData;
+  try {
+    const jsonMatch = finalText.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      generatedData = JSON.parse(jsonMatch[0]);
+    } else {
+      throw new Error('No JSON found');
+    }
+  } catch (error) {
+    logger.warn('Failed to parse generated data as JSON, using fallback', { videoId });
       // Fallback structure
       generatedData = {
         title: `[영상 요약] ${metadata.title}`,
@@ -198,16 +204,7 @@ OUTPUT FORMAT:
     }
 
     // Generate slug
-    const baseSlug = title
-      .toLowerCase()
-      .replace(/[^a-z0-9가-힣]/g, '-')
-      .replace(/-+/g, '-')
-      .replace(/^-|-$/g, '')
-      .substring(0, 50)
-    
-    const timestamp = Date.now()
-    const randomNum = Math.floor(Math.random() * 1000)
-    const slug = `${baseSlug}-${timestamp}-${randomNum}`
+    const slug = generateUniqueSlugWithTimestamp(title, 50);
 
     // Extract tags from content
     const hashtags = metadata.description.match(/#\w+/g)?.map(tag => tag.slice(1)) || []
@@ -238,30 +235,20 @@ OUTPUT FORMAT:
       }
     })
 
-    console.log('Blog post created:', {
+  logger.info('Blog post created from YouTube video', {
+    postId: post.id,
+    slug: post.slug,
+    status: post.status,
+    videoId
+  });
+
+  return NextResponse.json({
+    success: true,
+    post: {
       id: post.id,
       slug: post.slug,
+      title: post.title,
       status: post.status
-    })
-
-    return NextResponse.json({
-      success: true,
-      post: {
-        id: post.id,
-        slug: post.slug,
-        title: post.title,
-        status: post.status
-      }
-    })
-
-  } catch (error: any) {
-    console.error('YouTube to blog error:', error)
-    return NextResponse.json(
-      { 
-        error: error.message || 'Failed to process YouTube video',
-        details: error.toString()
-      },
-      { status: 500 }
-    )
-  }
-}
+    }
+  });
+});

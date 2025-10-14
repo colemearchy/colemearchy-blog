@@ -1,23 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { env } from '@/lib/env';
 
 // Verify cron secret
 function verifyCronSecret(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization');
-  const cronSecret = process.env.CRON_SECRET;
-  
+  const cronSecret = env.CRON_SECRET;
+
   if (!cronSecret) {
     console.error('CRON_SECRET not configured');
     return false;
   }
-  
+
   return authHeader === `Bearer ${cronSecret}`;
 }
 
 // Trigger Vercel redeployment
 async function triggerRedeploy() {
-  const webhookUrl = process.env.REDEPLOY_WEBHOOK_URL;
-  
+  const webhookUrl = env.REDEPLOY_WEBHOOK_URL;
+
   if (!webhookUrl) {
     console.error('REDEPLOY_WEBHOOK_URL not configured');
     return false;
@@ -40,8 +41,8 @@ async function triggerRedeploy() {
 
 // Submit URL to IndexNow for immediate indexing
 async function submitToIndexNow(url: string) {
-  const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
-  
+  const SITE_URL = env.NEXT_PUBLIC_SITE_URL;
+
   if (!SITE_URL) {
     console.error('NEXT_PUBLIC_SITE_URL not configured');
     return false;
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest) {
     
     // Update posts to published status
     const publishedPosts = [];
-    const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL;
+    const SITE_URL = env.NEXT_PUBLIC_SITE_URL;
     
     for (const post of postsToPublish) {
       try {
