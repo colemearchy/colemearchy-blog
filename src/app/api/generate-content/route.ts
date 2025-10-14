@@ -6,6 +6,7 @@ import { env } from '@/lib/env';
 import { withErrorHandler, logger, ApiError } from '@/lib/error-handler';
 import { generateContentSchema } from '@/lib/validations';
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slug';
+import { detectLanguage } from '@/lib/translation';
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
@@ -127,7 +128,16 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       const existing = await prisma.post.findUnique({ where: { slug: s } });
       return !!existing;
     });
-    
+
+    // Auto-detect language from generated content
+    const detectedLanguage = detectLanguage(
+      (parsedContent.title || prompt) + ' ' + (parsedContent.content || responseText).substring(0, 500)
+    );
+    logger.info('Language detected for AI-generated content', {
+      language: detectedLanguage,
+      title: parsedContent.title || prompt
+    });
+
     const post = await prisma.post.create({
       data: {
         title: parsedContent.title || prompt,
@@ -140,7 +150,8 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         coverImage: parsedContent.coverImage,
         status: 'DRAFT',
         scheduledAt,
-        author: 'Colemearchy AI'
+        author: 'Colemearchy AI',
+        originalLanguage: detectedLanguage
       }
     });
 

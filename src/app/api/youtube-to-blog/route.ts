@@ -7,6 +7,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai'
 import { env } from '@/lib/env'
 import { withErrorHandler, logger, ApiError } from '@/lib/error-handler'
 import { generateUniqueSlugWithTimestamp } from '@/lib/utils/slug'
+import { detectLanguage } from '@/lib/translation'
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
 
@@ -216,6 +217,10 @@ OUTPUT FORMAT:
       ...generatedData.tags || []
     ])].slice(0, 5)
 
+    // Auto-detect language from title and content
+    const detectedLanguage = detectLanguage(title + ' ' + (generatedData.content || enhancedContent).substring(0, 500))
+    logger.info('Language detected', { language: detectedLanguage, title })
+
     // Create post
     const post = await prisma.post.create({
       data: {
@@ -231,7 +236,7 @@ OUTPUT FORMAT:
         coverImage: metadata.thumbnailUrl,
         seoTitle: generatedData.seoTitle || title,
         seoDescription: generatedData.seoDescription || generatedData.excerpt,
-        originalLanguage: 'ko'
+        originalLanguage: detectedLanguage
       }
     })
 
