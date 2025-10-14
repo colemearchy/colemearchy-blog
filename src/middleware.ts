@@ -4,13 +4,21 @@ import { defaultLocale, locales } from '@/lib/i18n'
 
 export async function middleware(request: NextRequest) {
   try {
-    const pathname = request.nextUrl.pathname
-    
+    let pathname = request.nextUrl.pathname
+
+    // Remove trailing slash (except for root) to avoid extra redirects
+    if (pathname !== '/' && pathname.endsWith('/')) {
+      return NextResponse.redirect(
+        new URL(pathname.slice(0, -1) + request.nextUrl.search, request.url),
+        { status: 308 } // Permanent redirect
+      )
+    }
+
     // Check if the pathname already has a locale
     const pathnameHasLocale = locales.some(
       (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
     )
-    
+
     // Skip locale redirect for special routes
     const skipLocaleRedirect = [
       '/api',
@@ -23,12 +31,14 @@ export async function middleware(request: NextRequest) {
       '/sitemap.xml',
       '/ads.txt'
     ].some(path => pathname.startsWith(path))
-    
+
     // Redirect to default locale if no locale is present
     if (!pathnameHasLocale && !skipLocaleRedirect) {
       const locale = request.cookies.get('locale')?.value || defaultLocale
+      // Use 307 for temporary redirect (preserves method)
       return NextResponse.redirect(
-        new URL(`/${locale}${pathname}`, request.url)
+        new URL(`/${locale}${pathname}${request.nextUrl.search}`, request.url),
+        { status: 307 }
       )
     }
     

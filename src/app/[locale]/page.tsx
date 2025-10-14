@@ -249,7 +249,7 @@ export default async function HomePage({
                   </Link>
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {recentPosts.map((post) => (
+                  {recentPosts.map((post, index) => (
                     <article key={post.id} className="group">
                       <Link href={`/${locale}/posts/${post.slug}`} className="block">
                         <div className="space-y-3">
@@ -259,11 +259,13 @@ export default async function HomePage({
                                 src={post.coverImage}
                                 alt={post.title}
                                 fill
-                                loading="lazy"
+                                priority={index === 0}
+                                loading={index === 0 ? undefined : "lazy"}
                                 className="object-cover group-hover:scale-105 transition-transform duration-300"
                                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
                                 placeholder="blur"
                                 blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxQf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                                fetchPriority={index === 0 ? "high" : undefined}
                               />
                             </div>
                           )}

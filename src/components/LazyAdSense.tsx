@@ -69,10 +69,28 @@ export function LazyAdSense({ slot, format = 'auto', style }: LazyAdSenseProps) 
   }, [isLoaded])
   
   return (
-    <div ref={adRef} className="min-h-[280px]">
+    <div
+      ref={adRef}
+      className="relative w-full overflow-hidden"
+      style={{
+        minHeight: '250px',
+        height: '250px',
+        maxHeight: '250px',
+        ...style
+      }}
+    >
+      {!isLoaded && (
+        <div className="absolute inset-0 bg-gray-50 animate-pulse rounded-lg flex items-center justify-center">
+          <span className="text-xs text-gray-400">Advertisement</span>
+        </div>
+      )}
       <ins
         className="adsbygoogle"
-        style={{ display: 'block', ...style }}
+        style={{
+          display: 'block',
+          minHeight: '250px',
+          height: '250px'
+        }}
         data-ad-client="ca-pub-9914003663926064"
         data-ad-slot={slot}
         data-ad-format={format}
