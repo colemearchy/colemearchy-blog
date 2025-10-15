@@ -86,14 +86,14 @@ export default function YouTubeManagerPage() {
 
   const createPostFromVideo = async (video: YouTubeVideo) => {
     setIsCreating(true)
-    
+
     try {
       // YouTube 설명에서 콘텐츠 추출
       const lines = video.description.split('\n').filter((line: string) => line.trim())
       const excerpt = lines.slice(0, 3).join(' ').substring(0, 200)
       const hashtags = (video.description.match(/#\w+/g) || []).map((tag: string) => tag.slice(1)).slice(0, 5)
       const content = video.description
-      
+
       // 마크다운 콘텐츠 생성
       const postContent = `## ${video.title}
 
@@ -109,15 +109,10 @@ This post is based on our YouTube video. Watch it for more details!
 
 *Originally published on YouTube: ${new Date(video.publishedAt).toLocaleDateString()}*`
 
-      // Create a unique slug from video title and ID
-      const baseSlug = video.title
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .replace(/\s+/g, '-')
-        .slice(0, 50); // Limit slug length
-      
-      const uniqueSlug = `${baseSlug}-${video.id}`;
-      
+      // Create slug using timestamp + video ID (always valid)
+      const timestamp = Date.now()
+      const uniqueSlug = `yt-${video.id}-${timestamp}`
+
       const postData = {
         title: video.title,
         slug: uniqueSlug,
@@ -128,7 +123,7 @@ This post is based on our YouTube video. Watch it for more details!
         tags: hashtags.length > 0 ? hashtags : ['youtube', 'video'],
         publishedAt: new Date().toISOString(),
       }
-      
+
       console.log('Creating post with data:', postData);
 
       const response = await fetch('/api/posts', {
@@ -138,7 +133,9 @@ This post is based on our YouTube video. Watch it for more details!
       })
 
       if (!response.ok) {
-        throw new Error('Failed to create post')
+        const errorData = await response.json()
+        console.error('Server error:', errorData)
+        throw new Error(errorData.error || 'Failed to create post')
       }
 
       // Update local state to reflect the change
