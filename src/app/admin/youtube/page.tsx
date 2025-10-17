@@ -113,8 +113,9 @@ This post is based on our YouTube video. Watch it for more details!
 *Originally published on YouTube: ${new Date(video.publishedAt).toLocaleDateString()}*`
 
       // Create slug using timestamp + video ID (always valid)
+      // Convert to lowercase to pass slug validation (schema requires lowercase only)
       const timestamp = Date.now()
-      const uniqueSlug = `yt-${video.id}-${timestamp}`
+      const uniqueSlug = `yt-${video.id.toLowerCase()}-${timestamp}`
 
       // Ensure tags array has at least 1 item (schema requirement)
       const tags = hashtags.length > 0 ? hashtags : ['youtube', 'video']
