@@ -46,11 +46,18 @@ export function handleApiError(
 
   // Zod 검증 에러
   if (error instanceof ZodError) {
+    // Format validation errors into readable messages
+    const zodError = error as ZodError;
+    const fieldErrors = zodError.issues.map(err => {
+      const field = err.path.join('.');
+      return `${field}: ${err.message}`;
+    }).join(', ');
+
     return NextResponse.json(
       {
         error: 'Validation Error',
-        message: 'Invalid request data',
-        details: isDevelopment ? (error as any).errors : undefined,
+        message: `Invalid request data: ${fieldErrors}`,
+        details: isDevelopment ? zodError.issues : undefined,
         timestamp: new Date().toISOString(),
         path,
       },

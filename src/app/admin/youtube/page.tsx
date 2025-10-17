@@ -90,7 +90,10 @@ export default function YouTubeManagerPage() {
     try {
       // YouTube 설명에서 콘텐츠 추출
       const lines = video.description.split('\n').filter((line: string) => line.trim())
-      const excerpt = lines.slice(0, 3).join(' ').substring(0, 200)
+      // Ensure excerpt is max 500 chars (schema limit)
+      const rawExcerpt = lines.slice(0, 3).join(' ')
+      const excerpt = rawExcerpt.length > 500 ? rawExcerpt.substring(0, 497) + '...' : rawExcerpt
+
       const hashtags = (video.description.match(/#\w+/g) || []).map((tag: string) => tag.slice(1)).slice(0, 5)
       const content = video.description
 
@@ -113,14 +116,22 @@ This post is based on our YouTube video. Watch it for more details!
       const timestamp = Date.now()
       const uniqueSlug = `yt-${video.id}-${timestamp}`
 
+      // Ensure tags array has at least 1 item (schema requirement)
+      const tags = hashtags.length > 0 ? hashtags : ['youtube', 'video']
+
+      // Ensure coverImage is a valid URL
+      const coverImage = video.thumbnailUrl?.startsWith('http')
+        ? video.thumbnailUrl
+        : `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`
+
       const postData = {
         title: video.title,
         slug: uniqueSlug,
         content: postContent,
-        excerpt: excerpt || video.title,
-        coverImage: video.thumbnailUrl || `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`,
+        excerpt: excerpt || video.title.substring(0, 200),
+        coverImage,
         youtubeVideoId: video.id,
-        tags: hashtags.length > 0 ? hashtags : ['youtube', 'video'],
+        tags,
         publishedAt: new Date().toISOString(),
       }
 
@@ -133,9 +144,19 @@ This post is based on our YouTube video. Watch it for more details!
       })
 
       if (!response.ok) {
-        const errorData = await response.json()
-        console.error('Server error:', errorData)
-        throw new Error(errorData.error || 'Failed to create post')
+        const errorText = await response.text()
+        console.error('Server error response:', errorText)
+        let errorMessage = 'Failed to create post'
+        try {
+          const errorData = JSON.parse(errorText)
+          console.error('Parsed error data:', errorData)
+          errorMessage = errorData.error || errorData.message || errorText
+        } catch (e) {
+          console.error('Could not parse error as JSON:', e)
+          errorMessage = errorText
+        }
+        alert(`포스트 생성 실패:\n${errorMessage}`)
+        throw new Error(errorMessage)
       }
 
       // Update local state to reflect the change
