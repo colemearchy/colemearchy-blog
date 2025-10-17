@@ -80,46 +80,49 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       },
     });
 
-    // Create translations
-    try {
-      const targetLang = sourceLang === 'ko' ? 'en' : 'ko';
-
-      const translation = await createPostTranslation({
-        title: data.title,
-        content: data.content,
-        excerpt: data.excerpt,
-        seoTitle: data.seoTitle,
-        seoDescription: data.seoDescription,
-      }, targetLang);
-
-      await tx.postTranslation.create({
-        data: {
-          postId: createdPost.id,
-          ...translation,
-        },
-      });
-
-      await tx.postTranslation.create({
-        data: {
-          postId: createdPost.id,
-          locale: sourceLang,
-          title: data.title,
-          content: data.content,
-          excerpt: data.excerpt || null,
-          seoTitle: data.seoTitle || null,
-          seoDescription: data.seoDescription || null,
-        },
-      });
-
-      logger.info('Translation created successfully', { postId: createdPost.id });
-    } catch (translationError) {
-      logger.error('Translation failed', translationError, { postId: createdPost.id });
-      // Translation failure will rollback the entire transaction
-      throw translationError;
-    }
-
     return createdPost;
   });
+
+  // Create translations OUTSIDE transaction (optional, non-blocking)
+  // This way translation failure won't prevent post creation
+  try {
+    const targetLang = sourceLang === 'ko' ? 'en' : 'ko';
+
+    const translation = await createPostTranslation({
+      title: data.title,
+      content: data.content,
+      excerpt: data.excerpt,
+      seoTitle: data.seoTitle,
+      seoDescription: data.seoDescription,
+    }, targetLang);
+
+    // Create translated version
+    await prisma.postTranslation.create({
+      data: {
+        postId: post.id,
+        ...translation,
+      },
+    });
+
+    // Create original language version
+    await prisma.postTranslation.create({
+      data: {
+        postId: post.id,
+        locale: sourceLang,
+        title: data.title,
+        content: data.content,
+        excerpt: data.excerpt || null,
+        seoTitle: data.seoTitle || null,
+        seoDescription: data.seoDescription || null,
+      },
+    });
+
+    logger.info('Translation created successfully', { postId: post.id });
+  } catch (translationError) {
+    // Translation failure is non-critical, just log it
+    logger.error('Translation failed (non-critical)', translationError, { postId: post.id });
+    // Post is still created successfully, translation can be added later
+  }
 
   // If post is published, trigger sitemap update
   if (post.status === 'PUBLISHED' && post.publishedAt) {
