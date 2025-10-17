@@ -397,8 +397,49 @@ export default async function PostPage({
                 <LazyAdSense slot="8561234146" />
               </div>
 
-              <MarkdownContent content={content} />
-              
+              {(() => {
+                // Check if content is long enough (500+ characters) to insert mid-content ad
+                const shouldInsertMidAd = content.length >= 500
+
+                if (!shouldInsertMidAd) {
+                  // Short content - render normally without mid-content ad
+                  return <MarkdownContent content={content} />
+                }
+
+                // Split content into paragraphs
+                const paragraphs = content.split('\n\n')
+
+                // Find mid-point by character count (aim for ~50% through content)
+                let charCount = 0
+                const midPoint = content.length / 2
+                let splitIndex = Math.floor(paragraphs.length / 2) // fallback to middle paragraph
+
+                for (let i = 0; i < paragraphs.length; i++) {
+                  charCount += paragraphs[i].length + 2 // +2 for \n\n
+                  if (charCount >= midPoint) {
+                    splitIndex = i
+                    break
+                  }
+                }
+
+                // Split content at mid-point
+                const firstHalf = paragraphs.slice(0, splitIndex).join('\n\n')
+                const secondHalf = paragraphs.slice(splitIndex).join('\n\n')
+
+                return (
+                  <>
+                    <MarkdownContent content={firstHalf} />
+
+                    {/* Mid-content Ad - Only for content 500+ chars */}
+                    <div className="my-8">
+                      <LazyAdSense slot="8561234146" />
+                    </div>
+
+                    <MarkdownContent content={secondHalf} />
+                  </>
+                )
+              })()}
+
               {/* Second Ad - After content, before comments */}
               <div className="my-12">
                 <LazyAdSense slot="8561234146" />
