@@ -1,17 +1,32 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { env } from '@/lib/env'
 
 // Verify cron secret
 function verifyCronSecret(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization')
-  const cronSecret = process.env.CRON_SECRET
+  const cronSecret = env.CRON_SECRET
+
+  console.log('[DEBUG] Verifying cron secret:', {
+    hasAuthHeader: !!authHeader,
+    hasCronSecret: !!cronSecret,
+    authHeaderLength: authHeader?.length,
+    cronSecretLength: cronSecret?.length
+  })
 
   if (!cronSecret) {
-    console.error('CRON_SECRET not configured')
+    console.error('❌ CRON_SECRET not configured in environment variables')
     return false
   }
 
-  return authHeader === `Bearer ${cronSecret}`
+  const expectedHeader = `Bearer ${cronSecret}`
+  const isValid = authHeader === expectedHeader
+
+  if (!isValid) {
+    console.error('❌ Invalid authorization header')
+  }
+
+  return isValid
 }
 
 // Daily quota limit (leave buffer)
