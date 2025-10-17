@@ -19,7 +19,8 @@ export function detectLanguage(text: string): 'ko' | 'en' {
 export async function translate(text: string, targetLang: 'en' | 'ko', context: 'title' | 'content' | 'excerpt' = 'content'): Promise<string> {
   try {
     const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+    // Use gemini-1.5-flash for higher quota (1500 RPD vs 50 RPD for gemini-2.0-flash-exp)
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
     
     let prompt = ''
     
@@ -90,8 +91,15 @@ Provide only the translated content without any explanation.`
     const response = await result.response
     return response.text().trim()
   } catch (error) {
-    console.error('Translation error:', error)
-    throw new Error('Failed to translate content')
+    console.error('Translation error details:', {
+      error,
+      message: error instanceof Error ? error.message : String(error),
+      stack: error instanceof Error ? error.stack : undefined,
+      targetLang,
+      context,
+      textLength: text.length
+    })
+    throw new Error(`Failed to translate content: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
 
@@ -111,27 +119,81 @@ export async function createPostTranslation(post: {
   seoTitle?: string | null
   seoDescription?: string | null
 }, targetLang: 'en' | 'ko' = 'en') {
-  const [translatedTitle, translatedContent, translatedExcerpt] = await Promise.all([
-    translate(post.title, targetLang, 'title'),
-    translate(post.content, targetLang, 'content'),
-    post.excerpt ? translate(post.excerpt, targetLang, 'excerpt') : Promise.resolve(null),
-  ])
-  
-  // For SEO fields, use translated versions or fall back to main translations
-  const translatedSeoTitle = post.seoTitle 
-    ? await translate(post.seoTitle, targetLang, 'title')
-    : translatedTitle
-    
-  const translatedSeoDescription = post.seoDescription
-    ? await translate(post.seoDescription, targetLang, 'excerpt')
-    : translatedExcerpt
-  
-  return {
-    locale: targetLang,
-    title: translatedTitle,
-    content: translatedContent,
-    excerpt: translatedExcerpt,
-    seoTitle: translatedSeoTitle,
-    seoDescription: translatedSeoDescription,
+  // Optimize: Batch all translations in a single API call instead of 5 separate calls
+  // This reduces API quota usage from 5 calls to 1 call per post
+  try {
+    const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
+    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' })
+
+    const sourceFields = {
+      title: post.title,
+      content: post.content,
+      excerpt: post.excerpt || '',
+      seoTitle: post.seoTitle || post.title,
+      seoDescription: post.seoDescription || post.excerpt || ''
+    }
+
+    const prompt = targetLang === 'en'
+      ? `You are a professional translator specializing in tech blogs. Translate the following Korean blog post fields to English.
+
+Requirements:
+- Preserve all markdown formatting in content
+- Keep technical terms accurate
+- Maintain the author's tone and style
+- Make it natural for English readers
+- Keep any code blocks unchanged
+- Translate image alt texts if present
+
+Translate these fields and return ONLY a JSON object with the same structure:
+
+${JSON.stringify(sourceFields, null, 2)}
+
+Important: Return ONLY the JSON object with translated values. No explanation or markdown code blocks.`
+      : `You are a professional translator specializing in tech blogs. Translate the following English blog post fields to Korean.
+
+Requirements:
+- Preserve all markdown formatting in content
+- Keep technical terms accurate
+- Maintain the author's tone and style
+- Make it natural for Korean readers
+- Keep any code blocks unchanged
+- Translate image alt texts if present
+- Use appropriate honorifics and formal language
+
+Translate these fields and return ONLY a JSON object with the same structure:
+
+${JSON.stringify(sourceFields, null, 2)}
+
+Important: Return ONLY the JSON object with translated values. No explanation or markdown code blocks.`
+
+    const result = await model.generateContent(prompt)
+    const response = await result.response
+    let responseText = response.text().trim()
+
+    // Remove markdown code block wrapper if present
+    if (responseText.startsWith('```json')) {
+      responseText = responseText.replace(/^```json\s*/, '').replace(/\s*```$/, '')
+    } else if (responseText.startsWith('```')) {
+      responseText = responseText.replace(/^```\s*/, '').replace(/\s*```$/, '')
+    }
+
+    const translated = JSON.parse(responseText)
+
+    return {
+      locale: targetLang,
+      title: translated.title,
+      content: translated.content,
+      excerpt: translated.excerpt || null,
+      seoTitle: translated.seoTitle,
+      seoDescription: translated.seoDescription,
+    }
+  } catch (error) {
+    console.error('Batch translation error details:', {
+      error,
+      message: error instanceof Error ? error.message : String(error),
+      targetLang,
+      postTitle: post.title
+    })
+    throw new Error(`Failed to translate post: ${error instanceof Error ? error.message : String(error)}`)
   }
 }
