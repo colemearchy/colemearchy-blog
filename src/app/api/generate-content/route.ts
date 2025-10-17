@@ -104,11 +104,33 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     });
 
     const responseText = result.response.text();
-    
+
     // Step 5: Parse the generated content
     let parsedContent;
     try {
-      parsedContent = JSON.parse(responseText);
+      // Remove markdown code block wrapper if present
+      let jsonText = responseText.trim();
+      if (jsonText.startsWith('```json')) {
+        jsonText = jsonText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+
+      parsedContent = JSON.parse(jsonText);
+
+      // IMPORTANT: If parsed content already has a 'content' field,
+      // ensure we're using ONLY that content, not the entire JSON
+      if (parsedContent.content && typeof parsedContent.content === 'string') {
+        // Content is already extracted correctly
+      } else if (typeof parsedContent === 'object' && !parsedContent.content) {
+        // JSON doesn't have a content field, treat entire text as content
+        parsedContent = {
+          title: parsedContent.title || prompt.substring(0, 60),
+          content: responseText,
+          excerpt: parsedContent.excerpt || responseText.substring(0, 160),
+          tags: parsedContent.tags || keywords || []
+        };
+      }
     } catch {
       // If not JSON, wrap in content object
       parsedContent = {

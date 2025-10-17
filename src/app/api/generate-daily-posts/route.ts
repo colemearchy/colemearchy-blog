@@ -169,13 +169,36 @@ async function generateContentWithRAG(topic: string): Promise<any> {
     });
 
     const responseText = result.response.text();
-    
+
     // Parse the generated content
     try {
-      return JSON.parse(responseText);
+      // Remove markdown code block wrapper if present
+      let jsonText = responseText.trim();
+      if (jsonText.startsWith('```json')) {
+        jsonText = jsonText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+      } else if (jsonText.startsWith('```')) {
+        jsonText = jsonText.replace(/^```\s*/, '').replace(/\s*```$/, '');
+      }
+
+      const parsedContent = JSON.parse(jsonText);
+
+      // IMPORTANT: Ensure we're using ONLY the content field, not the entire JSON
+      if (parsedContent.content && typeof parsedContent.content === 'string') {
+        return parsedContent;
+      } else if (typeof parsedContent === 'object' && !parsedContent.content) {
+        // JSON doesn't have a content field, treat entire text as content
+        return {
+          title: parsedContent.title || topic,
+          content: responseText,
+          excerpt: parsedContent.excerpt || responseText.substring(0, 160),
+          tags: parsedContent.tags || []
+        };
+      }
+
+      return parsedContent;
     } catch {
       // If not JSON, wrap in content object
-      return { 
+      return {
         title: topic,
         content: responseText,
         excerpt: responseText.substring(0, 160),
