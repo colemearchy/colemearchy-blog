@@ -188,7 +188,9 @@ This post is based on our YouTube video. Watch it for more details!
 *Originally published on YouTube: ${new Date(video.publishedAt).toLocaleDateString()}*`
 
     const timestamp = Date.now()
-    const uniqueSlug = `yt-${video.id.toLowerCase()}-${timestamp}`
+    // Convert to lowercase and replace underscores with hyphens for valid slug
+    const sanitizedVideoId = video.id.toLowerCase().replace(/_/g, '-')
+    const uniqueSlug = `yt-${sanitizedVideoId}-${timestamp}`
 
     const tags = hashtags.length > 0 ? hashtags : ['youtube', 'video']
 
@@ -207,6 +209,19 @@ This post is based on our YouTube video. Watch it for more details!
       publishedAt: new Date().toISOString(),
     }
 
+    // Debug logging
+    console.log('=== POST DATA DEBUG ===')
+    console.log('Video:', { id: video.id, title: video.title })
+    console.log('Post Data:', postData)
+    console.log('Validation:', {
+      titleLength: postData.title.length,
+      slugValid: /^[a-z0-9-]+$/.test(postData.slug),
+      excerptLength: postData.excerpt?.length || 0,
+      tagsCount: postData.tags.length,
+      coverImageIsUrl: postData.coverImage.startsWith('http'),
+      youtubeIdValid: /^[a-zA-Z0-9_-]{11}$/.test(postData.youtubeVideoId),
+    })
+
     const response = await fetch('/api/posts', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -215,9 +230,14 @@ This post is based on our YouTube video. Watch it for more details!
 
     if (!response.ok) {
       const errorText = await response.text()
+      console.error('=== ERROR RESPONSE ===')
+      console.error('Status:', response.status)
+      console.error('Response:', errorText)
+
       let errorMessage = 'Failed to create post'
       try {
         const errorData = JSON.parse(errorText)
+        console.error('Parsed error:', errorData)
         errorMessage = errorData.error || errorData.message || errorText
       } catch (e) {
         errorMessage = errorText
