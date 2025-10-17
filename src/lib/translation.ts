@@ -19,8 +19,8 @@ export function detectLanguage(text: string): 'ko' | 'en' {
 export async function translate(text: string, targetLang: 'en' | 'ko', context: 'title' | 'content' | 'excerpt' = 'content'): Promise<string> {
   try {
     const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
-    // Use gemini-1.5-pro for higher quota and stability
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' })
+    // Use gemini-2.5-pro for translations (latest and most capable)
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' })
     
     let prompt = ''
     
@@ -123,7 +123,7 @@ export async function createPostTranslation(post: {
   // This reduces API quota usage from 5 calls to 1 call per post
   try {
     const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
-    const model = genAI.getGenerativeModel({ model: 'gemini-1.5-pro' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-pro' })
 
     const sourceFields = {
       title: post.title,
