@@ -37,10 +37,15 @@ export default function YouTubeManagerPage() {
   const [selectedVideo, setSelectedVideo] = useState<YouTubeVideo | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const [nextPageToken, setNextPageToken] = useState<string | undefined>()
-  
+
   // Filters
   const [filterType, setFilterType] = useState<FilterType>('all')
   const [postedFilter, setPostedFilter] = useState<PostedFilter>('all')
+
+  // Bulk selection
+  const [selectedVideos, setSelectedVideos] = useState<Set<string>>(new Set())
+  const [isBulkCreating, setIsBulkCreating] = useState(false)
+  const [bulkProgress, setBulkProgress] = useState({ current: 0, total: 0 })
 
   const fetchVideos = async (pageToken?: string) => {
     if (!pageToken) {
@@ -84,21 +89,91 @@ export default function YouTubeManagerPage() {
     }
   }
 
-  const createPostFromVideo = async (video: YouTubeVideo) => {
-    setIsCreating(true)
+  const toggleVideoSelection = (videoId: string) => {
+    setSelectedVideos(prev => {
+      const newSet = new Set(prev)
+      if (newSet.has(videoId)) {
+        newSet.delete(videoId)
+      } else {
+        newSet.add(videoId)
+      }
+      return newSet
+    })
+  }
 
-    try {
-      // YouTube 설명에서 콘텐츠 추출
-      const lines = video.description.split('\n').filter((line: string) => line.trim())
-      // Ensure excerpt is max 500 chars (schema limit)
-      const rawExcerpt = lines.slice(0, 3).join(' ')
-      const excerpt = rawExcerpt.length > 500 ? rawExcerpt.substring(0, 497) + '...' : rawExcerpt
+  const selectAll = () => {
+    const notPostedVideos = filteredVideos.filter(v => !v.isPosted)
+    setSelectedVideos(new Set(notPostedVideos.map(v => v.id)))
+  }
 
-      const hashtags = (video.description.match(/#\w+/g) || []).map((tag: string) => tag.slice(1)).slice(0, 5)
-      const content = video.description
+  const clearSelection = () => {
+    setSelectedVideos(new Set())
+  }
 
-      // 마크다운 콘텐츠 생성
-      const postContent = `## ${video.title}
+  const createBulkPosts = async () => {
+    const videosToCreate = videos.filter(v => selectedVideos.has(v.id))
+    if (videosToCreate.length === 0) return
+
+    setIsBulkCreating(true)
+    setBulkProgress({ current: 0, total: videosToCreate.length })
+
+    const results = { success: 0, failed: 0, errors: [] as string[] }
+
+    for (let i = 0; i < videosToCreate.length; i++) {
+      const video = videosToCreate[i]
+      setBulkProgress({ current: i + 1, total: videosToCreate.length })
+
+      try {
+        await createPostFromVideoInternal(video)
+        results.success++
+
+        // Update UI immediately
+        setVideos(prev =>
+          prev.map(v => v.id === video.id ? { ...v, isPosted: true } : v)
+        )
+
+        // Remove from selection
+        setSelectedVideos(prev => {
+          const newSet = new Set(prev)
+          newSet.delete(video.id)
+          return newSet
+        })
+      } catch (error) {
+        results.failed++
+        results.errors.push(`${video.title}: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+
+      // Small delay between requests to avoid rate limiting
+      if (i < videosToCreate.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 1000))
+      }
+    }
+
+    setIsBulkCreating(false)
+    setBulkProgress({ current: 0, total: 0 })
+
+    // Show results
+    let message = `완료!\n성공: ${results.success}개\n실패: ${results.failed}개`
+    if (results.errors.length > 0) {
+      message += `\n\n실패한 항목:\n${results.errors.slice(0, 5).join('\n')}`
+      if (results.errors.length > 5) {
+        message += `\n...외 ${results.errors.length - 5}개`
+      }
+    }
+    alert(message)
+    router.refresh()
+  }
+
+  const createPostFromVideoInternal = async (video: YouTubeVideo) => {
+    // YouTube 설명에서 콘텐츠 추출
+    const lines = video.description.split('\n').filter((line: string) => line.trim())
+    const rawExcerpt = lines.slice(0, 3).join(' ')
+    const excerpt = rawExcerpt.length > 500 ? rawExcerpt.substring(0, 497) + '...' : rawExcerpt
+
+    const hashtags = (video.description.match(/#\w+/g) || []).map((tag: string) => tag.slice(1)).slice(0, 5)
+    const content = video.description
+
+    const postContent = `## ${video.title}
 
 ${content}
 
@@ -112,59 +187,55 @@ This post is based on our YouTube video. Watch it for more details!
 
 *Originally published on YouTube: ${new Date(video.publishedAt).toLocaleDateString()}*`
 
-      // Create slug using timestamp + video ID (always valid)
-      // Convert to lowercase to pass slug validation (schema requires lowercase only)
-      const timestamp = Date.now()
-      const uniqueSlug = `yt-${video.id.toLowerCase()}-${timestamp}`
+    const timestamp = Date.now()
+    const uniqueSlug = `yt-${video.id.toLowerCase()}-${timestamp}`
 
-      // Ensure tags array has at least 1 item (schema requirement)
-      const tags = hashtags.length > 0 ? hashtags : ['youtube', 'video']
+    const tags = hashtags.length > 0 ? hashtags : ['youtube', 'video']
 
-      // Ensure coverImage is a valid URL
-      const coverImage = video.thumbnailUrl?.startsWith('http')
-        ? video.thumbnailUrl
-        : `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`
+    const coverImage = video.thumbnailUrl?.startsWith('http')
+      ? video.thumbnailUrl
+      : `https://img.youtube.com/vi/${video.id}/maxresdefault.jpg`
 
-      const postData = {
-        title: video.title,
-        slug: uniqueSlug,
-        content: postContent,
-        excerpt: excerpt || video.title.substring(0, 200),
-        coverImage,
-        youtubeVideoId: video.id,
-        tags,
-        publishedAt: new Date().toISOString(),
+    const postData = {
+      title: video.title,
+      slug: uniqueSlug,
+      content: postContent,
+      excerpt: excerpt || video.title.substring(0, 200),
+      coverImage,
+      youtubeVideoId: video.id,
+      tags,
+      publishedAt: new Date().toISOString(),
+    }
+
+    const response = await fetch('/api/posts', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(postData),
+    })
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      let errorMessage = 'Failed to create post'
+      try {
+        const errorData = JSON.parse(errorText)
+        errorMessage = errorData.error || errorData.message || errorText
+      } catch (e) {
+        errorMessage = errorText
       }
+      throw new Error(errorMessage)
+    }
+  }
 
-      console.log('Creating post with data:', postData);
+  const createPostFromVideo = async (video: YouTubeVideo) => {
+    setIsCreating(true)
 
-      const response = await fetch('/api/posts', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(postData),
-      })
+    try {
+      await createPostFromVideoInternal(video)
 
-      if (!response.ok) {
-        const errorText = await response.text()
-        console.error('Server error response:', errorText)
-        let errorMessage = 'Failed to create post'
-        try {
-          const errorData = JSON.parse(errorText)
-          console.error('Parsed error data:', errorData)
-          errorMessage = errorData.error || errorData.message || errorText
-        } catch (e) {
-          console.error('Could not parse error as JSON:', e)
-          errorMessage = errorText
-        }
-        alert(`포스트 생성 실패:\n${errorMessage}`)
-        throw new Error(errorMessage)
-      }
-
-      // Update local state to reflect the change
-      setVideos(prevVideos => 
-        prevVideos.map(v => 
-          v.id === video.id 
-            ? { ...v, isPosted: true } 
+      setVideos(prevVideos =>
+        prevVideos.map(v =>
+          v.id === video.id
+            ? { ...v, isPosted: true }
             : v
         )
       )
@@ -172,7 +243,7 @@ This post is based on our YouTube video. Watch it for more details!
       router.refresh()
     } catch (err) {
       console.error('Error creating post:', err)
-      alert('포스트 생성 실패')
+      alert(`포스트 생성 실패:\n${err instanceof Error ? err.message : 'Unknown error'}`)
     } finally {
       setIsCreating(false)
       setSelectedVideo(null)
@@ -250,6 +321,46 @@ This post is based on our YouTube video. Watch it for more details!
         </div>
       )}
 
+      {/* Bulk Actions */}
+      {filteredVideos.filter(v => !v.isPosted).length > 0 && (
+        <div className="bg-white p-4 rounded-lg shadow mb-6">
+          <div className="flex items-center justify-between flex-wrap gap-4">
+            <div className="flex items-center gap-4">
+              <button
+                onClick={selectAll}
+                className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-medium"
+              >
+                전체 선택 ({filteredVideos.filter(v => !v.isPosted).length}개)
+              </button>
+              {selectedVideos.size > 0 && (
+                <button
+                  onClick={clearSelection}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300 text-sm font-medium"
+                >
+                  선택 해제
+                </button>
+              )}
+              <span className="text-sm text-gray-600">
+                {selectedVideos.size}개 선택됨
+              </span>
+            </div>
+
+            {selectedVideos.size > 0 && (
+              <button
+                onClick={createBulkPosts}
+                disabled={isBulkCreating}
+                className="px-6 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 font-medium"
+              >
+                {isBulkCreating
+                  ? `생성 중... (${bulkProgress.current}/${bulkProgress.total})`
+                  : `선택한 항목 포스트 생성 (${selectedVideos.size}개)`
+                }
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+
       {loading && !videos.length ? (
         <div className="text-center py-12">
           <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-gray-900"></div>
@@ -258,8 +369,20 @@ This post is based on our YouTube video. Watch it for more details!
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredVideos.map((video) => (
-              <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden">
+              <div key={video.id} className="bg-white rounded-lg shadow-md overflow-hidden relative">
                 <div className="relative aspect-video bg-gray-100">
+                  {/* Checkbox for bulk selection */}
+                  {!video.isPosted && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <input
+                        type="checkbox"
+                        checked={selectedVideos.has(video.id)}
+                        onChange={() => toggleVideoSelection(video.id)}
+                        className="w-5 h-5 cursor-pointer accent-green-600 bg-white rounded border-2 border-gray-300"
+                      />
+                    </div>
+                  )}
+
                   {/* 기본 YouTube 썸네일 URL 사용 */}
                   <img
                     src={`https://img.youtube.com/vi/${video.id}/hqdefault.jpg`}
@@ -284,7 +407,7 @@ This post is based on our YouTube video. Watch it for more details!
                     </div>
                   )}
                   {video.isPosted && (
-                    <div className="absolute top-2 left-2 bg-green-600 bg-opacity-90 text-white px-2 py-1 rounded text-xs font-semibold">
+                    <div className="absolute bottom-2 left-2 bg-green-600 bg-opacity-90 text-white px-2 py-1 rounded text-xs font-semibold">
                       포스트 작성됨
                     </div>
                   )}
