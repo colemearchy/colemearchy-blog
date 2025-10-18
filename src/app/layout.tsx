@@ -3,6 +3,7 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import AdBlockerNotice from '@/components/AdBlockerNotice';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -130,6 +131,7 @@ export default function RootLayout({
         <GoogleAnalytics />
         <ServiceWorkerRegistration />
         {children}
+        <AdBlockerNotice />
       </body>
     </html>
   );
