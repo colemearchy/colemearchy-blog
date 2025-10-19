@@ -11,28 +11,44 @@
 
 export function detectAdBlocker(): Promise<boolean> {
   return new Promise((resolve) => {
-    // Method 1: Check if AdSense script is blocked
+    // Method 1: Try loading AdSense script
+    const adsenseTest = document.createElement('script')
+    adsenseTest.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
+    adsenseTest.async = true
+
+    let scriptLoaded = false
+    adsenseTest.onload = () => {
+      scriptLoaded = true
+    }
+
+    document.head.appendChild(adsenseTest)
+
+    // Method 2: Bait element with ad-like classes (more aggressive)
     const testAd = document.createElement('div')
     testAd.innerHTML = '&nbsp;'
-    testAd.className = 'adsbox ad-placement adsbygoogle'
-    testAd.style.cssText = 'width: 1px !important; height: 1px !important; position: absolute !important; left: -9999px !important;'
+    testAd.className = 'ad ads advertisement banner adsbox ad-placement adsbygoogle'
+    testAd.style.cssText = 'width: 300px !important; height: 250px !important; position: absolute !important; left: -9999px !important; top: -9999px !important;'
+    testAd.setAttribute('data-ad-slot', '1234567890')
 
     document.body.appendChild(testAd)
 
-    // Wait a bit for ad blockers to process
+    // Wait for ad blockers to process
     setTimeout(() => {
-      // Check if element was hidden or removed by ad blocker
+      // Check multiple indicators
       const isBlocked =
+        !scriptLoaded ||
         testAd.offsetHeight === 0 ||
         testAd.offsetWidth === 0 ||
         window.getComputedStyle(testAd).display === 'none' ||
-        window.getComputedStyle(testAd).visibility === 'hidden'
+        window.getComputedStyle(testAd).visibility === 'hidden' ||
+        window.getComputedStyle(testAd).opacity === '0'
 
       // Clean up
       document.body.removeChild(testAd)
+      document.head.removeChild(adsenseTest)
 
       resolve(isBlocked)
-    }, 100)
+    }, 150)
   })
 }
 
