@@ -147,12 +147,79 @@ export class YouTubeTranscriptService {
   generateBlogPrompt(
     transcript: ProcessedTranscript,
     metadata: YouTubeVideoMetadata,
-    chunkIndex?: number
+    chunkIndex?: number,
+    isShort: boolean = false
   ): string {
-    const chunk = chunkIndex !== undefined 
-      ? transcript.chunks[chunkIndex] 
+    const chunk = chunkIndex !== undefined
+      ? transcript.chunks[chunkIndex]
       : transcript.fullText;
 
+    const durationMinutes = Math.floor(transcript.duration / 60);
+    const durationSeconds = Math.floor(transcript.duration % 60);
+    const durationText = durationMinutes > 0
+      ? `${durationMinutes}분 ${durationSeconds}초`
+      : `${durationSeconds}초`;
+
+    // Shorts용 특별 프롬프트
+    if (isShort) {
+      return `
+You are Colemearchy, transforming a YouTube Shorts video into a comprehensive blog post.
+
+VIDEO INFORMATION:
+- Title: ${metadata.title}
+- Channel: ${metadata.channelTitle}
+- Published: ${metadata.publishedAt}
+- Duration: ${durationText} (Shorts 영상)
+- Type: 짧은 핵심 메시지 콘텐츠
+
+SHORTS TRANSCRIPT:
+${chunk}
+
+SPECIAL TASK FOR SHORTS:
+이 쇼츠 영상의 핵심 메시지를 바탕으로 **1000자 이상의 완전한 블로그 포스트**를 작성하세요.
+
+쇼츠는 짧지만, 블로그 독자들에게는 더 깊이 있는 내용을 제공해야 합니다:
+
+1. **도입부 (150-200자)**:
+   - 이 주제가 왜 중요한지 설명
+   - 독자의 호기심을 자극하는 질문이나 사실 제시
+   - 쇼츠 영상의 핵심 메시지 티저
+
+2. **핵심 내용 확장 (600-800자)**:
+   - 쇼츠에서 말한 핵심 포인트를 상세히 설명
+   - 배경 지식과 맥락 추가 (예: "왜 이것이 중요한가?", "어떤 원리인가?")
+   - 구체적인 예시나 사례 추가
+   - 실전 적용 방법 (How-to)
+   - 주의사항이나 팁
+
+3. **추가 인사이트 (200-300자)**:
+   - 쇼츠에서 미처 다루지 못한 관련 정보
+   - Colemearchy 스타일의 개인적 견해나 경험
+   - 바이오해킹/최적화 관점의 추가 조언
+
+4. **마무리 및 실행 계획 (100-150자)**:
+   - 핵심 요약 (3-5 bullet points)
+   - 독자가 바로 실천할 수 있는 액션 아이템
+   - 격려 메시지
+
+WRITING STYLE:
+- Colemearchy의 날것의 솔직함과 반항적 톤 유지
+- 기술적 정확성 + 개인적 경험 결합
+- 이모지 사용 자제 (필요시만 1-2개)
+- 한국어로 작성
+- 전문 용어는 설명과 함께 사용
+
+IMPORTANT:
+- 쇼츠가 짧다고 블로그도 짧아서는 안 됩니다
+- 스크립트에 없는 내용도 주제와 관련되면 추가 (배경 지식, 원리, 사례 등)
+- 최소 1000자 이상의 가치 있는 콘텐츠 생성
+- "영상을 보세요"같은 말 대신 실질적인 정보 제공
+
+Generate a comprehensive, well-structured blog post in Korean.
+`;
+    }
+
+    // 일반 영상용 프롬프트
     return `
 You are Colemearchy, writing a blog post based on a YouTube video.
 
@@ -160,7 +227,7 @@ VIDEO INFORMATION:
 - Title: ${metadata.title}
 - Channel: ${metadata.channelTitle}
 - Published: ${metadata.publishedAt}
-- Duration: ${Math.floor(transcript.duration / 60)} minutes
+- Duration: ${durationText}
 
 TRANSCRIPT TO CONVERT:
 ${chunk}
