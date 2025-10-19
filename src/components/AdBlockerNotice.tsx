@@ -1,15 +1,20 @@
 'use client'
 
 import { useEffect, useState } from 'react'
+import { usePathname } from 'next/navigation'
 import { detectAdBlocker, hasSeenAdBlockerNotice, markAdBlockerNoticeSeen } from '@/lib/detectAdBlocker'
 
 export default function AdBlockerNotice() {
+  const pathname = usePathname()
   const [showNotice, setShowNotice] = useState(false)
   const [isClosing, setIsClosing] = useState(false)
 
   useEffect(() => {
     // Only run on client side
     if (typeof window === 'undefined') return
+
+    // Don't show on admin pages
+    if (pathname?.startsWith('/admin')) return
 
     // Don't show if user has already seen the notice
     if (hasSeenAdBlockerNotice()) return
@@ -24,7 +29,7 @@ export default function AdBlockerNotice() {
     }, 2000) // Wait 2 seconds after page load
 
     return () => clearTimeout(timer)
-  }, [])
+  }, [pathname])
 
   const handleClose = () => {
     setIsClosing(true)
