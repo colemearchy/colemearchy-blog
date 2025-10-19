@@ -172,3 +172,160 @@ curl -X POST -H "Authorization: Bearer YOUR_CRON_SECRET" https://colemearchy.com
 3. **본문 구조화**: SEO에 최적화된 구조로 콘텐츠 작성
 4. **내부 링크**: 관련 포스트와 자연스럽게 연결
 5. **메타데이터**: SEO title, description, excerpt 최적화
+## 9. TDD (Test-Driven Development) 필수 요구사항
+
+> **📌 USER MANDATE**: "앞으로 새로운거 개발할 때마다 항상 TDD에 기반해서 테스트를 의무화해줘"
+
+### 9.1. TDD 원칙 (Red-Green-Refactor)
+
+**모든 신규 기능은 TDD 사이클을 따라야 합니다:**
+
+1. **🔴 Red**: 실패하는 테스트 작성
+2. **🟢 Green**: 테스트를 통과하는 최소한의 코드 작성
+3. **🔵 Refactor**: 테스트를 유지하면서 코드 개선
+
+### 9.2. 테스팅 피라미드
+
+**권장 테스트 비율 (Gemini 자문 기반):**
+
+```
+Unit Tests (50%)
+├─ 순수 함수, 유틸리티, 데이터 변환 로직
+├─ 목표 Coverage: 80-90%
+└─ 예: 텍스트 정제, 길이 계산, 포맷 변환
+
+Integration Tests (40%)
+├─ API 라우트 (YouTube API, Gemini API 호출)
+├─ DB 상호작용 (Prisma 쿼리)
+├─ 핵심 비즈니스 로직 End-to-End
+└─ 예: YouTube→Blog 전체 플로우
+
+E2E Tests (10%)
+├─ 핵심 사용자 여정만 선택적으로 테스트
+├─ 예: YouTube URL 제출 → 블로그 포스트 생성 → 발행
+└─ 주의: 느리고 깨지기 쉬우므로 최소화
+```
+
+### 9.3. 기술 스택
+
+**Testing Framework**: Vitest
+- Next.js/Vite 생태계 호환
+- TypeScript 친화적
+- 빠른 실행 속도
+- Jest 호환 API
+
+**Mocking**:
+- `msw` (Mock Service Worker): YouTube/Gemini API 네트워크 레벨 mocking
+- `vi.mock`, `vi.fn`: Vitest 내장 mocking
+- `prisma-mock` (예정): In-memory Prisma 클라이언트
+
+**CI/CD**:
+- GitHub Actions에서 모든 PR에 대해 자동 테스트 실행
+- Coverage 체크 (최소 70% 목표)
+- Linting/Formatting 자동 검증
+
+### 9.4. 테스트 작성 규칙
+
+#### 필수 테스트가 필요한 경우:
+✅ 새로운 기능 개발
+✅ 핵심 비즈니스 로직 (AI 변환, 데이터 처리)
+✅ API 라우트 (YouTube, Gemini, DB)
+✅ 유틸리티 함수
+✅ 버그 수정 (재현 테스트 먼저!)
+
+#### 테스트 생략 가능한 경우:
+⚠️ UI 미세 조정 (색상, 간격 등)
+⚠️ 일회성 스크립트 (단, 재사용 가능하면 테스트 권장)
+⚠️ 프로토타입 (프로덕션 전환 시 테스트 추가)
+
+### 9.5. 실행 명령어
+
+```bash
+# 개발 모드 (watch)
+pnpm test
+
+# UI 모드 (브라우저에서 테스트 결과 확인)
+pnpm test:ui
+
+# 한 번 실행 (CI용)
+pnpm test:run
+
+# Coverage 리포트
+pnpm test:coverage
+```
+
+### 9.6. Quality Gates
+
+**PR 머지 전 필수 조건:**
+- ✅ 모든 테스트 통과
+- ✅ 최소 70% code coverage (핵심 모듈은 90%+)
+- ✅ 신규 기능은 unit + integration 테스트 필수
+- ✅ Linting/TypeScript 에러 0개
+
+**예외 허용 조건:**
+- 매우 작은 변경사항 (주석, 설명 수정)
+- 긴급 핫픽스 (단, 배포 후 즉시 테스트 추가)
+
+### 9.7. AI API 테스팅 전략
+
+**문제**: Gemini API는 비결정적 (매번 다른 결과)
+**해결책**:
+1. **형태 검증**: JSON 구조, 필드 타입, 길이 확인
+2. **Fuzzy Matching**: 정확한 텍스트가 아닌 패턴 매칭
+3. **MSW Mocking**: 개발/테스트 시 고정된 응답 반환
+4. **Golden Outputs**: 실제 API 응답 스냅샷 저장 후 회귀 테스트
+
+### 9.8. 예시: Shorts Regeneration 테스트
+
+```typescript
+// __tests__/regenerate-shorts.test.ts
+import { describe, it, expect, vi } from 'vitest'
+import { regenerateShorts } from '@/scripts/regenerate-shorts-daily'
+import { setupServer } from 'msw/node'
+import { http, HttpResponse } from 'msw'
+
+// MSW 서버 설정 (YouTube/Gemini API mocking)
+const server = setupServer(
+  http.get('https://youtube.googleapis.com/youtube/v3/videos', () => {
+    return HttpResponse.json({
+      items: [{ id: 'test-video-id', snippet: { title: 'Test' } }]
+    })
+  }),
+  http.post('https://generativelanguage.googleapis.com/*', () => {
+    return HttpResponse.json({
+      candidates: [{ content: { parts: [{ text: 'Generated content' }] } }]
+    })
+  })
+)
+
+describe('Shorts Regeneration', () => {
+  it('should fetch eligible videos from database', async () => {
+    // Test implementation...
+  })
+
+  it('should skip video if YouTube API fails', async () => {
+    // Test with mocked API failure...
+  })
+
+  it('should generate content with correct format', async () => {
+    // Validate output structure...
+  })
+})
+```
+
+### 9.9. 참고 자료
+
+**학습한 TDD 원칙:**
+- CircleCI TDD Guide: Red-Green-Refactor, Arrange-Act-Assert
+- Wikipedia TDD: Kent Beck 방법론, BDD와의 차이
+- 실무 적용: 속도 vs 품질 균형, 점진적 도입
+
+**Gemini 자문 문서**: `docs/TDD-STRATEGY.md`
+- 3-Phase 로드맵 (Week 1-3)
+- Pragmatic Tradeoffs
+- 구체적인 구현 예시
+
+---
+
+**마지막 업데이트**: 2025-10-19  
+**TDD 의무화 시작일**: 2025-10-19 (Gemini 자문 기반)

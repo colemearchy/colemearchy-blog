@@ -16,7 +16,9 @@ import dotenv from 'dotenv'
 dotenv.config()
 
 const prisma = new PrismaClient()
-const API_BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.colemearchy.com'
+const API_BASE_URL = process.env.TEST_MODE
+  ? 'http://localhost:3000'
+  : (process.env.NEXT_PUBLIC_SITE_URL || 'https://www.colemearchy.com')
 
 // Configuration
 const CONFIG = {
