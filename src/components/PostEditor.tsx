@@ -3,7 +3,6 @@
 import dynamic from 'next/dynamic'
 import { useState, Fragment } from 'react'
 import '@uiw/react-md-editor/markdown-editor.css'
-import '@uiw/react-markdown-preview/markdown.css'
 import { extractYouTubeVideoId } from '@/components/YouTubeEmbed'
 
 const MDEditor = dynamic(
