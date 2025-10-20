@@ -20,3 +20,6 @@ vitest.setup.mts
 
 # Scripts (not needed for build)
 scripts/
+
+# Coverage reports
+coverage/
