@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
+import { trackEvent } from '@/components/GoogleAnalytics'
+import { uploadWithRetry, validateImageFile } from '@/lib/upload-utils'
 
 interface Post {
   id: string
@@ -27,10 +29,33 @@ interface NeedsThumbnailData {
   }
 }
 
+// 이미지 미리보기 컴포넌트
+function ImagePreview({ image, alt, className }: { image: File; alt: string; className: string }) {
+  const [imageUrl, setImageUrl] = useState<string>('')
+
+  useEffect(() => {
+    const url = URL.createObjectURL(image)
+    setImageUrl(url)
+
+    return () => {
+      URL.revokeObjectURL(url)
+    }
+  }, [image])
+
+  return <img src={imageUrl} alt={alt} className={className} />
+}
+
 export default function NeedsThumbnailPosts() {
   const [data, setData] = useState<NeedsThumbnailData | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
+
+  // 일괄 업로드 상태
+  const [images, setImages] = useState<File[]>([])
+  const [isUploading, setIsUploading] = useState(false)
+  const [uploadProgress, setUploadProgress] = useState(0)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     fetchPosts()
@@ -40,11 +65,11 @@ export default function NeedsThumbnailPosts() {
     try {
       setLoading(true)
       const response = await fetch('/api/admin/posts/needs-thumbnail')
-      
+
       if (!response.ok) {
         throw new Error('Failed to fetch posts')
       }
-      
+
       const data = await response.json()
       setData(data)
     } catch (err) {
@@ -52,6 +77,131 @@ export default function NeedsThumbnailPosts() {
     } finally {
       setLoading(false)
     }
+  }
+
+  // 제목 복사 기능
+  const copyTitle = async (title: string, postId: string) => {
+    try {
+      await navigator.clipboard.writeText(title)
+      setCopiedId(postId)
+      setTimeout(() => setCopiedId(null), 2000)
+      trackEvent('copy_post_title', 'admin', title)
+    } catch (err) {
+      alert('복사 실패')
+    }
+  }
+
+  // 파일 선택 처리
+  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = Array.from(e.target.files || [])
+    processFiles(files)
+  }
+
+  // 파일 처리 및 정렬
+  const processFiles = (files: File[]) => {
+    const validFiles: File[] = []
+    const errors: string[] = []
+
+    files.forEach(file => {
+      const validation = validateImageFile(file)
+      if (validation.valid) {
+        validFiles.push(file)
+      } else {
+        errors.push(`${file.name}: ${validation.error}`)
+      }
+    })
+
+    if (errors.length > 0) {
+      alert(errors.join('\n'))
+    }
+
+    // 파일명에서 숫자 추출하여 정렬
+    const sortedFiles = validFiles.sort((a, b) => {
+      const numA = parseInt(a.name.match(/\d+/)?.[0] || '0')
+      const numB = parseInt(b.name.match(/\d+/)?.[0] || '0')
+      return numA - numB
+    })
+
+    setImages(sortedFiles)
+    trackEvent('bulk_thumbnail_select', 'admin', `${sortedFiles.length} images`)
+  }
+
+  // 일괄 썸네일 업로드
+  const handleBulkUpload = async () => {
+    if (!data || data.posts.length === 0) {
+      alert('썸네일이 필요한 게시물이 없습니다.')
+      return
+    }
+
+    if (images.length === 0) {
+      alert('이미지를 선택해주세요.')
+      return
+    }
+
+    setIsUploading(true)
+    setUploadProgress(0)
+
+    try {
+      const totalImages = Math.min(images.length, data.posts.length)
+      let successCount = 0
+
+      for (let i = 0; i < totalImages; i++) {
+        const image = images[i]
+        const post = data.posts[i]
+
+        try {
+          const formData = new FormData()
+          formData.append('image', image)
+          formData.append('postId', post.id)
+
+          // 이미지 업로드
+          const uploadResponse = await uploadWithRetry(async () => {
+            return await fetch('/api/admin/upload-image', {
+              method: 'POST',
+              body: formData
+            })
+          })
+
+          if (uploadResponse.ok) {
+            const { imageUrl } = await uploadResponse.json()
+
+            // 게시물 업데이트
+            const updateResponse = await fetch(`/api/admin/posts/${post.id}`, {
+              method: 'PATCH',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ coverImage: imageUrl })
+            })
+
+            if (updateResponse.ok) {
+              successCount++
+            }
+          }
+        } catch (error) {
+          console.error(`Failed to upload thumbnail for post ${post.id}:`, error)
+        }
+
+        setUploadProgress(Math.round(((i + 1) / totalImages) * 100))
+      }
+
+      alert(`${successCount}/${totalImages}개 썸네일 업로드 완료!`)
+
+      // 목록 새로고침
+      await fetchPosts()
+      setImages([])
+
+      trackEvent('bulk_thumbnail_upload_complete', 'admin', `${successCount}/${totalImages} success`)
+    } catch (error) {
+      console.error('Bulk upload error:', error)
+      alert('업로드 중 오류가 발생했습니다.')
+    } finally {
+      setIsUploading(false)
+      setUploadProgress(0)
+    }
+  }
+
+  // 이미지 제거
+  const removeImage = (index: number) => {
+    setImages(prev => prev.filter((_, i) => i !== index))
   }
 
   if (loading) {
@@ -83,12 +233,125 @@ export default function NeedsThumbnailPosts() {
           <p className="mt-1 text-sm text-gray-500">
             Draft posts that need a cover image before publishing
           </p>
+          <p className="mt-1 text-xs text-blue-600">
+            💡 팁: 제목 클릭하면 복사됩니다 (피그마에서 바로 사용 가능)
+          </p>
         </div>
         <div className="text-right">
           <p className="text-3xl font-bold text-gray-900">{data.stats.total}</p>
           <p className="text-sm text-gray-500">Total Posts</p>
         </div>
       </div>
+
+      {/* 일괄 썸네일 업로드 섹션 */}
+      {data.posts.length > 0 && (
+        <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border-2 border-blue-200">
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">
+            ⚡ 일괄 썸네일 업로드 (숫자 매칭)
+          </h3>
+
+          <div className="space-y-4">
+            {/* 파일 선택 */}
+            <div
+              onClick={() => fileInputRef.current?.click()}
+              className="border-2 border-dashed border-blue-300 rounded-lg p-6 text-center cursor-pointer hover:border-blue-400 bg-white transition-colors"
+            >
+              <svg className="mx-auto h-10 w-10 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+              </svg>
+              <p className="mt-2 text-sm text-gray-700 font-medium">
+                피그마 이미지를 1.png, 2.png... 순서로 저장하고 한번에 업로드
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                파일명 숫자와 글 순서가 자동 매칭됩니다
+              </p>
+              <input
+                ref={fileInputRef}
+                type="file"
+                multiple
+                accept="image/*"
+                onChange={handleFileSelect}
+                className="hidden"
+              />
+            </div>
+
+            {/* 선택된 이미지 미리보기 */}
+            {images.length > 0 && (
+              <div className="space-y-3">
+                <div className="flex justify-between items-center">
+                  <p className="text-sm font-medium text-gray-700">
+                    선택된 이미지: {images.length}개 (상위 {Math.min(images.length, data.posts.length)}개 글에 매칭)
+                  </p>
+                  <button
+                    onClick={() => setImages([])}
+                    className="text-xs text-red-600 hover:text-red-800"
+                  >
+                    전체 삭제
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-6 gap-2 max-h-40 overflow-y-auto bg-white p-2 rounded">
+                  {images.map((image, index) => (
+                    <div key={index} className="relative group">
+                      <ImagePreview
+                        image={image}
+                        alt={image.name}
+                        className="w-full h-16 object-cover rounded border"
+                      />
+                      <div className="absolute top-0 left-0 bg-blue-600 text-white text-xs px-1 rounded-br font-bold">
+                        {index + 1}
+                      </div>
+                      <button
+                        onClick={() => removeImage(index)}
+                        className="absolute top-0 right-0 bg-red-500 text-white rounded-bl opacity-0 group-hover:opacity-100 transition-opacity p-0.5"
+                      >
+                        <svg className="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                      <div className="text-xs text-center truncate mt-0.5">
+                        {image.name}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+
+                <button
+                  onClick={handleBulkUpload}
+                  disabled={isUploading}
+                  className={`w-full py-3 px-4 rounded-lg font-medium transition-colors ${
+                    isUploading
+                      ? 'bg-gray-400 cursor-not-allowed'
+                      : 'bg-blue-600 hover:bg-blue-700 text-white'
+                  }`}
+                >
+                  {isUploading ? `업로드 중... ${uploadProgress}%` : '일괄 업로드 시작'}
+                </button>
+
+                {isUploading && (
+                  <div className="w-full bg-gray-200 rounded-full h-2">
+                    <div
+                      className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                      style={{ width: `${uploadProgress}%` }}
+                    />
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* 사용 방법 */}
+            <div className="bg-blue-100 rounded-lg p-3">
+              <p className="text-xs font-semibold text-blue-900 mb-1">사용 방법:</p>
+              <ol className="text-xs text-blue-800 space-y-0.5 list-decimal list-inside">
+                <li>제목 클릭으로 복사 → 피그마에서 썸네일 디자인</li>
+                <li>피그마에서 1.png, 2.png... 순서대로 저장</li>
+                <li>모든 이미지 한번에 선택 → 자동 매칭 업로드</li>
+                <li>이미지 개수가 글보다 적으면 상위 글만 업데이트</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Language Stats */}
       <div className="grid grid-cols-2 gap-4">
@@ -123,13 +386,24 @@ export default function NeedsThumbnailPosts() {
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {data.posts.map((post) => (
-              <div key={post.id} className="px-6 py-4 hover:bg-gray-50">
+            {data.posts.map((post, index) => (
+              <div key={post.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
-                    <h4 className="text-lg font-medium text-gray-900">
-                      {post.title}
-                    </h4>
+                    <div className="flex items-center gap-2">
+                      <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold">
+                        {index + 1}
+                      </span>
+                      <h4
+                        onClick={() => copyTitle(post.title, post.id)}
+                        className="text-lg font-medium text-gray-900 cursor-pointer hover:text-blue-600 transition-colors relative group"
+                      >
+                        {post.title}
+                        <span className="ml-2 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {copiedId === post.id ? '✓ 복사됨!' : '📋 클릭하여 복사'}
+                        </span>
+                      </h4>
+                    </div>
                     {post.excerpt && (
                       <p className="mt-1 text-sm text-gray-600 line-clamp-2">
                         {post.excerpt}

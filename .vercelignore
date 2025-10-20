@@ -8,3 +8,15 @@ node_modules
 .vercel
 *.log
 .DS_Store
+
+# Test files
+vitest.config.mts
+vitest.setup.mts
+**/__tests__/**
+**/*.test.ts
+**/*.test.tsx
+**/*.spec.ts
+**/*.spec.tsx
+
+# Scripts (not needed for build)
+scripts/
