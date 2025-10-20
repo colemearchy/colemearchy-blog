@@ -16,9 +16,11 @@ interface Post {
   status: string
   originalLanguage: string
   views: number
+  postNumber: number // 실제 글 번호 (1-based, 생성일 순)
+  englishTitle?: string // 영어 제목 (영어 썸네일 탭에서만 사용)
 }
 
-interface NeedsThumbnailData {
+interface LanguageData {
   posts: Post[]
   stats: {
     total: number
@@ -27,6 +29,11 @@ interface NeedsThumbnailData {
       en: number
     }
   }
+}
+
+interface NeedsThumbnailData {
+  korean: LanguageData
+  english: LanguageData
 }
 
 // 이미지 미리보기 컴포넌트
@@ -50,6 +57,7 @@ export default function NeedsThumbnailPosts() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
+  const [activeTab, setActiveTab] = useState<'korean' | 'english'>('korean')
 
   // 일괄 업로드 상태
   const [images, setImages] = useState<File[]>([])
@@ -128,7 +136,14 @@ export default function NeedsThumbnailPosts() {
 
   // 일괄 썸네일 업로드
   const handleBulkUpload = async () => {
-    if (!data || data.posts.length === 0) {
+    if (!data) {
+      alert('데이터를 불러오는 중입니다.')
+      return
+    }
+
+    const currentPosts = activeTab === 'korean' ? data.korean.posts : data.english.posts
+
+    if (currentPosts.length === 0) {
       alert('썸네일이 필요한 게시물이 없습니다.')
       return
     }
@@ -142,12 +157,12 @@ export default function NeedsThumbnailPosts() {
     setUploadProgress(0)
 
     try {
-      const totalImages = Math.min(images.length, data.posts.length)
+      const totalImages = Math.min(images.length, currentPosts.length)
       let successCount = 0
 
       for (let i = 0; i < totalImages; i++) {
         const image = images[i]
-        const post = data.posts[i]
+        const post = currentPosts[i]
 
         try {
           const formData = new FormData()
@@ -165,12 +180,26 @@ export default function NeedsThumbnailPosts() {
           if (uploadResponse.ok) {
             const { imageUrl } = await uploadResponse.json()
 
-            // 게시물 업데이트
-            const updateResponse = await fetch(`/api/admin/posts/${post.id}`, {
-              method: 'PATCH',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ coverImage: imageUrl })
-            })
+            // 한글/영어 탭에 따라 다른 API 호출
+            let updateResponse
+            if (activeTab === 'korean') {
+              // 한글 썸네일: Post.coverImage 업데이트
+              updateResponse = await fetch(`/api/admin/posts/${post.id}`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ coverImage: imageUrl })
+              })
+            } else {
+              // 영어 썸네일: PostTranslation.coverImage 업데이트
+              updateResponse = await fetch(`/api/posts/${post.id}/translation`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                  locale: 'en',
+                  coverImage: imageUrl
+                })
+              })
+            }
 
             if (updateResponse.ok) {
               successCount++
@@ -189,7 +218,7 @@ export default function NeedsThumbnailPosts() {
       await fetchPosts()
       setImages([])
 
-      trackEvent('bulk_thumbnail_upload_complete', 'admin', `${successCount}/${totalImages} success`)
+      trackEvent('bulk_thumbnail_upload_complete', 'admin', `${activeTab}:${successCount}/${totalImages} success`)
     } catch (error) {
       console.error('Bulk upload error:', error)
       alert('업로드 중 오류가 발생했습니다.')
@@ -224,6 +253,11 @@ export default function NeedsThumbnailPosts() {
     return null
   }
 
+  // 현재 탭의 데이터 가져오기
+  const currentData = activeTab === 'korean' ? data.korean : data.english
+  const currentPosts = currentData.posts
+  const currentStats = currentData.stats
+
   return (
     <div className="space-y-8">
       {/* Header with Stats */}
@@ -231,20 +265,50 @@ export default function NeedsThumbnailPosts() {
         <div>
           <h2 className="text-2xl font-bold text-gray-900">Posts Needing Thumbnails</h2>
           <p className="mt-1 text-sm text-gray-500">
-            Draft posts that need a cover image before publishing
+            Posts that need a cover image before publishing
           </p>
           <p className="mt-1 text-xs text-blue-600">
             💡 팁: 제목 클릭하면 복사됩니다 (피그마에서 바로 사용 가능)
           </p>
         </div>
         <div className="text-right">
-          <p className="text-3xl font-bold text-gray-900">{data.stats.total}</p>
+          <p className="text-3xl font-bold text-gray-900">{currentStats.total}</p>
           <p className="text-sm text-gray-500">Total Posts</p>
         </div>
       </div>
 
+      {/* 한글/영어 탭 */}
+      <div className="flex border-b border-gray-200">
+        <button
+          onClick={() => {
+            setActiveTab('korean')
+            setImages([]) // 탭 변경 시 선택된 이미지 초기화
+          }}
+          className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'korean'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          🇰🇷 한글 썸네일 ({data.korean.stats.total}개)
+        </button>
+        <button
+          onClick={() => {
+            setActiveTab('english')
+            setImages([]) // 탭 변경 시 선택된 이미지 초기화
+          }}
+          className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+            activeTab === 'english'
+              ? 'border-blue-600 text-blue-600'
+              : 'border-transparent text-gray-500 hover:text-gray-700'
+          }`}
+        >
+          🇬🇧 영어 썸네일 ({data.english.stats.total}개)
+        </button>
+      </div>
+
       {/* 일괄 썸네일 업로드 섹션 */}
-      {data.posts.length > 0 && (
+      {currentPosts.length > 0 && (
         <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg p-6 border-2 border-blue-200">
           <h3 className="text-lg font-semibold text-gray-900 mb-4">
             ⚡ 일괄 썸네일 업로드 (숫자 매칭)
@@ -280,7 +344,7 @@ export default function NeedsThumbnailPosts() {
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <p className="text-sm font-medium text-gray-700">
-                    선택된 이미지: {images.length}개 (상위 {Math.min(images.length, data.posts.length)}개 글에 매칭)
+                    선택된 이미지: {images.length}개 (상위 {Math.min(images.length, currentPosts.length)}개 글에 매칭)
                   </p>
                   <button
                     onClick={() => setImages([])}
@@ -357,18 +421,18 @@ export default function NeedsThumbnailPosts() {
       <div className="grid grid-cols-2 gap-4">
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-            Korean Posts
+            Korean Original
           </h3>
           <p className="mt-2 text-2xl font-bold text-gray-900">
-            {data.stats.byLanguage.ko}
+            {currentStats.byLanguage.ko}
           </p>
         </div>
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-            English Posts
+            English Original
           </h3>
           <p className="mt-2 text-2xl font-bold text-gray-900">
-            {data.stats.byLanguage.en}
+            {currentStats.byLanguage.en}
           </p>
         </div>
       </div>
@@ -376,33 +440,40 @@ export default function NeedsThumbnailPosts() {
       {/* Posts List */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
         <div className="px-6 py-4 border-b border-gray-200">
-          <h3 className="text-lg font-medium text-gray-900">Posts</h3>
+          <h3 className="text-lg font-medium text-gray-900">
+            {activeTab === 'korean' ? '한글 썸네일 필요' : '영어 썸네일 필요'}
+          </h3>
         </div>
-        
-        {data.posts.length === 0 ? (
+
+        {currentPosts.length === 0 ? (
           <div className="px-6 py-12 text-center text-gray-500">
             <p className="text-lg">All posts have thumbnails! 🎉</p>
             <p className="mt-2 text-sm">No action needed at this time.</p>
           </div>
         ) : (
           <div className="divide-y divide-gray-200">
-            {data.posts.map((post, index) => (
+            {currentPosts.map((post, index) => (
               <div key={post.id} className="px-6 py-4 hover:bg-gray-50 transition-colors">
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
                       <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold">
-                        {index + 1}
+                        {post.postNumber}
                       </span>
-                      <h4
-                        onClick={() => copyTitle(post.title, post.id)}
-                        className="text-lg font-medium text-gray-900 cursor-pointer hover:text-blue-600 transition-colors relative group"
-                      >
-                        {post.title}
-                        <span className="ml-2 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                          {copiedId === post.id ? '✓ 복사됨!' : '📋 클릭하여 복사'}
-                        </span>
-                      </h4>
+                      <div className="flex flex-col gap-1">
+                        <h4
+                          onClick={() => copyTitle(activeTab === 'english' && post.englishTitle ? post.englishTitle : post.title, post.id)}
+                          className="text-lg font-medium text-gray-900 cursor-pointer hover:text-blue-600 transition-colors relative group"
+                        >
+                          {activeTab === 'english' && post.englishTitle ? post.englishTitle : post.title}
+                          <span className="ml-2 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
+                            {copiedId === post.id ? '✓ 복사됨!' : '📋 클릭하여 복사'}
+                          </span>
+                        </h4>
+                        {activeTab === 'english' && post.englishTitle && (
+                          <p className="text-sm text-gray-500">원본: {post.title}</p>
+                        )}
+                      </div>
                     </div>
                     {post.excerpt && (
                       <p className="mt-1 text-sm text-gray-600 line-clamp-2">
@@ -428,7 +499,7 @@ export default function NeedsThumbnailPosts() {
                       href={`/admin/edit/${post.id}`}
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                     >
-                      Add Thumbnail
+                      {activeTab === 'korean' ? '한글 썸네일 추가' : '영어 썸네일 추가'}
                     </Link>
                   </div>
                 </div>

@@ -36,7 +36,16 @@ export async function PUT(
   try {
     const { id } = await params
     const data = await request.json()
-    
+
+    // Build update data object, only including provided fields
+    const updateData: any = {}
+    if (data.title !== undefined) updateData.title = data.title
+    if (data.content !== undefined) updateData.content = data.content
+    if (data.excerpt !== undefined) updateData.excerpt = data.excerpt
+    if (data.coverImage !== undefined) updateData.coverImage = data.coverImage
+    if (data.seoTitle !== undefined) updateData.seoTitle = data.seoTitle
+    if (data.seoDescription !== undefined) updateData.seoDescription = data.seoDescription
+
     const translation = await prisma.postTranslation.update({
       where: {
         postId_locale: {
@@ -44,16 +53,9 @@ export async function PUT(
           locale: data.locale,
         }
       },
-      data: {
-        title: data.title,
-        content: data.content,
-        excerpt: data.excerpt,
-        coverImage: data.coverImage,
-        seoTitle: data.seoTitle,
-        seoDescription: data.seoDescription,
-      }
+      data: updateData
     })
-    
+
     return NextResponse.json(translation)
   } catch (error) {
     console.error('Error updating translation:', error)

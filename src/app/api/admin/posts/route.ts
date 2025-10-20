@@ -18,10 +18,13 @@ export async function GET(request: NextRequest) {
         createdAt: true,
         coverImage: true,
         views: true,
+        youtubeVideoId: true,
+        originalLanguage: true,
         translations: {
           select: {
             locale: true,
             title: true,
+            coverImage: true,
           }
         }
       }

@@ -6,6 +6,7 @@ import { useState, useEffect, useCallback } from 'react'
 interface Translation {
   locale: string
   title: string
+  coverImage: string | null
 }
 
 interface Post {
@@ -15,6 +16,7 @@ interface Post {
   publishedAt: Date | null
   views: number
   coverImage: string | null
+  youtubeVideoId: string | null
   originalLanguage?: string
   translations?: Translation[]
 }
@@ -30,6 +32,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
   const [copiedUrl, setCopiedUrl] = useState<string | null>(null)
   const [deletingPostId, setDeletingPostId] = useState<string | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
+  const [categoryFilter, setCategoryFilter] = useState<'all' | 'manual' | 'youtube'>('all')
   const [languageFilter, setLanguageFilter] = useState<'all' | 'ko' | 'en' | 'no-en' | 'no-ko'>('all')
   const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set())
   const [isTranslating, setIsTranslating] = useState(false)
@@ -185,8 +188,13 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
     }
   }
 
-  // Filter posts based on language
+  // Filter posts based on category and language
   const filteredPosts = posts.filter(post => {
+    // Category filter
+    if (categoryFilter === 'manual' && post.youtubeVideoId !== null) return false
+    if (categoryFilter === 'youtube' && post.youtubeVideoId === null) return false
+
+    // Language filter
     if (languageFilter === 'all') return true
     if (languageFilter === 'ko') return post.translations?.some(t => t.locale === 'ko')
     if (languageFilter === 'en') return post.translations?.some(t => t.locale === 'en')
@@ -235,6 +243,20 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
           </div>
           
           <div className="flex items-center gap-4">
+            {/* 카테고리 필터 */}
+            <select
+              value={categoryFilter}
+              onChange={(e) => {
+                setCategoryFilter(e.target.value as any)
+                setSelectedPosts(new Set())
+              }}
+              className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            >
+              <option value="all">전체</option>
+              <option value="manual">직접 작성</option>
+              <option value="youtube">YouTube 영상</option>
+            </select>
+
             {/* 언어 필터 */}
             <select
               value={languageFilter}
@@ -362,10 +384,17 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
                     )}
                   </td>
                   <td className="px-3 py-4 text-sm text-gray-900">
-                    <div className="relative group">
+                    <div className="relative group flex items-start gap-2">
+                      {post.youtubeVideoId && (
+                        <span className="flex-shrink-0 text-red-600 mt-0.5" title="YouTube 영상 기반 글">
+                          <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                            <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+                          </svg>
+                        </span>
+                      )}
                       <button
                         onClick={() => handleCopyTitle(post.title)}
-                        className="font-medium line-clamp-2 text-left hover:text-indigo-600 transition-colors cursor-pointer"
+                        className="font-medium line-clamp-2 text-left hover:text-indigo-600 transition-colors cursor-pointer flex-1"
                         title="클릭하여 복사"
                       >
                         {post.title}
