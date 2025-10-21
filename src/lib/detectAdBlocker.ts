@@ -11,19 +11,31 @@
 
 export function detectAdBlocker(): Promise<boolean> {
   return new Promise((resolve) => {
+    // Quick check: If AdSense is already loaded and working, user definitely doesn't have ad blocker
+    if (typeof (window as any).adsbygoogle !== 'undefined') {
+      resolve(false)
+      return
+    }
+
     // Method 1: Try loading AdSense script
     const adsenseTest = document.createElement('script')
     adsenseTest.src = 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js'
     adsenseTest.async = true
 
     let scriptLoaded = false
+    let scriptErrored = false
+
     adsenseTest.onload = () => {
       scriptLoaded = true
     }
 
+    adsenseTest.onerror = () => {
+      scriptErrored = true
+    }
+
     document.head.appendChild(adsenseTest)
 
-    // Method 2: Bait element with ad-like classes (more aggressive)
+    // Method 2: Bait element with ad-like classes
     const testAd = document.createElement('div')
     testAd.innerHTML = '&nbsp;'
     testAd.className = 'ad ads advertisement banner adsbox ad-placement adsbygoogle'
@@ -32,23 +44,31 @@ export function detectAdBlocker(): Promise<boolean> {
 
     document.body.appendChild(testAd)
 
-    // Wait for ad blockers to process
+    // Wait longer for slow connections (1000ms instead of 150ms)
     setTimeout(() => {
-      // Check multiple indicators
-      const isBlocked =
-        !scriptLoaded ||
+      // Bait element checks
+      const baitHidden =
         testAd.offsetHeight === 0 ||
         testAd.offsetWidth === 0 ||
         window.getComputedStyle(testAd).display === 'none' ||
         window.getComputedStyle(testAd).visibility === 'hidden' ||
         window.getComputedStyle(testAd).opacity === '0'
 
+      // More lenient logic:
+      // - If script loaded successfully, definitely NOT blocked
+      // - Only flag as blocked if script failed AND bait is hidden
+      const isBlocked = !scriptLoaded && scriptErrored && baitHidden
+
       // Clean up
-      document.body.removeChild(testAd)
-      document.head.removeChild(adsenseTest)
+      try {
+        document.body.removeChild(testAd)
+        document.head.removeChild(adsenseTest)
+      } catch (e) {
+        // Elements might have been removed already
+      }
 
       resolve(isBlocked)
-    }, 150)
+    }, 1000)
   })
 }
 

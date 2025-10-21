@@ -260,7 +260,7 @@ async function main() {
       return acc;
     }, {} as Record<string, any[]>);
 
-    Object.entries(byCategory).forEach(([category, posts]) => {
+    Object.entries(byCategory).forEach(([category, posts]: [string, any[]]) => {
       console.log(`\n  📂 ${category} (${posts.length}개):`);
       posts.forEach((post: any) => {
         console.log(`    - ${post.title || post.topic}`);
