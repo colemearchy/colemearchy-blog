@@ -30,12 +30,14 @@ model Post {
   socialLinks      Json?
   youtubeVideoId   String?
   originalLanguage String            @default("ko")
+  globalRank       Int?
   comments         Comment[]
   translations     PostTranslation[]
 
   @@index([slug])
   @@index([publishedAt])
   @@index([status, scheduledAt])
+  @@index([globalRank])
 }
 
 model Admin {

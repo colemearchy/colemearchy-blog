@@ -3,27 +3,8 @@ import { prisma } from '@/lib/prisma'
 
 export async function GET() {
   try {
-    // 1. Get all non-YouTube posts ordered by createdAt to calculate ranks
-    const allNonYoutubePosts = await prisma.post.findMany({
-      where: {
-        youtubeVideoId: null,
-        status: 'PUBLISHED'
-      },
-      select: {
-        id: true,
-      },
-      orderBy: {
-        createdAt: 'asc'
-      }
-    })
-
-    // Create a map of post ID to rank (한글 썸네일용)
-    const postRankMap = new Map<string, number>()
-    allNonYoutubePosts.forEach((post, index) => {
-      postRankMap.set(post.id, index + 1) // 1-based ranking
-    })
-
-    // 2. Get posts without Korean thumbnails (coverImage)
+    // 1. Get posts without Korean thumbnails (coverImage)
+    // Use globalRank for numbering (unified ranking system)
     const koreanThumbnailPosts = await prisma.post.findMany({
       where: {
         youtubeVideoId: null,
@@ -44,38 +25,15 @@ export async function GET() {
         status: true,
         originalLanguage: true,
         views: true,
+        globalRank: true,
       },
       orderBy: {
-        createdAt: 'asc'
+        globalRank: 'asc'
       }
     })
 
-    // 3. Get all posts with English translations
-    const allPostsWithEnglishTranslation = await prisma.post.findMany({
-      where: {
-        youtubeVideoId: null,
-        status: 'PUBLISHED',
-        translations: {
-          some: {
-            locale: 'en'
-          }
-        }
-      },
-      select: {
-        id: true,
-      },
-      orderBy: {
-        createdAt: 'asc'
-      }
-    })
-
-    // Create a map for English translation rank
-    const englishRankMap = new Map<string, number>()
-    allPostsWithEnglishTranslation.forEach((post, index) => {
-      englishRankMap.set(post.id, index + 1)
-    })
-
-    // 4. Get posts with English translation but no English thumbnail
+    // 2. Get posts with English translation but no English thumbnail
+    // Use globalRank for numbering (same unified ranking)
     const englishThumbnailPosts = await prisma.post.findMany({
       where: {
         youtubeVideoId: null,
@@ -101,6 +59,7 @@ export async function GET() {
         status: true,
         originalLanguage: true,
         views: true,
+        globalRank: true,
         translations: {
           where: {
             locale: 'en'
@@ -112,20 +71,20 @@ export async function GET() {
         }
       },
       orderBy: {
-        createdAt: 'asc'
+        globalRank: 'asc'
       }
     })
 
-    // 5. Add postNumber to Korean thumbnail posts
+    // 3. Format response with globalRank as postNumber
     const koreanPostsWithNumbers = koreanThumbnailPosts.map(post => ({
       ...post,
-      postNumber: postRankMap.get(post.id) || 0
+      postNumber: post.globalRank || 0
     }))
 
-    // 6. Add postNumber to English thumbnail posts
+    // 4. Format English posts with globalRank (SAME numbering as Korean)
     const englishPostsWithNumbers = englishThumbnailPosts.map(post => ({
       ...post,
-      postNumber: englishRankMap.get(post.id) || 0,
+      postNumber: post.globalRank || 0,
       englishTitle: post.translations[0]?.title || ''
     }))
 
