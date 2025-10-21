@@ -3,6 +3,8 @@
  * Handles YouTube thumbnail URL generation with proper quality fallbacks
  */
 
+import type { YouTubeThumbnails } from '@/types/youtube'
+
 export type YouTubeThumbnailQuality = 
   | 'maxresdefault'  // 1280x720 (not always available)
   | 'sddefault'      // 640x480 (not always available)
@@ -84,23 +86,18 @@ export function normalizeYouTubeThumbnailUrl(url: string | undefined): string | 
 /**
  * Get thumbnail from YouTube API response with fallbacks
  */
-export function getBestThumbnailFromApiResponse(thumbnails: any): string {
+export function getBestThumbnailFromApiResponse(thumbnails: YouTubeThumbnails | undefined): string {
   if (!thumbnails) return ''
-  
-  // Priority order: maxres > high > medium > default
-  const qualities = ['maxres', 'high', 'medium', 'standard', 'default']
-  
+
+  // Priority order: maxres > high > medium > standard > default
+  const qualities: Array<keyof YouTubeThumbnails> = ['maxres', 'high', 'standard', 'medium', 'default']
+
   for (const quality of qualities) {
-    if (thumbnails[quality]?.url) {
-      return thumbnails[quality].url
+    const thumbnail = thumbnails[quality]
+    if (thumbnail?.url) {
+      return thumbnail.url
     }
   }
-  
-  // Fallback to any available thumbnail
-  const availableQualities = Object.keys(thumbnails)
-  if (availableQualities.length > 0) {
-    return thumbnails[availableQualities[0]]?.url || ''
-  }
-  
+
   return ''
 }

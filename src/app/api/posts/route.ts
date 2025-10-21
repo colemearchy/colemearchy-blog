@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createPostTranslation, detectLanguage } from '@/lib/translation'
-import { withErrorHandler, logger } from '@/lib/error-handler'
+import { withErrorHandler, logger, createSuccessResponse, ApiError, validateRequest } from '@/lib/error-handler'
 import { createPostSchema } from '@/lib/validations'
 
-export const GET = withErrorHandler(async () => {
+export const GET = withErrorHandler(async (request: NextRequest) => {
   logger.info('Fetching all posts');
 
   // Select only necessary fields for list view
@@ -27,14 +27,12 @@ export const GET = withErrorHandler(async () => {
     orderBy: { createdAt: 'desc' },
   });
 
-  return NextResponse.json(posts);
+  return createSuccessResponse(posts, new URL(request.url).pathname);
 });
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
-  const body = await request.json();
-
   // Validate input data
-  const data = createPostSchema.parse(body);
+  const data = await validateRequest(request, createPostSchema);
 
   logger.info('Creating post', {
     title: data.title,
@@ -51,10 +49,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   if (existingPost) {
     logger.warn('Slug already exists', { slug: data.slug });
-    return NextResponse.json(
-      { error: 'Slug already exists.' },
-      { status: 409 }
-    );
+    throw new ApiError(409, 'Slug already exists', { slug: data.slug });
   }
 
   // Detect source language
@@ -137,5 +132,5 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   }
 
   logger.info('Post created successfully', { postId: post.id, slug: post.slug });
-  return NextResponse.json(post);
+  return createSuccessResponse(post, new URL(request.url).pathname);
 });

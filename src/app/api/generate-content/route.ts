@@ -3,7 +3,7 @@ import { GoogleGenerativeAI } from '@google/generative-ai';
 import { prisma } from '@/lib/prisma';
 import { MASTER_SYSTEM_PROMPT, generateContentPrompt } from '@/lib/ai-prompts';
 import { env } from '@/lib/env';
-import { withErrorHandler, logger, ApiError } from '@/lib/error-handler';
+import { withErrorHandler, logger, ApiError, createSuccessResponse, validateRequest } from '@/lib/error-handler';
 import { generateContentSchema } from '@/lib/validations';
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slug';
 import { detectLanguage } from '@/lib/translation';
@@ -37,10 +37,8 @@ async function searchSimilarKnowledge(queryEmbedding: number[], limit: number = 
 }
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
-  const body = await request.json();
-
   // Validate input data
-  const validatedData = generateContentSchema.parse(body);
+  const validatedData = await validateRequest(request, generateContentSchema);
   const { prompt, keywords, affiliateProducts, publishDate } = validatedData;
 
   logger.info('Generating content', {
@@ -183,12 +181,12 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     status: post.status
   });
 
-  return NextResponse.json({
+  return createSuccessResponse({
     ...parsedContent,
     id: post.id,
     slug: post.slug,
     status: post.status,
     scheduledAt: post.scheduledAt,
     ragContextUsed: similarKnowledge.length > 0
-  });
+  }, new URL(request.url).pathname);
 });

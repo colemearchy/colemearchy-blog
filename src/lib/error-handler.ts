@@ -1,14 +1,33 @@
 import { NextResponse } from 'next/server';
-import { ZodError } from 'zod';
+import { ZodError, ZodSchema } from 'zod';
 import { Prisma } from '@prisma/client';
 
+/**
+ * Standard success response format
+ */
+export interface SuccessResponse<T = unknown> {
+  success: true;
+  data: T;
+  timestamp: string;
+  path?: string;
+}
+
+/**
+ * Standard error response format
+ */
 export interface ErrorResponse {
+  success: false;
   error: string;
   message?: string;
   details?: unknown;
   timestamp: string;
   path?: string;
 }
+
+/**
+ * Union type for all API responses
+ */
+export type ApiResponse<T = unknown> = SuccessResponse<T> | ErrorResponse;
 
 export class ApiError extends Error {
   constructor(
@@ -34,6 +53,7 @@ export function handleApiError(
   if (error instanceof ApiError) {
     return NextResponse.json(
       {
+        success: false,
         error: error.message,
         message: error.message,
         details: isDevelopment ? error.details : undefined,
@@ -55,6 +75,7 @@ export function handleApiError(
 
     return NextResponse.json(
       {
+        success: false,
         error: 'Validation Error',
         message: `Invalid request data: ${fieldErrors}`,
         details: isDevelopment ? zodError.issues : undefined,
@@ -87,6 +108,7 @@ export function handleApiError(
 
     return NextResponse.json(
       {
+        success: false,
         error: message,
         message,
         details: isDevelopment ? { code: error.code, meta: error.meta } : undefined,
@@ -101,6 +123,7 @@ export function handleApiError(
   if (error instanceof Error) {
     return NextResponse.json(
       {
+        success: false,
         error: 'Internal Server Error',
         message: isDevelopment ? error.message : 'An unexpected error occurred',
         details: isDevelopment ? { stack: error.stack } : undefined,
@@ -114,6 +137,7 @@ export function handleApiError(
   // 알 수 없는 에러
   return NextResponse.json(
     {
+      success: false,
       error: 'Internal Server Error',
       message: 'An unexpected error occurred',
       details: isDevelopment ? error : undefined,
@@ -124,19 +148,71 @@ export function handleApiError(
   );
 }
 
-// API 라우트 래퍼 함수
-export function withErrorHandler<T extends any[], R>(
-  handler: (...args: T) => Promise<R>
+/**
+ * Create a standardized success response
+ */
+export function createSuccessResponse<T>(
+  data: T,
+  path?: string
+): NextResponse<SuccessResponse<T>> {
+  return NextResponse.json({
+    success: true,
+    data,
+    timestamp: new Date().toISOString(),
+    path,
+  });
+}
+
+/**
+ * API route wrapper function with error handling
+ * Automatically catches errors and returns standardized error responses
+ */
+export function withErrorHandler<T extends unknown[], R>(
+  handler: (...args: T) => Promise<NextResponse<R>>
 ) {
-  return async (...args: T): Promise<R | NextResponse<ErrorResponse>> => {
+  return async (...args: T): Promise<NextResponse<R | ErrorResponse>> => {
     try {
       return await handler(...args);
     } catch (error) {
       const request = args.find(arg => arg instanceof Request) as Request | undefined;
       const path = request ? new URL(request.url).pathname : undefined;
-      return handleApiError(error, path) as any;
+      return handleApiError(error, path);
     }
   };
+}
+
+/**
+ * Validate request body with Zod schema
+ * Throws ApiError if validation fails
+ */
+export async function validateRequest<T>(
+  request: Request,
+  schema: ZodSchema<T>
+): Promise<T> {
+  try {
+    const body = await request.json();
+    return schema.parse(body);
+  } catch (error) {
+    if (error instanceof ZodError) {
+      throw error; // Will be handled by withErrorHandler
+    }
+    if (error instanceof SyntaxError) {
+      throw new ApiError(400, 'Invalid JSON in request body');
+    }
+    throw new ApiError(400, 'Invalid request body');
+  }
+}
+
+/**
+ * Validate URL search params with Zod schema
+ * Throws ApiError if validation fails
+ */
+export function validateSearchParams<T>(
+  searchParams: URLSearchParams,
+  schema: ZodSchema<T>
+): T {
+  const params = Object.fromEntries(searchParams.entries());
+  return schema.parse(params);
 }
 
 // 클라이언트 측 에러 처리 헬퍼
@@ -144,15 +220,15 @@ export function getErrorMessage(error: unknown): string {
   if (error instanceof Error) {
     return error.message;
   }
-  
+
   if (typeof error === 'string') {
     return error;
   }
-  
+
   if (error && typeof error === 'object' && 'message' in error) {
     return String(error.message);
   }
-  
+
   return 'An unexpected error occurred';
 }
 

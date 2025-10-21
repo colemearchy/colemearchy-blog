@@ -1,5 +1,4 @@
 import { useState, useCallback } from 'react'
-import { ApiError } from '@/types'
 
 interface UseAsyncState<T> {
   data: T | null
@@ -7,14 +6,14 @@ interface UseAsyncState<T> {
   isLoading: boolean
 }
 
-interface UseAsyncReturn<T> extends UseAsyncState<T> {
-  execute: (...args: any[]) => Promise<T | null>
+interface UseAsyncReturn<T, Args extends unknown[]> extends UseAsyncState<T> {
+  execute: (...args: Args) => Promise<T | null>
   reset: () => void
 }
 
-export function useAsync<T>(
-  asyncFunction: (...args: any[]) => Promise<T>
-): UseAsyncReturn<T> {
+export function useAsync<T, Args extends unknown[] = []>(
+  asyncFunction: (...args: Args) => Promise<T>
+): UseAsyncReturn<T, Args> {
   const [state, setState] = useState<UseAsyncState<T>>({
     data: null,
     error: null,
@@ -22,9 +21,9 @@ export function useAsync<T>(
   })
 
   const execute = useCallback(
-    async (...args: any[]) => {
+    async (...args: Args) => {
       setState({ data: null, error: null, isLoading: true })
-      
+
       try {
         const data = await asyncFunction(...args)
         setState({ data, error: null, isLoading: false })

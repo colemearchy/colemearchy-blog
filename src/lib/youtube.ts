@@ -5,6 +5,7 @@ import type {
   YouTubeChannelsResponse,
   YouTubePlaylistItemsResponse,
   YouTubeVideosResponse,
+  YouTubeVideoResource,
 } from '@/types/youtube';
 
 // ISO 8601 duration을 초 단위로 변환하는 함수
@@ -89,13 +90,13 @@ export async function getChannelVideos(maxResults: number = 10, pageToken?: stri
     }
     
     // 비디오 상세 정보 가져오기 (duration 포함)
-    const videoDetails = new Map<string, any>();
+    const videoDetails = new Map<string, YouTubeVideoResource>();
     if (videoIds.length > 0) {
       const videoResponse = await youtube.videos.list({
         part: ['contentDetails', 'snippet'],
         id: videoIds,
       }) as { data: YouTubeVideosResponse };
-      
+
       for (const video of videoResponse.data.items || []) {
         if (video.id) {
           videoDetails.set(video.id, video);
@@ -133,14 +134,18 @@ export async function getChannelVideos(maxResults: number = 10, pageToken?: stri
       videos,
       nextPageToken: playlistResponse.data.nextPageToken || undefined
     };
-  } catch (error: any) {
-    console.error('Error fetching YouTube videos:', error);
+  } catch (error) {
+    const err = error as Error & {
+      code?: string | number;
+      errors?: unknown[];
+    };
+    console.error('Error fetching YouTube videos:', err);
     console.error('Error details:', {
-      message: error.message,
-      code: error.code,
-      errors: error.errors
+      message: err.message,
+      code: err.code,
+      errors: err.errors
     });
-    throw error;
+    throw err;
   }
 }
 

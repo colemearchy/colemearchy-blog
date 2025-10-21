@@ -1,5 +1,16 @@
 import { YoutubeTranscript } from 'youtube-transcript';
 
+/**
+ * Raw transcript item from youtube-transcript library
+ */
+interface RawTranscriptItem {
+  text: string;
+  start?: number;
+  offset?: number;
+  duration?: number;
+  dur?: number;
+}
+
 export interface TranscriptItem {
   text: string;
   start: number;
@@ -41,10 +52,10 @@ export class YouTubeTranscriptService {
       );
 
       // Map the response to our TranscriptItem interface
-      return transcript.map((item: any) => ({
+      return transcript.map((item: RawTranscriptItem): TranscriptItem => ({
         text: item.text,
-        start: item.start || item.offset || 0,
-        duration: item.duration || item.dur || 0
+        start: item.start ?? item.offset ?? 0,
+        duration: item.duration ?? item.dur ?? 0
       }));
     } catch (error) {
       console.error('Failed to fetch transcript:', error);

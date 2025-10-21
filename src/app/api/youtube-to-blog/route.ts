@@ -5,7 +5,7 @@ import { getVideoMetadataForBlog } from '@/lib/youtube'
 import { YouTubeTranscriptService } from '@/lib/youtube-transcript'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { env } from '@/lib/env'
-import { withErrorHandler, logger, ApiError } from '@/lib/error-handler'
+import { withErrorHandler, logger, ApiError, createSuccessResponse } from '@/lib/error-handler'
 import { generateUniqueSlugWithTimestamp } from '@/lib/utils/slug'
 import { detectLanguage } from '@/lib/translation'
 
@@ -27,11 +27,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
   if (existingPost) {
     logger.warn('Video already processed', { videoId, postId: existingPost.id });
-    return NextResponse.json({
-      error: 'Video already processed',
+    throw new ApiError(409, 'Video already processed', {
       postId: existingPost.id,
       slug: existingPost.slug
-    }, { status: 400 });
+    });
   }
 
   // Initialize services
@@ -298,13 +297,12 @@ OUTPUT FORMAT:
     videoId
   });
 
-  return NextResponse.json({
-    success: true,
+  return createSuccessResponse({
     post: {
       id: post.id,
       slug: post.slug,
       title: post.title,
       status: post.status
     }
-  });
+  }, new URL(request.url).pathname);
 });
