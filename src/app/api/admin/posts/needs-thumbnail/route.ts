@@ -27,6 +27,7 @@ export async function GET() {
     const koreanThumbnailPosts = await prisma.post.findMany({
       where: {
         youtubeVideoId: null,
+        status: 'PUBLISHED',
         OR: [
           { coverImage: null },
           { coverImage: '' }
@@ -78,6 +79,7 @@ export async function GET() {
     const englishThumbnailPosts = await prisma.post.findMany({
       where: {
         youtubeVideoId: null,
+        status: 'PUBLISHED',
         translations: {
           some: {
             locale: 'en',
