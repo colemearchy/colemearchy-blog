@@ -24,6 +24,7 @@ interface LanguageData {
   posts: Post[]
   stats: {
     total: number
+    totalAvailable: number // Total non-YouTube posts in database
     byLanguage: {
       ko: number
       en: number
@@ -278,33 +279,59 @@ export default function NeedsThumbnailPosts() {
       </div>
 
       {/* 한글/영어 탭 */}
-      <div className="flex border-b border-gray-200">
-        <button
-          onClick={() => {
-            setActiveTab('korean')
-            setImages([]) // 탭 변경 시 선택된 이미지 초기화
-          }}
-          className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'korean'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          🇰🇷 한글 썸네일 ({data.korean.stats.total}개)
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab('english')
-            setImages([]) // 탭 변경 시 선택된 이미지 초기화
-          }}
-          className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
-            activeTab === 'english'
-              ? 'border-blue-600 text-blue-600'
-              : 'border-transparent text-gray-500 hover:text-gray-700'
-          }`}
-        >
-          🇬🇧 영어 썸네일 ({data.english.stats.total}개)
-        </button>
+      <div className="border-b border-gray-200">
+        <div className="flex">
+          <button
+            onClick={() => {
+              setActiveTab('korean')
+              setImages([]) // 탭 변경 시 선택된 이미지 초기화
+            }}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'korean'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            🇰🇷 한글 썸네일 ({data.korean.stats.total}개)
+          </button>
+          <button
+            onClick={() => {
+              setActiveTab('english')
+              setImages([]) // 탭 변경 시 선택된 이미지 초기화
+            }}
+            className={`px-6 py-3 text-sm font-medium border-b-2 transition-colors ${
+              activeTab === 'english'
+                ? 'border-blue-600 text-blue-600'
+                : 'border-transparent text-gray-500 hover:text-gray-700'
+            }`}
+          >
+            🇬🇧 영어 썸네일 ({data.english.stats.total}개)
+          </button>
+        </div>
+
+        {/* Unified Ranking Explanation */}
+        {activeTab === 'english' && (
+          <div className="px-6 py-3 bg-blue-50 border-t border-blue-100">
+            <div className="flex items-start gap-2">
+              <svg className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+              </svg>
+              <div className="flex-1">
+                <p className="text-sm font-medium text-blue-900">
+                  📊 Unified Numbering System
+                </p>
+                <p className="mt-1 text-xs text-blue-700">
+                  Posts are numbered chronologically across all languages ({currentStats.totalAvailable} total non-YouTube posts).
+                  English translations use the <strong>same numbers</strong> as Korean originals
+                  (e.g., Post #74 is always Post #74 in both languages).
+                  {currentStats.totalAvailable > 0 && currentStats.total > 0 && (
+                    <> Numbers may appear non-sequential (e.g., #74, #76, #78) because only {currentStats.total} of {currentStats.totalAvailable} posts have English translations.</>
+                  )}
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 일괄 썸네일 업로드 섹션 */}
@@ -457,8 +484,16 @@ export default function NeedsThumbnailPosts() {
                 <div className="flex items-center justify-between">
                   <div className="flex-1">
                     <div className="flex items-center gap-2">
-                      <span className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold">
+                      <span
+                        className="inline-flex items-center justify-center w-6 h-6 bg-blue-100 text-blue-600 rounded-full text-xs font-bold cursor-help group relative"
+                        title={activeTab === 'english' ? `Global rank #${post.postNumber} of ${currentStats.totalAvailable} total posts` : `Post #${post.postNumber}`}
+                      >
                         {post.postNumber}
+                        {activeTab === 'english' && (
+                          <span className="absolute left-full ml-2 hidden group-hover:block bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap z-10">
+                            Global rank #{post.postNumber} of {currentStats.totalAvailable}
+                          </span>
+                        )}
                       </span>
                       <div className="flex flex-col gap-1">
                         <h4

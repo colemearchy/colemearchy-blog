@@ -88,8 +88,17 @@ export async function GET() {
       englishTitle: post.translations[0]?.title || ''
     }))
 
+    // Get total count of all non-YouTube published posts for context
+    const totalNonYoutubePosts = await prisma.post.count({
+      where: {
+        youtubeVideoId: null,
+        status: 'PUBLISHED'
+      }
+    })
+
     const koreanStats = {
       total: koreanPostsWithNumbers.length,
+      totalAvailable: totalNonYoutubePosts,
       byLanguage: {
         ko: koreanPostsWithNumbers.filter(p => p.originalLanguage === 'ko').length,
         en: koreanPostsWithNumbers.filter(p => p.originalLanguage === 'en').length,
@@ -98,6 +107,7 @@ export async function GET() {
 
     const englishStats = {
       total: englishPostsWithNumbers.length,
+      totalAvailable: totalNonYoutubePosts,
       byLanguage: {
         ko: englishPostsWithNumbers.filter(p => p.originalLanguage === 'ko').length,
         en: englishPostsWithNumbers.filter(p => p.originalLanguage === 'en').length,
