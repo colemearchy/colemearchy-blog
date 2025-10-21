@@ -5,11 +5,5 @@
   "installCommand": "pnpm install",
   "env": {
     "NEXT_PUBLIC_NODE_ENV": "production"
-  },
-  "crons": [
-    {
-      "path": "/api/cron/generate-daily-posts",
-      "schedule": "0 9 * * *"
-    }
-  ]
+  }
 }

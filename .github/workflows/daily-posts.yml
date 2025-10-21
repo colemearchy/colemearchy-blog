@@ -1,0 +1,19 @@
+name: Generate Daily Blog Posts
+
+on:
+  schedule:
+    # 매일 오전 9시 UTC (한국 시간 오후 6시)
+    - cron: '0 9 * * *'
+  workflow_dispatch: # 수동 실행 가능
+
+jobs:
+  generate-posts:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Call Vercel API to generate posts
+        run: |
+          curl -X POST \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json" \
+            https://colemearchy.com/api/cron/generate-daily-posts
