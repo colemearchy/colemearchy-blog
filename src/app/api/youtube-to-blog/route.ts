@@ -6,7 +6,7 @@ import { YouTubeTranscriptService } from '@/lib/youtube-transcript'
 import { GoogleGenerativeAI } from '@google/generative-ai'
 import { env } from '@/lib/env'
 import { withErrorHandler, logger, ApiError, createSuccessResponse } from '@/lib/error-handler'
-import { generateUniqueSlugWithTimestamp } from '@/lib/utils/slug'
+import { generateSlug, generateUniqueSlug } from '@/lib/utils/slug'
 import { detectLanguage } from '@/lib/translation'
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
@@ -252,7 +252,11 @@ OUTPUT FORMAT:
     }
 
     // Generate slug
-    const slug = generateUniqueSlugWithTimestamp(title, 50);
+    const baseSlug = generateSlug(title, 60);
+    const slug = await generateUniqueSlug(baseSlug, async (s) => {
+      const existing = await prisma.post.findUnique({ where: { slug: s } });
+      return !!existing;
+    });
 
     // Extract tags from content
     const hashtags = metadata.description.match(/#\w+/g)?.map(tag => tag.slice(1)) || []

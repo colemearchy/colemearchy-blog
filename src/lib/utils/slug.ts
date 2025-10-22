@@ -5,12 +5,35 @@
  * @returns URL-friendly slug
  */
 export function generateSlug(title: string, maxLength: number = 60): string {
-  return title
+  // Clean up title (remove JSON artifacts, code blocks, etc.)
+  let cleanTitle = title
+    .replace(/```json/gi, '')
+    .replace(/```/g, '')
+    .replace(/[{}"\[\]]/g, ' ')
+    .trim();
+
+  // Fallback for empty or invalid titles
+  if (!cleanTitle || cleanTitle.length < 3) {
+    cleanTitle = `post-${Date.now()}`;
+  }
+
+  let slug = cleanTitle
     .toLowerCase()
-    .replace(/[^a-z0-9가-힣]+/g, '-') // Allow Korean characters
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '')
+    .replace(/[^a-z0-9가-힣ㄱ-ㅎㅏ-ㅣ\s]+/g, '') // Remove special chars, keep Korean and spaces
+    .replace(/\s+/g, '-') // Convert spaces to hyphens
+    .replace(/-+/g, '-') // Remove duplicate hyphens
+    .replace(/^-|-$/g, '') // Remove leading/trailing hyphens
     .substring(0, maxLength);
+
+  // Ensure slug doesn't start/end with hyphen (extra safety)
+  slug = slug.replace(/^-+|-+$/g, '');
+
+  // Final fallback if slug is empty
+  if (!slug || slug.length < 2) {
+    slug = `post-${Date.now()}`;
+  }
+
+  return slug;
 }
 
 /**
