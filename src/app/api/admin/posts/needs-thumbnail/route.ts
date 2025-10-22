@@ -77,16 +77,17 @@ export async function GET() {
       }
     })
 
-    // 3. Format response with globalRank as postNumber
-    const koreanPostsWithNumbers = koreanThumbnailPosts.map(post => ({
+    // 3. Format response with sequential numbering (1, 2, 3...)
+    // For DRAFT posts without globalRank, assign sequential numbers based on order
+    const koreanPostsWithNumbers = koreanThumbnailPosts.map((post, index) => ({
       ...post,
-      postNumber: post.globalRank || 0
+      postNumber: post.globalRank || (index + 1)
     }))
 
-    // 4. Format English posts with globalRank (SAME numbering as Korean)
-    const englishPostsWithNumbers = englishThumbnailPosts.map(post => ({
+    // 4. Format English posts with sequential numbering
+    const englishPostsWithNumbers = englishThumbnailPosts.map((post, index) => ({
       ...post,
-      postNumber: post.globalRank || 0,
+      postNumber: post.globalRank || (index + 1),
       englishTitle: post.translations[0]?.title || ''
     }))
 
