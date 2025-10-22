@@ -29,6 +29,10 @@ interface LanguageData {
       ko: number
       en: number
     }
+    byStatus: {
+      DRAFT: number
+      PUBLISHED: number
+    }
   }
 }
 
@@ -444,8 +448,8 @@ export default function NeedsThumbnailPosts() {
         </div>
       )}
 
-      {/* Language Stats */}
-      <div className="grid grid-cols-2 gap-4">
+      {/* Stats: Language + Status */}
+      <div className="grid grid-cols-4 gap-4">
         <div className="bg-white p-4 rounded-lg shadow">
           <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
             Korean Original
@@ -460,6 +464,22 @@ export default function NeedsThumbnailPosts() {
           </h3>
           <p className="mt-2 text-2xl font-bold text-gray-900">
             {currentStats.byLanguage.en}
+          </p>
+        </div>
+        <div className="bg-yellow-50 p-4 rounded-lg shadow border border-yellow-200">
+          <h3 className="text-sm font-medium text-yellow-700 uppercase tracking-wider">
+            DRAFT
+          </h3>
+          <p className="mt-2 text-2xl font-bold text-yellow-800">
+            {currentStats.byStatus.DRAFT}
+          </p>
+        </div>
+        <div className="bg-green-50 p-4 rounded-lg shadow border border-green-200">
+          <h3 className="text-sm font-medium text-green-700 uppercase tracking-wider">
+            PUBLISHED
+          </h3>
+          <p className="mt-2 text-2xl font-bold text-green-800">
+            {currentStats.byStatus.PUBLISHED}
           </p>
         </div>
       </div>
@@ -494,6 +514,16 @@ export default function NeedsThumbnailPosts() {
                             Global rank #{post.postNumber} of {currentStats.totalAvailable}
                           </span>
                         )}
+                      </span>
+                      {/* Status Badge */}
+                      <span
+                        className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
+                          post.status === 'DRAFT'
+                            ? 'bg-yellow-100 text-yellow-800'
+                            : 'bg-green-100 text-green-800'
+                        }`}
+                      >
+                        {post.status}
                       </span>
                       <div className="flex flex-col gap-1">
                         <h4

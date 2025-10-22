@@ -5,10 +5,11 @@ export async function GET() {
   try {
     // 1. Get posts without Korean thumbnails (coverImage)
     // Use globalRank for numbering (unified ranking system)
+    // Include both PUBLISHED and DRAFT posts (user needs to add thumbnails before publishing)
     const koreanThumbnailPosts = await prisma.post.findMany({
       where: {
         youtubeVideoId: null,
-        status: 'PUBLISHED',
+        status: { in: ['PUBLISHED', 'DRAFT'] },
         OR: [
           { coverImage: null },
           { coverImage: '' }
@@ -34,10 +35,11 @@ export async function GET() {
 
     // 2. Get posts with English translation but no English thumbnail
     // Use globalRank for numbering (same unified ranking)
+    // Include both PUBLISHED and DRAFT posts
     const englishThumbnailPosts = await prisma.post.findMany({
       where: {
         youtubeVideoId: null,
-        status: 'PUBLISHED',
+        status: { in: ['PUBLISHED', 'DRAFT'] },
         translations: {
           some: {
             locale: 'en',
@@ -88,11 +90,11 @@ export async function GET() {
       englishTitle: post.translations[0]?.title || ''
     }))
 
-    // Get total count of all non-YouTube published posts for context
+    // Get total count of all non-YouTube posts (PUBLISHED + DRAFT) for context
     const totalNonYoutubePosts = await prisma.post.count({
       where: {
         youtubeVideoId: null,
-        status: 'PUBLISHED'
+        status: { in: ['PUBLISHED', 'DRAFT'] }
       }
     })
 
@@ -102,6 +104,10 @@ export async function GET() {
       byLanguage: {
         ko: koreanPostsWithNumbers.filter(p => p.originalLanguage === 'ko').length,
         en: koreanPostsWithNumbers.filter(p => p.originalLanguage === 'en').length,
+      },
+      byStatus: {
+        DRAFT: koreanPostsWithNumbers.filter(p => p.status === 'DRAFT').length,
+        PUBLISHED: koreanPostsWithNumbers.filter(p => p.status === 'PUBLISHED').length,
       }
     }
 
@@ -111,6 +117,10 @@ export async function GET() {
       byLanguage: {
         ko: englishPostsWithNumbers.filter(p => p.originalLanguage === 'ko').length,
         en: englishPostsWithNumbers.filter(p => p.originalLanguage === 'en').length,
+      },
+      byStatus: {
+        DRAFT: englishPostsWithNumbers.filter(p => p.status === 'DRAFT').length,
+        PUBLISHED: englishPostsWithNumbers.filter(p => p.status === 'PUBLISHED').length,
       }
     }
 
