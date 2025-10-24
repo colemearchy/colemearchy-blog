@@ -9,11 +9,32 @@ on:
 jobs:
   generate-posts:
     runs-on: ubuntu-latest
+    timeout-minutes: 30 # 30분 타임아웃
 
     steps:
-      - name: Call Vercel API to generate posts
-        run: |
-          curl -X POST \
-            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            -H "Content-Type: application/json" \
-            https://colemearchy.com/api/cron/generate-daily-posts
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 8
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Generate Prisma client
+        run: pnpm prisma generate
+
+      - name: Generate daily blog posts
+        run: POSTS_PER_DAY=10 pnpm tsx scripts/generate-daily-posts.ts
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2}}
