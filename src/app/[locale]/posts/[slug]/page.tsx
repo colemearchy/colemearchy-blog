@@ -35,30 +35,40 @@ export async function generateStaticParams() {
       where: {
         status: 'PUBLISHED',
         publishedAt: {
-          not: null,
-          lte: new Date()
+          not: null
+          // 🔧 HOTFIX: Remove lte condition to include all published posts
+          // lte: new Date()
         }
       },
       select: {
         slug: true
       }
     })
-    
+
+    if (posts.length === 0) {
+      console.warn('⚠️ [generateStaticParams] No posts found for static generation!')
+      return []
+    }
+
     const locales = ['ko', 'en']
-    return posts.flatMap((post) => 
+    const params = posts.flatMap((post) =>
       locales.map((locale) => ({
         slug: post.slug,
         locale,
       }))
     )
+
+    return params
   } catch (error) {
-    console.error('Error generating static params:', error)
+    console.error('❌ [generateStaticParams] Error:', error)
     return []
   }
 }
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
-  const { slug, locale } = await params
+  const { slug: rawSlug, locale } = await params
+  // 🔧 HOTFIX: Decode URL parameter to handle Korean characters
+  const slug = decodeURIComponent(rawSlug)
   const post = await prisma.post.findUnique({
     where: { slug },
     include: {
@@ -143,15 +153,19 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   }
 }
 
-export default async function PostPage({ 
+export default async function PostPage({
   params
 }: PostPageProps) {
-  const { slug, locale } = await params
+  const { slug: rawSlug, locale } = await params
   const lang = locale === 'en' ? 'en' : 'ko'
-  
+
+  // 🔧 HOTFIX: Decode URL parameter to handle Korean characters
+  const slug = decodeURIComponent(rawSlug)
+
   const post = await getPostBySlug(slug)
 
   if (!post || !post.publishedAt || post.status !== 'PUBLISHED') {
+    console.warn('⚠️ [PostPage] Post not found or not published, returning 404')
     notFound()
   }
   

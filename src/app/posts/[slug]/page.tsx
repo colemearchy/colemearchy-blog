@@ -45,7 +45,9 @@ export async function generateStaticParams() {
 }
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
-  const { slug } = await params
+  const { slug: rawSlug } = await params
+  // 🔧 HOTFIX: Decode URL parameter to handle Korean characters
+  const slug = decodeURIComponent(rawSlug)
   const post = await prisma.post.findUnique({
     where: { slug },
   })
@@ -110,14 +112,17 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   }
 }
 
-export default async function PostPage({ 
+export default async function PostPage({
   params,
-  searchParams 
+  searchParams
 }: PostPageProps & { searchParams: Promise<{ lang?: string }> }) {
-  const { slug } = await params
+  const { slug: rawSlug } = await params
   const sp = await searchParams
   const lang = sp.lang === 'en' ? 'en' : 'ko'
-  
+
+  // 🔧 HOTFIX: Decode URL parameter to handle Korean characters
+  const slug = decodeURIComponent(rawSlug)
+
   const post = await prisma.post.findUnique({
     where: { slug },
     include: {
