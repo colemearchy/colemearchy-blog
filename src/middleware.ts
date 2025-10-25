@@ -8,15 +8,6 @@ export async function middleware(request: NextRequest) {
     let pathname = url.pathname
     const hostname = request.headers.get('host') || ''
 
-    // Domain redirect: colemearchy.com -> coleitai.com
-    // TODO: Enable after purchasing coleitai.com domain
-    /*
-    if (hostname === 'colemearchy.com' || hostname === 'www.colemearchy.com') {
-      const newDomain = hostname.startsWith('www.') ? 'www.coleitai.com' : 'coleitai.com'
-      url.hostname = newDomain
-      return NextResponse.redirect(url, { status: 301 })
-    }
-    */
 
     // Handle www redirect + other redirects in a single hop
     const isWww = hostname.startsWith('www.')
