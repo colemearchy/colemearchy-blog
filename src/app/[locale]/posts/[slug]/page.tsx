@@ -364,8 +364,8 @@ export default async function PostPage({
           </header>
 
           {post.coverImage && (
-            <div className="relative w-full mb-8 rounded-lg overflow-hidden">
-              <div className="relative aspect-[16/9]">
+            <div className="relative w-full max-w-4xl mb-8 rounded-lg overflow-hidden">
+              <div className="relative aspect-[16/9] w-full">
                 {(() => {
                   const isYouTubeThumbnail = post.coverImage.includes('ytimg.com') || post.coverImage.includes('img.youtube.com')
                   const youtubeVideoIdMatch = post.coverImage.match(/\/vi\/([a-zA-Z0-9_-]{11})\//)

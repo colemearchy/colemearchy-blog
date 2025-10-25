@@ -8,6 +8,13 @@ export async function middleware(request: NextRequest) {
     let pathname = url.pathname
     const hostname = request.headers.get('host') || ''
 
+    // Domain redirect: colemearchy.com -> coleitai.com
+    if (hostname === 'colemearchy.com' || hostname === 'www.colemearchy.com') {
+      const newDomain = hostname.startsWith('www.') ? 'www.coleitai.com' : 'coleitai.com'
+      url.hostname = newDomain
+      return NextResponse.redirect(url, { status: 301 })
+    }
+
     // Handle www redirect + other redirects in a single hop
     const isWww = hostname.startsWith('www.')
     const hasTrailingSlash = pathname !== '/' && pathname.endsWith('/')
@@ -94,6 +101,6 @@ export async function middleware(request: NextRequest) {
 export const config = {
   matcher: [
     // Match all pathnames except static files and api routes
-    '/((?!api|_next/static|_next/image|favicon.ico|icon|apple-icon|robots.txt|sitemap.xml|ads.txt).*)',
+    '/((?!api|_next/static|_next/image|favicon.ico|icon|apple-icon|robots.txt|sitemap.xml|ads.txt|fonts|images).*)',
   ]
 }

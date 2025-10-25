@@ -5,6 +5,12 @@ settings:
   excludeLinksFromLockfile: false
 
 dependencies:
+  '@fontsource/noto-sans-kr':
+    specifier: ^5.2.8
+    version: 5.2.8
+  '@fontsource/pretendard':
+    specifier: ^5.2.5
+    version: 5.2.5
   '@google/generative-ai':
     specifier: ^0.24.1
     version: 0.24.1
@@ -545,6 +551,14 @@ packages:
   /@fastify/busboy@2.1.1:
     resolution: {integrity: sha512-vBZP4NlzfOlerQTnba4aqZoMhE/a9HY7HRqoOPaETQcSQuWEIyZMHGfVu6w9wGtGK5fED5qRs2DteVCjOH60sA==}
     engines: {node: '>=14'}
+    dev: false
+
+  /@fontsource/noto-sans-kr@5.2.8:
+    resolution: {integrity: sha512-2Nbu2Iy1YGUkHbOTF8mMchipbg8g4ZBTpUzHwg09/dz/9b7r5o5h2PF6hnbismsBp8GzpsBA66OlQJw3GZehuw==}
+    dev: false
+
+  /@fontsource/pretendard@5.2.5:
+    resolution: {integrity: sha512-UAj3l+Exfx6Sq5hySbhTQhNzkZnhzBxQdHySmjo2lifXyXpMAHv7GD7hAQTLgZfBd1WixJJkmynfJbOp+TAckg==}
     dev: false
 
   /@formatjs/ecma402-abstract@2.3.6:

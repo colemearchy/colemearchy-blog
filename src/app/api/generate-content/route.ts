@@ -7,6 +7,7 @@ import { withErrorHandler, logger, ApiError, createSuccessResponse, validateRequ
 import { generateContentSchema } from '@/lib/validations';
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slug';
 import { detectLanguage } from '@/lib/translation';
+import { autoGenerateThumbnailUrl } from '@/lib/utils/thumbnail';
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
@@ -158,16 +159,26 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       title: parsedContent.title || prompt
     });
 
+    // Auto-generate thumbnail URL if no coverImage provided
+    const postTitle = parsedContent.title || prompt;
+    const coverImageUrl = parsedContent.coverImage || autoGenerateThumbnailUrl(postTitle, request);
+
+    logger.info('Thumbnail generation for new post', {
+      title: postTitle,
+      hasAICoverImage: !!parsedContent.coverImage,
+      generatedThumbnailUrl: !parsedContent.coverImage ? coverImageUrl : null
+    });
+
     const post = await prisma.post.create({
       data: {
-        title: parsedContent.title || prompt,
+        title: postTitle,
         slug,
         content: parsedContent.content || responseText,
         excerpt: parsedContent.excerpt || responseText.substring(0, 160),
         tags: parsedContent.tags || [],
         seoTitle: parsedContent.seoTitle || parsedContent.title,
         seoDescription: parsedContent.seoDescription || parsedContent.excerpt,
-        coverImage: parsedContent.coverImage,
+        coverImage: coverImageUrl,
         status: 'DRAFT',
         scheduledAt,
         author: 'Colemearchy AI',
