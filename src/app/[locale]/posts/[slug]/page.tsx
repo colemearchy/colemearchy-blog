@@ -328,8 +328,8 @@ export default async function PostPage({
         </header>
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full overflow-x-hidden">
-          <div className="flex gap-8">
-            <article className="flex-1 max-w-4xl">
+          <div className="xl:flex xl:gap-8">
+            <article className="xl:flex-1 max-w-4xl mx-auto xl:mx-0">
               <Breadcrumb postTitle={displayTitle} postSlug={post.slug} />
               <header className="mb-8">
                 <h1 className="text-4xl font-bold text-gray-900 mb-4">{displayTitle}</h1>
