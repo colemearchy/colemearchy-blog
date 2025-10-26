@@ -34,23 +34,19 @@ export async function GET() {
       }
     })
 
-    // 2. Get posts with English translation but no English thumbnail
+    // 2. Get English original posts that need English thumbnails
     // Use globalRank for numbering (same unified ranking)
     // Include both PUBLISHED and DRAFT posts
-    // Filter to only show posts that have English translations (not Korean-only posts)
+    // Only show English original posts missing thumbnails (not Korean posts with English translations)
     const englishThumbnailPosts = await prisma.post.findMany({
       where: {
         youtubeVideoId: null,
         status: { in: ['PUBLISHED', 'DRAFT'] },
-        translations: {
-          some: {
-            locale: 'en',
-            OR: [
-              { coverImage: null },
-              { coverImage: '' }
-            ]
-          }
-        }
+        originalLanguage: 'en', // Only English original posts for English thumbnail section
+        OR: [
+          { coverImage: null },
+          { coverImage: '' }
+        ],
       },
       select: {
         id: true,
@@ -64,15 +60,6 @@ export async function GET() {
         originalLanguage: true,
         views: true,
         globalRank: true,
-        translations: {
-          where: {
-            locale: 'en'
-          },
-          select: {
-            title: true,
-            coverImage: true,
-          }
-        }
       },
       orderBy: {
         createdAt: 'asc' // Changed to creation date for clear sequential numbering
@@ -89,8 +76,7 @@ export async function GET() {
     // 4. Format English posts with sequential numbering
     const englishPostsWithNumbers = englishThumbnailPosts.map((post, index) => ({
       ...post,
-      postNumber: index + 1, // Simple 1, 2, 3... numbering
-      englishTitle: post.translations[0]?.title || ''
+      postNumber: index + 1 // Simple 1, 2, 3... numbering
     }))
 
     // Get total count of all non-YouTube posts (PUBLISHED + DRAFT) for context

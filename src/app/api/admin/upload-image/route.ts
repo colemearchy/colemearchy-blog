@@ -17,6 +17,7 @@ export async function POST(request: NextRequest) {
     const formData = await request.formData()
     const image = formData.get('image') as File
     const postId = formData.get('postId') as string
+    const language = formData.get('language') as string // 'korean' or 'english'
 
     if (!image || !postId) {
       return NextResponse.json(
@@ -53,10 +54,39 @@ export async function POST(request: NextRequest) {
 
     // Update post if not temp
     if (!postId.startsWith('temp-')) {
-      await prisma.post.update({
+      // First check if the post exists
+      const existingPost = await prisma.post.findUnique({
         where: { id: postId },
-        data: { coverImage: blob.url }
+        select: { id: true }
       })
+
+      if (!existingPost) {
+        console.error('Post not found with id:', postId)
+        return NextResponse.json(
+          { error: `Post not found: ${postId}` },
+          { status: 404 }
+        )
+      }
+
+      // Update based on language tab
+      if (language === 'english') {
+        // Update English translation coverImage
+        await prisma.postTranslation.updateMany({
+          where: {
+            postId: postId,
+            locale: 'en'
+          },
+          data: { coverImage: blob.url }
+        })
+        console.log('Updated English translation coverImage for post:', postId)
+      } else {
+        // Update Korean original post coverImage (default)
+        await prisma.post.update({
+          where: { id: postId },
+          data: { coverImage: blob.url }
+        })
+        console.log('Updated Korean post coverImage for post:', postId)
+      }
     }
 
     return NextResponse.json({ 

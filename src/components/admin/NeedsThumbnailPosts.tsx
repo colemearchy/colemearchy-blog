@@ -70,6 +70,10 @@ export default function NeedsThumbnailPosts() {
   const [uploadProgress, setUploadProgress] = useState(0)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
+  // 미리보기 상태
+  const [previewPost, setPreviewPost] = useState<any>(null)
+  const [isLoadingPreview, setIsLoadingPreview] = useState(false)
+
   useEffect(() => {
     fetchPosts()
   }, [])
@@ -101,6 +105,26 @@ export default function NeedsThumbnailPosts() {
       trackEvent('copy_post_title', 'admin', title)
     } catch (err) {
       alert('복사 실패')
+    }
+  }
+
+  // 미리보기 함수
+  const previewPostContent = async (postId: string) => {
+    try {
+      setIsLoadingPreview(true)
+      const response = await fetch(`/api/admin/posts/${postId}`)
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch post content')
+      }
+
+      const postData = await response.json()
+      setPreviewPost(postData)
+    } catch (error) {
+      console.error('Failed to fetch post preview:', error)
+      alert('미리보기를 불러올 수 없습니다.')
+    } finally {
+      setIsLoadingPreview(false)
     }
   }
 
@@ -173,8 +197,9 @@ export default function NeedsThumbnailPosts() {
           const formData = new FormData()
           formData.append('image', image)
           formData.append('postId', post.id)
+          formData.append('language', activeTab) // 'korean' or 'english'
 
-          // 이미지 업로드
+          // 이미지 업로드 (업로드 API에서 언어별 업데이트까지 처리)
           const uploadResponse = await uploadWithRetry(async () => {
             return await fetch('/api/admin/upload-image', {
               method: 'POST',
@@ -183,32 +208,10 @@ export default function NeedsThumbnailPosts() {
           })
 
           if (uploadResponse.ok) {
-            const { imageUrl } = await uploadResponse.json()
-
-            // 한글/영어 탭에 따라 다른 API 호출
-            let updateResponse
-            if (activeTab === 'korean') {
-              // 한글 썸네일: Post.coverImage 업데이트
-              updateResponse = await fetch(`/api/admin/posts/${post.id}`, {
-                method: 'PATCH',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ coverImage: imageUrl })
-              })
-            } else {
-              // 영어 썸네일: PostTranslation.coverImage 업데이트
-              updateResponse = await fetch(`/api/posts/${post.id}/translation`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  locale: 'en',
-                  coverImage: imageUrl
-                })
-              })
-            }
-
-            if (updateResponse.ok) {
-              successCount++
-            }
+            successCount++
+          } else {
+            const errorData = await uploadResponse.text()
+            console.error(`Upload failed for post ${post.id}:`, errorData)
           }
         } catch (error) {
           console.error(`Failed to upload thumbnail for post ${post.id}:`, error)
@@ -559,7 +562,14 @@ export default function NeedsThumbnailPosts() {
                       )}
                     </div>
                   </div>
-                  <div className="ml-4 flex-shrink-0">
+                  <div className="ml-4 flex-shrink-0 flex gap-2">
+                    <button
+                      onClick={() => previewPostContent(post.id)}
+                      disabled={isLoadingPreview}
+                      className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                    >
+                      {isLoadingPreview ? '로딩...' : '📄 미리보기'}
+                    </button>
                     <Link
                       href={`/admin/edit/${post.id}`}
                       className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
@@ -583,6 +593,88 @@ export default function NeedsThumbnailPosts() {
           Refresh
         </button>
       </div>
+
+      {/* 미리보기 모달 */}
+      {previewPost && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
+          <div className="bg-white rounded-lg shadow-xl max-w-4xl w-full max-h-[80vh] overflow-hidden">
+            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+              <h3 className="text-lg font-medium text-gray-900">
+                📄 글 미리보기
+              </h3>
+              <button
+                onClick={() => setPreviewPost(null)}
+                className="text-gray-400 hover:text-gray-500"
+              >
+                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            </div>
+            <div className="p-6 overflow-y-auto max-h-[calc(80vh-120px)]">
+              <div className="space-y-4">
+                <div>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">
+                    {previewPost.title}
+                  </h1>
+                  <div className="flex items-center gap-4 text-sm text-gray-500 mb-4">
+                    <span>언어: {previewPost.originalLanguage?.toUpperCase()}</span>
+                    <span>상태: {previewPost.status}</span>
+                    <span>조회수: {previewPost.views}</span>
+                    <span>생성일: {new Date(previewPost.createdAt).toLocaleDateString()}</span>
+                  </div>
+                  {previewPost.excerpt && (
+                    <p className="text-gray-600 italic mb-4">
+                      {previewPost.excerpt}
+                    </p>
+                  )}
+                  {previewPost.tags && previewPost.tags.length > 0 && (
+                    <div className="mb-4">
+                      <span className="text-sm text-gray-500">태그: </span>
+                      {previewPost.tags.map((tag: string, index: number) => (
+                        <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2">
+                          {tag}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                <div className="border-t pt-4">
+                  <h3 className="text-lg font-medium text-gray-900 mb-3">본문 내용</h3>
+                  <div className="prose max-w-none">
+                    <div
+                      className="text-gray-700 whitespace-pre-wrap"
+                      style={{ lineHeight: '1.6' }}
+                    >
+                      {previewPost.content ? previewPost.content.substring(0, 2000) : '내용이 없습니다.'}
+                      {previewPost.content && previewPost.content.length > 2000 && (
+                        <span className="text-gray-500">
+                          ... ({previewPost.content.length - 2000}자 더 있음)
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 p-6 border-t border-gray-200 bg-gray-50">
+              <button
+                onClick={() => setPreviewPost(null)}
+                className="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50"
+              >
+                닫기
+              </button>
+              <Link
+                href={`/admin/edit/${previewPost.id}`}
+                className="px-4 py-2 text-sm font-medium text-white bg-blue-600 rounded-md hover:bg-blue-700"
+                onClick={() => setPreviewPost(null)}
+              >
+                편집하기
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
