@@ -5,10 +5,6 @@ import { generateUniqueFileName, validateImageFile } from '@/lib/upload-utils'
 
 export async function POST(request: NextRequest) {
   try {
-    console.log('=== UPLOAD IMAGE API CALLED ===')
-    console.log('Request method:', request.method)
-    console.log('Request URL:', request.url)
-
     // 환경 변수 체크
     if (!process.env.BLOB_READ_WRITE_TOKEN) {
       console.error('BLOB_READ_WRITE_TOKEN is not set')
@@ -23,13 +19,7 @@ export async function POST(request: NextRequest) {
     const postId = formData.get('postId') as string
     const language = formData.get('language') as string // 'korean' or 'english'
 
-    console.log('Form data received:')
-    console.log('- image:', image ? `${image.name} (${image.size} bytes)` : 'null')
-    console.log('- postId:', postId)
-    console.log('- language:', language)
-
     if (!image || !postId) {
-      console.error('Missing required fields - image:', !!image, 'postId:', !!postId)
       return NextResponse.json(
         { error: 'Image and postId are required' },
         { status: 400 }

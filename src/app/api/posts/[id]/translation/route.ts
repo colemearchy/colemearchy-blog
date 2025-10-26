@@ -37,11 +37,6 @@ export async function PUT(
     const { id } = await params
     const data = await request.json()
 
-    console.log('=== TRANSLATION API PUT CALLED ===')
-    console.log('Post ID:', id)
-    console.log('Request data:', data)
-    console.log('Request URL:', request.url)
-
     // Build update data object, only including provided fields
     const updateData: any = {}
     if (data.title !== undefined) updateData.title = data.title
