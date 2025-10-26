@@ -276,7 +276,7 @@ export default async function PostPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       
-      <div className="min-h-screen bg-white">
+      <div className="min-h-screen bg-white w-full overflow-x-hidden">
         <header className="bg-white shadow-sm">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-6">
@@ -305,7 +305,7 @@ export default async function PostPage({
           </div>
         </header>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full overflow-x-hidden">
           <div className="flex gap-8">
             <article className="flex-1 max-w-4xl">
               <Breadcrumb postTitle={displayTitle} postSlug={post.slug} />

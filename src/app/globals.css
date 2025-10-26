@@ -32,6 +32,9 @@ html {
   scroll-behavior: smooth;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* Prevent horizontal scroll at root level */
+  overflow-x: hidden;
+  max-width: 100vw;
 }
 
 body {
@@ -243,8 +246,29 @@ a, button {
     overflow-x: hidden;
   }
 
-  /* Mobile-first responsive image containers */
-  @media (max-width: 640px) {
+  /* Aggressive mobile fixes to prevent any horizontal scroll */
+  @media (max-width: 768px) {
+    /* Force all max-width containers to respect viewport */
+    .max-w-7xl,
+    .max-w-6xl,
+    .max-w-5xl,
+    .max-w-4xl {
+      max-width: 100vw !important;
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
+    }
+
+    /* Reduce excessive padding on mobile */
+    .px-4,
+    .px-6,
+    .px-8,
+    .sm\:px-6,
+    .lg\:px-8 {
+      padding-left: 1rem !important;
+      padding-right: 1rem !important;
+    }
+
+    /* Ensure aspect ratio containers fit */
     .aspect-video,
     .aspect-\[16\/9\],
     .aspect-\[16\/10\],
@@ -253,16 +277,27 @@ a, button {
       max-width: 100% !important;
     }
 
-    /* Ensure grid items don't overflow */
+    /* Force grid items to not overflow */
     .grid > * {
-      min-width: 0;
-      overflow: hidden;
+      min-width: 0 !important;
+      overflow: hidden !important;
     }
 
     /* Responsive image sizing */
     img, picture, video {
       max-width: 100% !important;
       height: auto !important;
+    }
+
+    /* Force any potential wide elements to fit */
+    * {
+      max-width: 100vw !important;
+      box-sizing: border-box !important;
+    }
+
+    /* Exception for inline elements that should not be constrained */
+    span, em, strong, i, b, small, code {
+      max-width: none !important;
     }
   }
 }

@@ -146,10 +146,10 @@ export default async function HomePage({
   const morePosts = posts.slice(5)
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white w-full overflow-x-hidden">
       {/* Header with Logo */}
       <header className="border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden">
           <div className="flex justify-between items-center py-8">
             <Link href={`/${locale}`} className="text-3xl font-serif italic">
               Cole IT AI
@@ -188,7 +188,7 @@ export default async function HomePage({
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full overflow-x-hidden">
         {posts.length > 0 && (
           <>
             {/* Featured Post */}
@@ -408,7 +408,7 @@ export default async function HomePage({
 
       {/* Footer */}
       <footer className="bg-white py-12" role="contentinfo">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
               <h3 className="font-semibold text-gray-900 mb-4">Cole IT AI</h3>
