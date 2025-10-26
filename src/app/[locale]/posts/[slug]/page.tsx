@@ -24,12 +24,15 @@ interface PostPageProps {
   params: Promise<{ slug: string; locale: string }>
 }
 
-// Force static generation with ISR
-export const dynamic = 'force-static'
-export const dynamicParams = true
-export const revalidate = 3600 // 1 hour ISR
+// Temporarily use dynamic rendering to avoid DB quota issues during build
+export const dynamic = 'force-dynamic'
+// Will revert to static generation once DB quota is resolved:
+// export const dynamic = 'force-static'
+// export const dynamicParams = true
+// export const revalidate = 3600 // 1 hour ISR
 
-// Static generation for better performance
+// Temporarily disabled to avoid DB quota issues during build
+/*
 export async function generateStaticParams() {
   try {
     const posts = await prisma.post.findMany({
@@ -65,12 +68,14 @@ export async function generateStaticParams() {
     return []
   }
 }
+*/
 
 export async function generateMetadata({ params }: PostPageProps): Promise<Metadata> {
-  const { slug: rawSlug, locale } = await params
-  // 🔧 HOTFIX: Decode URL parameter to handle Korean characters
-  const slug = decodeURIComponent(rawSlug)
-  const post = await prisma.post.findUnique({
+  try {
+    const { slug: rawSlug, locale } = await params
+    // 🔧 HOTFIX: Decode URL parameter to handle Korean characters
+    const slug = decodeURIComponent(rawSlug)
+    const post = await prisma.post.findUnique({
     where: { slug },
     include: {
       translations: {
@@ -152,18 +157,26 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
       images: [ogImageUrl],
     },
   }
+  } catch (error) {
+    console.error('Error generating metadata:', error)
+    return {
+      title: 'Post - Colemearchy Blog',
+      description: 'Blog post content unavailable'
+    }
+  }
 }
 
 export default async function PostPage({
   params
 }: PostPageProps) {
-  const { slug: rawSlug, locale } = await params
-  const lang = locale === 'en' ? 'en' : 'ko'
+  try {
+    const { slug: rawSlug, locale } = await params
+    const lang = locale === 'en' ? 'en' : 'ko'
 
-  // 🔧 HOTFIX: Decode URL parameter to handle Korean characters
-  const slug = decodeURIComponent(rawSlug)
+    // 🔧 HOTFIX: Decode URL parameter to handle Korean characters
+    const slug = decodeURIComponent(rawSlug)
 
-  const post = await getPostBySlug(slug)
+    const post = await getPostBySlug(slug)
 
   if (!post || !post.publishedAt || post.status !== 'PUBLISHED') {
     console.warn('⚠️ [PostPage] Post not found or not published, returning 404')
@@ -511,4 +524,28 @@ export default async function PostPage({
       </div>
     </>
   )
+  } catch (error) {
+    console.error('Error loading post page:', error)
+
+    // Emergency fallback during DB quota or connection issues
+    if (error instanceof Error && (
+      error.message.includes('quota') ||
+      error.message.includes('connection') ||
+      error.message.includes('database') ||
+      error.name === 'PrismaClientInitializationError'
+    )) {
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Service Temporarily Unavailable</h1>
+            <p className="text-gray-600 mb-4">We're experiencing high traffic. Please try again in a few minutes.</p>
+            <a href="/" className="text-blue-600 hover:text-blue-800">← Return to Home</a>
+          </div>
+        </div>
+      )
+    }
+
+    // For other errors, show 404
+    notFound()
+  }
 }
