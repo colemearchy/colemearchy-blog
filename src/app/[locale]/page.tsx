@@ -5,6 +5,7 @@ import LazyNewsletterAnalytics from '@/components/LazyNewsletterAnalytics'
 import { Metadata } from 'next'
 import { navigationItems } from '@/lib/navigation'
 import { LazyAdSense } from '@/components/LazyAdSense'
+import { shouldUseNextImage } from '@/lib/image-utils'
 
 // Static generation with ISR (Incremental Static Regeneration)
 export const revalidate = 3600 // Revalidate every hour
@@ -199,17 +200,26 @@ export default async function HomePage({
                     <div className="grid lg:grid-cols-2 gap-8 items-center">
                       {featuredPost.coverImage && (
                         <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-white w-full max-w-none">
-                          <Image
-                            src={featuredPost.coverImage}
-                            alt={featuredPost.title}
-                            fill
-                            priority
-                            className="object-cover"
-                            sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, 50vw"
-                            placeholder="blur"
-                            blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxQf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-                            fetchPriority="high"
-                          />
+                          {shouldUseNextImage(featuredPost.coverImage) ? (
+                            <Image
+                              src={featuredPost.coverImage}
+                              alt={featuredPost.title}
+                              fill
+                              priority
+                              className="object-cover"
+                              sizes="(max-width: 640px) 100vw, (max-width: 768px) 90vw, 50vw"
+                              placeholder="blur"
+                              blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxQf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                              fetchPriority="high"
+                            />
+                          ) : (
+                            <img
+                              src={featuredPost.coverImage}
+                              alt={featuredPost.title}
+                              className="absolute inset-0 w-full h-full object-cover"
+                              loading="eager"
+                            />
+                          )}
                         </div>
                       )}
                       <div className="space-y-4">
@@ -263,18 +273,27 @@ export default async function HomePage({
                         <div className="space-y-3">
                           {post.coverImage && (
                             <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gray-100 w-full">
-                              <Image
-                                src={post.coverImage}
-                                alt={post.title}
-                                fill
-                                priority={index === 0}
-                                loading={index === 0 ? undefined : "lazy"}
-                                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
-                                placeholder="blur"
-                                blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxQf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-                                fetchPriority={index === 0 ? "high" : undefined}
-                              />
+                              {shouldUseNextImage(post.coverImage) ? (
+                                <Image
+                                  src={post.coverImage}
+                                  alt={post.title}
+                                  fill
+                                  priority={index === 0}
+                                  loading={index === 0 ? undefined : "lazy"}
+                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                  sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
+                                  placeholder="blur"
+                                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxQf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                                  fetchPriority={index === 0 ? "high" : undefined}
+                                />
+                              ) : (
+                                <img
+                                  src={post.coverImage}
+                                  alt={post.title}
+                                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  loading={index === 0 ? "eager" : "lazy"}
+                                />
+                              )}
                             </div>
                           )}
                           <div>
@@ -313,14 +332,23 @@ export default async function HomePage({
                         <div className="grid md:grid-cols-3 gap-6 items-start">
                           {post.coverImage && (
                             <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-gray-100">
-                              <Image
-                                src={post.coverImage}
-                                alt={post.title}
-                                fill
-                                loading="lazy"
-                                className="object-cover group-hover:scale-105 transition-transform duration-300"
-                                sizes="(max-width: 768px) 100vw, 33vw"
-                              />
+                              {shouldUseNextImage(post.coverImage) ? (
+                                <Image
+                                  src={post.coverImage}
+                                  alt={post.title}
+                                  fill
+                                  loading="lazy"
+                                  className="object-cover group-hover:scale-105 transition-transform duration-300"
+                                  sizes="(max-width: 768px) 100vw, 33vw"
+                                />
+                              ) : (
+                                <img
+                                  src={post.coverImage}
+                                  alt={post.title}
+                                  className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                  loading="lazy"
+                                />
+                              )}
                             </div>
                           )}
                           <div className="md:col-span-2 space-y-2">

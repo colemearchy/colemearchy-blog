@@ -64,3 +64,18 @@ export function getImageMimeType(format: string): string {
   }
   return mimeTypes[format.toLowerCase()] || 'image/jpeg'
 }
+
+/**
+ * Check if the image URL is from YouTube
+ */
+export function isYouTubeImage(url: string): boolean {
+  return url.includes('ytimg.com') || url.includes('youtube.com')
+}
+
+/**
+ * Check if the image URL should use Vercel image optimization
+ * Returns false for YouTube images to avoid 402 Payment Required errors
+ */
+export function shouldUseNextImage(url: string): boolean {
+  return !isYouTubeImage(url)
+}
