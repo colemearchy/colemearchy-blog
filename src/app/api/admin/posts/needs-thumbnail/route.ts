@@ -29,7 +29,7 @@ export async function GET() {
         globalRank: true,
       },
       orderBy: {
-        globalRank: 'asc'
+        createdAt: 'asc' // Changed to creation date for clear sequential numbering
       }
     })
 
@@ -73,21 +73,21 @@ export async function GET() {
         }
       },
       orderBy: {
-        globalRank: 'asc'
+        createdAt: 'asc' // Changed to creation date for clear sequential numbering
       }
     })
 
     // 3. Format response with sequential numbering (1, 2, 3...)
-    // For DRAFT posts without globalRank, assign sequential numbers based on order
+    // Simple sequential numbering based on creation date order
     const koreanPostsWithNumbers = koreanThumbnailPosts.map((post, index) => ({
       ...post,
-      postNumber: post.globalRank || (index + 1)
+      postNumber: index + 1 // Simple 1, 2, 3... numbering
     }))
 
     // 4. Format English posts with sequential numbering
     const englishPostsWithNumbers = englishThumbnailPosts.map((post, index) => ({
       ...post,
-      postNumber: post.globalRank || (index + 1),
+      postNumber: index + 1, // Simple 1, 2, 3... numbering
       englishTitle: post.translations[0]?.title || ''
     }))
 
