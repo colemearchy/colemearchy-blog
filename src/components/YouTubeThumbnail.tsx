@@ -1,7 +1,6 @@
 'use client'
 
 import { useState } from 'react'
-import Image from 'next/image'
 import { getYouTubeThumbnailUrls } from '@/lib/youtube-thumbnail'
 
 interface YouTubeThumbnailProps {
@@ -68,35 +67,29 @@ export default function YouTubeThumbnail({
     )
   }
   
-  // Use next/image with proper error handling
+  // Use regular img tag to bypass Vercel image optimization (avoid 402 Payment Required error)
   if (fill) {
     return (
-      <Image
+      <img
         src={currentUrl}
         alt={alt}
-        fill
-        sizes={sizes}
-        className={className}
-        priority={priority}
+        className={`${className} absolute inset-0 w-full h-full object-cover`}
         loading={priority ? 'eager' : 'lazy'}
-        fetchPriority={priority ? 'high' : 'auto'}
         onError={handleError}
         onLoad={handleLoad}
       />
     )
   }
-  
+
   // Fixed dimensions
   return (
-    <Image
+    <img
       src={currentUrl}
       alt={alt}
       width={width || 640}
       height={height || 360}
       className={className}
-      priority={priority}
       loading={priority ? 'eager' : 'lazy'}
-      fetchPriority={priority ? 'high' : 'auto'}
       onError={handleError}
       onLoad={handleLoad}
     />
