@@ -125,6 +125,37 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Failed to fetch posts needing thumbnail:', error)
+
+    // Emergency fallback during DB quota or connection issues
+    if (error instanceof Error && (
+      error.message.includes('quota') ||
+      error.message.includes('connection') ||
+      error.message.includes('database') ||
+      error.name === 'PrismaClientInitializationError'
+    )) {
+      return NextResponse.json({
+        korean: {
+          posts: [],
+          stats: {
+            total: 0,
+            totalAvailable: 0,
+            byLanguage: { ko: 0, en: 0 },
+            byStatus: { DRAFT: 0, PUBLISHED: 0 }
+          }
+        },
+        english: {
+          posts: [],
+          stats: {
+            total: 0,
+            totalAvailable: 0,
+            byLanguage: { ko: 0, en: 0 },
+            byStatus: { DRAFT: 0, PUBLISHED: 0 }
+          }
+        },
+        message: 'Database quota exceeded. Please check back later.'
+      })
+    }
+
     return NextResponse.json(
       { error: 'Failed to fetch posts' },
       { status: 500 }

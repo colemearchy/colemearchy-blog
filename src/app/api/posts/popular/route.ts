@@ -41,6 +41,17 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(posts)
   } catch (error) {
     console.error('Error fetching popular posts:', error)
+
+    // Emergency fallback during DB quota or connection issues
+    if (error instanceof Error && (
+      error.message.includes('quota') ||
+      error.message.includes('connection') ||
+      error.message.includes('database') ||
+      error.name === 'PrismaClientInitializationError'
+    )) {
+      return NextResponse.json([])
+    }
+
     return NextResponse.json({ error: 'Failed to fetch popular posts' }, { status: 500 })
   }
 }
