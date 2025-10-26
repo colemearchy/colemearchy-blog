@@ -18,6 +18,7 @@ import { LazyAdSense } from '@/components/LazyAdSense'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 import ViewCounter from '@/components/ViewCounter'
 import { navigationItems } from '@/lib/navigation'
+import { shouldUseNextImage } from '@/lib/image-utils'
 
 interface PostPageProps {
   params: Promise<{ slug: string; locale: string }>
@@ -384,14 +385,27 @@ export default async function PostPage({
                     )
                   }
                   
+                  // Use conditional rendering based on image source to avoid 402 Payment Required errors
+                  if (shouldUseNextImage(post.coverImage)) {
+                    return (
+                      <Image
+                        src={post.coverImage}
+                        alt={post.title}
+                        fill
+                        className="object-contain bg-gray-100"
+                        priority
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                      />
+                    )
+                  }
+
+                  // Use regular img tag for Vercel Blob Storage and other problematic images
                   return (
-                    <Image
+                    <img
                       src={post.coverImage}
                       alt={post.title}
-                      fill
-                      className="object-contain bg-gray-100"
-                      priority
-                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                      className="absolute inset-0 w-full h-full object-contain bg-gray-100"
+                      loading="eager"
                     />
                   )
                 })()}
