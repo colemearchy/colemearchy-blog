@@ -10,6 +10,7 @@ export async function GET() {
       where: {
         youtubeVideoId: null,
         status: { in: ['PUBLISHED', 'DRAFT'] },
+        originalLanguage: 'ko', // Only Korean posts for Korean thumbnail section
         OR: [
           { coverImage: null },
           { coverImage: '' }
@@ -36,6 +37,7 @@ export async function GET() {
     // 2. Get posts with English translation but no English thumbnail
     // Use globalRank for numbering (same unified ranking)
     // Include both PUBLISHED and DRAFT posts
+    // Filter to only show posts that have English translations (not Korean-only posts)
     const englishThumbnailPosts = await prisma.post.findMany({
       where: {
         youtubeVideoId: null,
