@@ -2,6 +2,9 @@ import PageLayout from '@/components/PageLayout'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 
+// Temporarily disable static generation to avoid DB quota issues during build
+export const dynamic = 'force-dynamic'
+
 export default async function ArchivePage({
   params,
 }: {

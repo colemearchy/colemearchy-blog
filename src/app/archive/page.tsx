@@ -7,6 +7,9 @@ export const metadata: Metadata = {
   description: 'Browse all posts organized by date',
 }
 
+// Temporarily disable static generation to avoid DB quota issues during build
+export const dynamic = 'force-dynamic'
+
 export default async function ArchivePage() {
   const posts = await prisma.post.findMany({
     where: {
