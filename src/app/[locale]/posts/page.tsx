@@ -34,10 +34,11 @@ export default async function PostsPage({
 }: {
   params: Promise<{ locale: string }>
 }) {
-  const { locale } = await params
-  const lang = locale === 'en' ? 'en' : 'ko'
-  
-  const posts = await prisma.post.findMany({
+  try {
+    const { locale } = await params
+    const lang = locale === 'en' ? 'en' : 'ko'
+
+    const posts = await prisma.post.findMany({
     where: {
       status: 'PUBLISHED',
       publishedAt: {
@@ -139,4 +140,43 @@ export default async function PostsPage({
       )}
     </PageLayout>
   )
+  } catch (error) {
+    console.error('Error loading posts page:', error)
+
+    // Emergency fallback during DB quota or connection issues
+    if (error instanceof Error && (
+      error.message.includes('quota') ||
+      error.message.includes('connection') ||
+      error.message.includes('database') ||
+      error.name === 'PrismaClientInitializationError'
+    )) {
+      return (
+        <div className="min-h-screen bg-white flex items-center justify-center">
+          <div className="text-center">
+            <h1 className="text-2xl font-bold text-gray-900 mb-4">Service Temporarily Unavailable</h1>
+            <p className="text-gray-600 mb-4">We're experiencing high traffic. Please try again in a few minutes.</p>
+            <a href="/" className="text-blue-600 hover:text-blue-800">← Return to Home</a>
+          </div>
+        </div>
+      )
+    }
+
+    // For other errors, show empty posts list
+    const { locale } = await params
+    const lang = locale === 'en' ? 'en' : 'ko'
+
+    return (
+      <PageLayout locale={locale} currentPath="/posts">
+        <div className="mb-8">
+          <h1 className="text-4xl font-bold text-gray-900">
+            {lang === 'ko' ? '모든 글' : 'All Posts'}
+          </h1>
+        </div>
+
+        <p className="text-gray-600">
+          {lang === 'ko' ? '게시물을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.' : 'Unable to load posts. Please try again later.'}
+        </p>
+      </PageLayout>
+    )
+  }
 }

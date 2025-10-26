@@ -1,50 +1,67 @@
 import { unstable_cache } from 'next/cache'
 import { prisma } from '@/lib/prisma'
 
-// Optimized post query with caching
+// Optimized post query with caching and error handling
 export const getPostBySlug = unstable_cache(
   async (slug: string) => {
-    return prisma.post.findUnique({
-      where: { 
-        slug,
-        status: 'PUBLISHED',
-        publishedAt: {
-          not: null,
-          lte: new Date()
-        }
-      },
-      select: {
-        // Only select required fields
-        id: true,
-        title: true,
-        slug: true,
-        content: true,
-        excerpt: true,
-        coverImage: true,
-        publishedAt: true,
-        createdAt: true,
-        updatedAt: true,
-        author: true,
-        tags: true,
-        seoTitle: true,
-        seoDescription: true,
-        views: true,
-        status: true,
-        youtubeVideoId: true,
-        originalLanguage: true,
-        translations: {
-          select: {
-            id: true,
-            locale: true,
-            title: true,
-            content: true,
-            excerpt: true,
-            seoTitle: true,
-            seoDescription: true,
+    try {
+      return await prisma.post.findUnique({
+        where: {
+          slug,
+          status: 'PUBLISHED',
+          publishedAt: {
+            not: null,
+            lte: new Date()
+          }
+        },
+        select: {
+          // Only select required fields
+          id: true,
+          title: true,
+          slug: true,
+          content: true,
+          excerpt: true,
+          coverImage: true,
+          publishedAt: true,
+          createdAt: true,
+          updatedAt: true,
+          author: true,
+          tags: true,
+          seoTitle: true,
+          seoDescription: true,
+          views: true,
+          status: true,
+          youtubeVideoId: true,
+          originalLanguage: true,
+          translations: {
+            select: {
+              id: true,
+              locale: true,
+              title: true,
+              content: true,
+              excerpt: true,
+              seoTitle: true,
+              seoDescription: true,
+            }
           }
         }
+      })
+    } catch (error) {
+      console.error('Error fetching post by slug:', error)
+
+      // During database issues, return null instead of throwing
+      if (error instanceof Error && (
+        error.message.includes('quota') ||
+        error.message.includes('connection') ||
+        error.message.includes('database') ||
+        error.name === 'PrismaClientInitializationError'
+      )) {
+        return null
       }
-    })
+
+      // Re-throw other errors
+      throw error
+    }
   },
   ['post-by-slug'],
   {
@@ -97,28 +114,45 @@ export const getRelatedPosts = unstable_cache(
   }
 )
 
-// Get comments without caching (dynamic data)
+// Get comments without caching (dynamic data) with error handling
 export async function getPostComments(postId: string) {
-  return prisma.comment.findMany({
-    where: {
-      postId,
-      isApproved: true,
-      isDeleted: false,
-      parentId: null,
-    },
-    orderBy: {
-      createdAt: 'desc',
-    },
-    include: {
-      replies: {
-        where: {
-          isApproved: true,
-          isDeleted: false,
-        },
-        orderBy: {
-          createdAt: 'asc',
+  try {
+    return await prisma.comment.findMany({
+      where: {
+        postId,
+        isApproved: true,
+        isDeleted: false,
+        parentId: null,
+      },
+      orderBy: {
+        createdAt: 'desc',
+      },
+      include: {
+        replies: {
+          where: {
+            isApproved: true,
+            isDeleted: false,
+          },
+          orderBy: {
+            createdAt: 'asc',
+          },
         },
       },
-    },
-  })
+    })
+  } catch (error) {
+    console.error('Error fetching post comments:', error)
+
+    // During database issues, return empty array instead of throwing
+    if (error instanceof Error && (
+      error.message.includes('quota') ||
+      error.message.includes('connection') ||
+      error.message.includes('database') ||
+      error.name === 'PrismaClientInitializationError'
+    )) {
+      return []
+    }
+
+    // Re-throw other errors
+    throw error
+  }
 }
