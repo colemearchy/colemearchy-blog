@@ -73,9 +73,20 @@ export function isYouTubeImage(url: string): boolean {
 }
 
 /**
+ * Check if the image URL is from Vercel Blob Storage
+ */
+export function isVercelBlobImage(url: string): boolean {
+  return url.includes('.public.blob.vercel-storage.com')
+}
+
+/**
  * Check if the image URL should use Vercel image optimization
- * Returns false for YouTube images to avoid 402 Payment Required errors
+ * Returns false for YouTube images and Vercel Blob Storage images to avoid 402 Payment Required errors
  */
 export function shouldUseNextImage(url: string): boolean {
-  return !isYouTubeImage(url)
+  // Skip optimization for images that cause 402 Payment Required errors
+  if (isYouTubeImage(url)) return false
+  if (isVercelBlobImage(url)) return false
+
+  return true
 }
