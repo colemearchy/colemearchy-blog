@@ -7,18 +7,35 @@ const nextConfig: NextConfig = {
       config.plugins = [...config.plugins, new PrismaPlugin()]
     }
 
-    // Exclude README.md and LICENSE files from libSQL packages
+    // Ignore all libSQL related files that cause webpack issues
     config.module.rules.push({
-      test: /\.(md|LICENSE)$/,
-      type: 'asset/resource',
-      generator: {
-        emit: false,
-      },
+      test: /\.(md|LICENSE|\.node)$/,
+      use: 'null-loader'
     })
 
-    // Handle libSQL native modules
-    config.externals = config.externals || []
-    config.externals.push('@libsql/darwin-arm64', '@libsql/linux-x64', '@libsql/win32-x64')
+    // Ignore specific libSQL directories and files
+    config.resolve.alias = {
+      ...config.resolve.alias,
+      '@libsql/linux-x64-gnu': false,
+      '@libsql/linux-x64-musl': false,
+      '@libsql/darwin-arm64': false,
+      '@libsql/win32-x64': false,
+    }
+
+    // Add more comprehensive externals
+    const libsqlExternals = [
+      '@libsql/linux-x64-gnu',
+      '@libsql/linux-x64-musl',
+      '@libsql/darwin-arm64',
+      '@libsql/win32-x64',
+      'libsql',
+      /^@libsql\//
+    ]
+
+    if (isServer) {
+      config.externals = config.externals || []
+      config.externals.push(...libsqlExternals)
+    }
 
     return config
   },
