@@ -56,3 +56,6 @@ dev.log
 # temporary files
 *.tmp
 *.temp
+
+# local backups (sensitive data)
+/local-backups/

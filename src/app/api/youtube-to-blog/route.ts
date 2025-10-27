@@ -8,6 +8,7 @@ import { env } from '@/lib/env'
 import { withErrorHandler, logger, ApiError, createSuccessResponse } from '@/lib/error-handler'
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slug'
 import { detectLanguage } from '@/lib/translation'
+import { backupSinglePost } from '@/lib/auto-backup'
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
 
@@ -300,6 +301,18 @@ OUTPUT FORMAT:
     status: post.status,
     videoId
   });
+
+  // Auto-backup newly created post
+  try {
+    await backupSinglePost(post.id, 'post-create');
+    logger.info('Auto-backup completed for new post', { postId: post.id });
+  } catch (backupError) {
+    // Backup failure shouldn't break the main flow
+    logger.warn('Auto-backup failed but post creation succeeded', {
+      postId: post.id,
+      error: backupError
+    });
+  }
 
   return createSuccessResponse({
     post: {

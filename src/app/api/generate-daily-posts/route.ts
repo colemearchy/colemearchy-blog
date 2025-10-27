@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { prisma } from '@/lib/prisma';
 import { MASTER_SYSTEM_PROMPT, generateContentPrompt } from '@/lib/ai-prompts';
+import { backupSinglePost } from '@/lib/auto-backup';
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
@@ -282,6 +283,15 @@ export async function POST(request: NextRequest) {
               createdAt: new Date()
             }
           });
+
+          // Auto-backup newly created daily post
+          try {
+            await backupSinglePost(post.id, 'post-create');
+            console.log(`✅ Auto-backup completed for daily post: ${post.title}`);
+          } catch (backupError) {
+            // Backup failure shouldn't break the main flow
+            console.warn(`⚠️ Auto-backup failed for post ${post.id}:`, backupError);
+          }
 
           generatedPosts.push({
             id: post.id,
