@@ -31,7 +31,7 @@ export async function GET(
           { publishedAt: { lte: new Date() } },
           {
             OR: tagsToArray(currentPost.tags).map(tag => ({
-              tags: { has: tag }
+              tags: { contains: tag }
             }))
           }
         ]
