@@ -2,6 +2,7 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import InfinitePostsList from '@/components/InfinitePostsList'
+import { normalizePostsTags } from '@/lib/utils/tags'
 
 export const metadata: Metadata = {
   title: 'All Posts | Colemearchy Blog',
@@ -81,7 +82,7 @@ export default async function PostsPage() {
           {posts.length === 0 ? (
             <p className="text-gray-600">No posts found.</p>
           ) : (
-            <InfinitePostsList initialPosts={posts} />
+            <InfinitePostsList initialPosts={normalizePostsTags(posts)} />
           )}
         </main>
 

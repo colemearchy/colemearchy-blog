@@ -33,14 +33,14 @@ export function buildPostWhereClause(params: {
   
   if (params.search) {
     where.OR = [
-      { title: { contains: params.search, mode: 'insensitive' } },
-      { content: { contains: params.search, mode: 'insensitive' } },
-      { excerpt: { contains: params.search, mode: 'insensitive' } },
+      { title: { contains: params.search } },
+      { content: { contains: params.search } },
+      { excerpt: { contains: params.search } },
     ]
   }
   
   if (params.tag) {
-    where.tags = { has: params.tag }
+    where.tags = { contains: params.tag }
   }
   
   return where

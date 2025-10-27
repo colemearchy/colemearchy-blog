@@ -88,7 +88,7 @@ export const getRelatedPosts = unstable_cache(
           not: null
         },
         tags: {
-          hasSome: tags
+          contains: tags.join(',')
         }
       },
       select: {

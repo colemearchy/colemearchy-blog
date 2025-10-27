@@ -26,7 +26,8 @@ async function main() {
 
   recentPosts.forEach((post, i) => {
     console.log(`${i + 1}. ${post.title}`);
-    console.log(`   태그: ${post.tags.slice(0, 3).join(', ')}`);
+    const tagsDisplay = typeof post.tags === 'string' ? post.tags : ''
+    console.log(`   태그: ${tagsDisplay}`);
     console.log(`   언어: ${post.originalLanguage}`);
     console.log(`   예약: ${post.scheduledAt ? new Date(post.scheduledAt).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' }) : 'N/A'}`);
     console.log();
