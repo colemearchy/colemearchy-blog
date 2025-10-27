@@ -395,7 +395,7 @@ export default async function PostPage({
                 title={post.title} 
                 slug={post.slug} 
                 author={post.author || undefined}
-                tags={post.tags}
+                tags={tagsToArray(post.tags)}
               />
             </article>
             
