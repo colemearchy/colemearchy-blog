@@ -282,7 +282,7 @@ OUTPUT FORMAT:
         slug,
         content: generatedData.content || enhancedContent,
         excerpt: generatedData.excerpt || `${metadata.title} 영상을 요약하고 핵심 인사이트를 정리했습니다.`,
-        tags,
+        tags: Array.isArray(tags) ? tags.join(',') : (tags || ''),
         author: 'Colemearchy',
         status: autoPublish ? 'PUBLISHED' : 'DRAFT',
         publishedAt: autoPublish ? new Date() : null,
