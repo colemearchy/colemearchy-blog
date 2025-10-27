@@ -5,6 +5,14 @@ import Link from 'next/link'
 import LazyImage from './LazyImage'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 
+// Helper function to convert tags string to array
+// In SQLite (Turso), tags are stored as comma-separated strings
+function tagsToArray(tags: string | string[]): string[] {
+  if (Array.isArray(tags)) return tags
+  if (!tags || typeof tags !== 'string') return []
+  return tags.split(',').map(t => t.trim()).filter(Boolean)
+}
+
 interface Translation {
   id: string
   locale: string
@@ -19,7 +27,7 @@ interface Post {
   slug: string
   excerpt: string | null
   coverImage: string | null
-  tags: string[]
+  tags: string | string[] // SQLite stores as string, but can also be array
   content: string
   publishedAt: Date | null
   author: string | null
@@ -141,9 +149,9 @@ export default function InfinitePostsList({
                     {excerpt}
                   </p>
                 )}
-                {post.tags.length > 0 && (
+                {tagsToArray(post.tags).length > 0 && (
                   <div className="flex flex-wrap gap-2">
-                    {post.tags.slice(0, 3).map((tag) => (
+                    {tagsToArray(post.tags).slice(0, 3).map((tag) => (
                       <span
                         key={tag}
                         className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm"
