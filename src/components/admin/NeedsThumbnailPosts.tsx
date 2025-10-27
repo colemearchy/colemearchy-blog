@@ -4,6 +4,7 @@ import { useState, useEffect, useRef } from 'react'
 import Link from 'next/link'
 import { trackEvent } from '@/components/GoogleAnalytics'
 import { uploadWithRetry, validateImageFile } from '@/lib/upload-utils'
+import { tagsToArray } from '@/lib/utils/tags'
 
 interface Post {
   id: string
@@ -554,7 +555,7 @@ export default function NeedsThumbnailPosts() {
                       <span>Language: {post.originalLanguage.toUpperCase()}</span>
                       <span>•</span>
                       <span>Views: {post.views}</span>
-                      {post.tags.length > 0 && (
+                      {tagsToArray(post.tags).length > 0 && (
                         <>
                           <span>•</span>
                           <span>Tags: {post.tags.slice(0, 3).join(', ')}</span>

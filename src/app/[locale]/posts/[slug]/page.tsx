@@ -19,6 +19,7 @@ import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 import ViewCounter from '@/components/ViewCounter'
 import { navigationItems } from '@/lib/navigation'
 import { shouldUseNextImage } from '@/lib/image-utils'
+import { tagsToArray } from '@/lib/utils/tags'
 
 interface PostPageProps {
   params: Promise<{ slug: string; locale: string }>
@@ -128,8 +129,8 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   const displayExcerpt = locale === 'en' && translation?.excerpt ? translation.excerpt : post.excerpt
   const displayCoverImage = translation?.coverImage || post.coverImage
   
-  const ogImageUrl = displayCoverImage || 
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(displayTitle)}&author=${encodeURIComponent(post.author || 'Cole IT AI')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(post.tags.join(','))}`
+  const ogImageUrl = displayCoverImage ||
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(displayTitle)}&author=${encodeURIComponent(post.author || 'Cole IT AI')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`
 
   return {
     title: post.seoTitle || displayTitle,
@@ -236,7 +237,7 @@ export default async function PostPage({
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
-    image: post.coverImage || `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(post.tags.join(','))}`,
+    image: post.coverImage || `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`,
     datePublished: new Date(post.publishedAt).toISOString(),
     dateModified: new Date(post.updatedAt).toISOString(),
     author: {
@@ -257,8 +258,8 @@ export default async function PostPage({
       '@type': 'WebPage',
       '@id': `${process.env.NEXT_PUBLIC_SITE_URL}/posts/${post.slug}`,
     },
-    keywords: post.tags.join(', '),
-    articleSection: post.tags[0] || 'Blog',
+    keywords: tagsToArray(post.tags).join(', '),
+    articleSection: tagsToArray(post.tags)[0] || 'Blog',
     wordCount: content.split(/\s+/).length,
     timeRequired: `PT${readingTime}M`,
     inLanguage: lang === 'en' ? 'en-US' : 'ko-KR',
@@ -366,9 +367,9 @@ export default async function PostPage({
                     </>
                   )}
                 </div>
-            {post.tags.length > 0 && (
+            {tagsToArray(post.tags).length > 0 && (
               <div className="mt-4 flex flex-wrap gap-2">
-                {post.tags.map((tag) => (
+                {tagsToArray(post.tags).map((tag: string) => (
                   <span key={tag} className="bg-gray-100 text-gray-700 px-3 py-1 rounded-full text-sm">
                     {tag}
                   </span>

@@ -6,6 +6,7 @@ import { Metadata } from 'next'
 import { navigationItems } from '@/lib/navigation'
 import { LazyAdSense } from '@/components/LazyAdSense'
 import { shouldUseNextImage } from '@/lib/image-utils'
+import { tagsToArray } from '@/lib/utils/tags'
 
 // Static generation with ISR (Incremental Static Regeneration)
 export const revalidate = 3600 // Revalidate every hour
@@ -310,7 +311,7 @@ export default async function HomePage({
                                 })}
                               </time>
                               <span>•</span>
-                              <span>{post.tags[0] || 'ARTICLE'}</span>
+                              <span>{tagsToArray(post.tags)[0] || 'ARTICLE'}</span>
                             </div>
                           </div>
                         </div>
@@ -372,7 +373,7 @@ export default async function HomePage({
                                 })}
                               </time>
                               <span>•</span>
-                              <span>{post.tags[0] || 'ARTICLE'}</span>
+                              <span>{tagsToArray(post.tags)[0] || 'ARTICLE'}</span>
                             </div>
                           </div>
                         </div>

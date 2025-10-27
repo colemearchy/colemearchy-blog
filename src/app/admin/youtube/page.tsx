@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
+import { tagsToArray } from '@/lib/utils/tags'
 
 interface YouTubeVideo {
   id: string
@@ -217,7 +218,7 @@ This post is based on our YouTube video. Watch it for more details!
       titleLength: postData.title.length,
       slugValid: /^[a-z0-9-]+$/.test(postData.slug),
       excerptLength: postData.excerpt?.length || 0,
-      tagsCount: postData.tags.length,
+      tagsCount: tagsToArray(postData.tags).length,
       coverImageIsUrl: postData.coverImage.startsWith('http'),
       youtubeIdValid: /^[a-zA-Z0-9_-]{11}$/.test(postData.youtubeVideoId),
     })

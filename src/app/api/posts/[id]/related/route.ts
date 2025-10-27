@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { tagsToArray } from '@/lib/utils/tags'
 
 export async function GET(
   request: NextRequest,
@@ -29,7 +30,7 @@ export async function GET(
           { status: 'PUBLISHED' },
           { publishedAt: { lte: new Date() } },
           {
-            OR: currentPost.tags.map(tag => ({
+            OR: tagsToArray(currentPost.tags).map(tag => ({
               tags: { has: tag }
             }))
           }

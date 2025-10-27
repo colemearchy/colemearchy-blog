@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { cookies } from 'next/headers'
+import { tagsToArray } from '@/lib/utils/tags'
 
 export async function GET(request: NextRequest) {
   try {
@@ -63,7 +64,7 @@ export async function GET(request: NextRequest) {
 
     // Get views by tag
     const tagViews = posts.reduce((acc, post) => {
-      post.tags.forEach(tag => {
+      tagsToArray(post.tags).forEach(tag => {
         if (!acc[tag]) acc[tag] = 0
         acc[tag] += post.views
       })

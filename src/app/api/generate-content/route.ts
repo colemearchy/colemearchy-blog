@@ -8,6 +8,7 @@ import { generateContentSchema } from '@/lib/validations';
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slug';
 import { detectLanguage } from '@/lib/translation';
 import { autoGenerateThumbnailUrl } from '@/lib/utils/thumbnail';
+import { tagsToArray } from '@/lib/utils/tags'
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
@@ -74,7 +75,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
 
     const existingPostsContext = existingPosts.length > 0
       ? `\n\n**EXISTING POSTS IN DATABASE (for deduplication check):**\n${
-          existingPosts.map(p => `- Title: "${p.title}" | Slug: "${p.slug}" | Tags: [${p.tags.join(', ')}]`).join('\n')
+          existingPosts.map(p => `- Title: "${p.title}" | Slug: "${p.slug}" | Tags: [${tagsToArray(p.tags).join(', ')}]`).join('\n')
         }\n\n**IMPORTANT: Do NOT create content that duplicates any of the above topics. If the requested topic is similar to an existing post, create content that extends or provides a new angle on the topic.**\n\n`
       : '';
 
