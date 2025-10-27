@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import InfinitePostsList from '@/components/InfinitePostsList'
 import PageLayout from '@/components/PageLayout'
+import { normalizePostsTags } from '@/lib/utils/tags'
 
 export async function generateMetadata({
   params,
@@ -133,8 +134,8 @@ export default async function PostsPage({
           {lang === 'ko' ? '아직 게시물이 없습니다.' : 'No posts found.'}
         </p>
       ) : (
-        <InfinitePostsList 
-          initialPosts={posts} 
+        <InfinitePostsList
+          initialPosts={normalizePostsTags(posts)}
           locale={locale}
         />
       )}
