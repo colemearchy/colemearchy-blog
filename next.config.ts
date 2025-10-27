@@ -6,6 +6,20 @@ const nextConfig: NextConfig = {
     if (isServer) {
       config.plugins = [...config.plugins, new PrismaPlugin()]
     }
+
+    // Exclude README.md and LICENSE files from libSQL packages
+    config.module.rules.push({
+      test: /\.(md|LICENSE)$/,
+      type: 'asset/resource',
+      generator: {
+        emit: false,
+      },
+    })
+
+    // Handle libSQL native modules
+    config.externals = config.externals || []
+    config.externals.push('@libsql/darwin-arm64', '@libsql/linux-x64', '@libsql/win32-x64')
+
     return config
   },
   // Target modern browsers only to reduce polyfills
@@ -61,7 +75,15 @@ const nextConfig: NextConfig = {
     imageSizes: [16, 32, 48, 64, 96, 128, 256, 384],
     minimumCacheTTL: 60 * 60 * 24 * 365, // 1 year
   },
-  serverExternalPackages: ['sharp', '@libsql/client', 'libsql'],
+  serverExternalPackages: [
+    'sharp',
+    '@libsql/client',
+    '@libsql/core',
+    '@libsql/hrana-client',
+    '@libsql/isomorphic-fetch',
+    '@libsql/isomorphic-ws',
+    'libsql'
+  ],
   compress: true,
   poweredByHeader: false,
   headers: async () => [
