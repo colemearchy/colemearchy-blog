@@ -145,7 +145,7 @@ ${snippet.channelTitle} 채널의 최신 콘텐츠로, 깊이 있는 내용을 �
       content: content,
       excerpt: excerpt,
       coverImage: `https://img.youtube.com/vi/${videoId}/maxresdefault.jpg`,
-      tags: tags,
+      tags: Array.isArray(tags) ? tags.join(',') : (tags || ''),
       status: 'PUBLISHED',
       publishedAt: new Date(),
       youtubeVideoId: videoId,

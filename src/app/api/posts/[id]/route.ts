@@ -45,7 +45,7 @@ export const PUT = withErrorHandler(async (
       content: data.content,
       excerpt: data.excerpt,
       coverImage: data.coverImage,
-      tags: data.tags,
+      tags: Array.isArray(data.tags) ? data.tags.join(',') : data.tags,
       seoTitle: data.seoTitle,
       seoDescription: data.seoDescription,
       publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,

@@ -65,7 +65,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         content: data.content,
         excerpt: data.excerpt,
         coverImage: data.coverImage,
-        tags: data.tags || [],
+        tags: Array.isArray(data.tags) ? data.tags.join(',') : (data.tags || ''),
         seoTitle: data.seoTitle || data.title,
         seoDescription: data.seoDescription || data.excerpt,
         publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
