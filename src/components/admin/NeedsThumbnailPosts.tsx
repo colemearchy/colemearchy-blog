@@ -558,7 +558,7 @@ export default function NeedsThumbnailPosts() {
                       {tagsToArray(post.tags).length > 0 && (
                         <>
                           <span>•</span>
-                          <span>Tags: {post.tags.slice(0, 3).join(', ')}</span>
+                          <span>Tags: {tagsToArray(post.tags).slice(0, 3).join(', ')}</span>
                         </>
                       )}
                     </div>
