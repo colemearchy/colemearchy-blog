@@ -5,19 +5,5 @@
   "installCommand": "pnpm install",
   "env": {
     "NEXT_PUBLIC_NODE_ENV": "production"
-  },
-  "crons": [
-    {
-      "path": "/api/cron/generate-daily-posts",
-      "schedule": "0 8 * * *"
-    },
-    {
-      "path": "/api/publish-posts",
-      "schedule": "0 9 * * *"
-    },
-    {
-      "path": "/api/cron/youtube-sync",
-      "schedule": "0 10 * * *"
-    }
-  ]
+  }
 }
