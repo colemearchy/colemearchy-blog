@@ -555,12 +555,15 @@ export default function NeedsThumbnailPosts() {
                       <span>Language: {post.originalLanguage.toUpperCase()}</span>
                       <span>•</span>
                       <span>Views: {post.views}</span>
-                      {tagsToArray(post.tags).length > 0 && (
-                        <>
-                          <span>•</span>
-                          <span>Tags: {tagsToArray(post.tags).slice(0, 3).join(', ')}</span>
-                        </>
-                      )}
+                      {(() => {
+                        const tags = tagsToArray(post.tags)
+                        return tags.length > 0 && (
+                          <>
+                            <span>•</span>
+                            <span>Tags: {tags.slice(0, 3).join(', ')}</span>
+                          </>
+                        )
+                      })()}
                     </div>
                   </div>
                   <div className="ml-4 flex-shrink-0 flex gap-2">
