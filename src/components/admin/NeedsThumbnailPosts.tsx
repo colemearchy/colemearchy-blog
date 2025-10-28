@@ -629,10 +629,10 @@ export default function NeedsThumbnailPosts() {
                       {previewPost.excerpt}
                     </p>
                   )}
-                  {previewPost.tags && previewPost.tags.length > 0 && (
+                  {tagsToArray(previewPost.tags).length > 0 && (
                     <div className="mb-4">
                       <span className="text-sm text-gray-500">태그: </span>
-                      {previewPost.tags.map((tag: string, index: number) => (
+                      {tagsToArray(previewPost.tags).map((tag: string, index: number) => (
                         <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2">
                           {tag}
                         </span>
