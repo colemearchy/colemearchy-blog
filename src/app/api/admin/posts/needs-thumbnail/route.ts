@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { tagsToArray } from '@/lib/utils/tags'
 
 export async function GET() {
   try {
@@ -68,14 +69,18 @@ export async function GET() {
 
     // 3. Format response with sequential numbering (1, 2, 3...)
     // Simple sequential numbering based on creation date order
+    // Convert tags to array for client-side compatibility
     const koreanPostsWithNumbers = koreanThumbnailPosts.map((post, index) => ({
       ...post,
+      tags: tagsToArray(post.tags), // Convert string tags to array
       postNumber: index + 1 // Simple 1, 2, 3... numbering
     }))
 
     // 4. Format English posts with sequential numbering
+    // Convert tags to array for client-side compatibility
     const englishPostsWithNumbers = englishThumbnailPosts.map((post, index) => ({
       ...post,
+      tags: tagsToArray(post.tags), // Convert string tags to array
       postNumber: index + 1 // Simple 1, 2, 3... numbering
     }))
 
