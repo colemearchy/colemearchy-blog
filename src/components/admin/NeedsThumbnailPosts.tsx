@@ -8,6 +8,7 @@ import { tagsToArray } from '@/lib/utils/tags'
 
 interface Post {
   id: string
+  translationId?: string // For English translations
   title: string
   slug: string
   excerpt: string | null
@@ -17,23 +18,30 @@ interface Post {
   status: string
   originalLanguage: string
   views: number
-  postNumber: number // 실제 글 번호 (1-based, 생성일 순)
-  englishTitle?: string // 영어 제목 (영어 썸네일 탭에서만 사용)
+  postNumber: number
+  isYoutube: boolean
+  youtubeVideoId?: string | null
 }
 
 interface LanguageData {
-  posts: Post[]
+  manual: Post[]
+  youtube: Post[]
   stats: {
-    total: number
-    totalAvailable: number // Total non-YouTube posts in database
-    byLanguage: {
-      ko: number
-      en: number
+    manual: {
+      total: number
+      byStatus: {
+        DRAFT: number
+        PUBLISHED: number
+      }
     }
-    byStatus: {
-      DRAFT: number
-      PUBLISHED: number
+    youtube: {
+      total: number
+      byStatus: {
+        DRAFT: number
+        PUBLISHED: number
+      }
     }
+    totalAvailable: number
   }
 }
 
@@ -64,6 +72,7 @@ export default function NeedsThumbnailPosts() {
   const [error, setError] = useState<string | null>(null)
   const [copiedId, setCopiedId] = useState<string | null>(null)
   const [activeTab, setActiveTab] = useState<'korean' | 'english'>('korean')
+  const [postTypeFilter, setPostTypeFilter] = useState<'all' | 'manual' | 'youtube'>('all')
 
   // 일괄 업로드 상태
   const [images, setImages] = useState<File[]>([])
@@ -171,7 +180,14 @@ export default function NeedsThumbnailPosts() {
       return
     }
 
-    const currentPosts = activeTab === 'korean' ? data.korean.posts : data.english.posts
+    const currentData = activeTab === 'korean' ? data.korean : data.english
+
+    // Get posts based on current filter
+    const currentPosts = postTypeFilter === 'all'
+      ? [...currentData.manual, ...currentData.youtube]
+      : postTypeFilter === 'manual'
+      ? currentData.manual
+      : currentData.youtube
 
     if (currentPosts.length === 0) {
       alert('썸네일이 필요한 게시물이 없습니다.')
@@ -264,8 +280,16 @@ export default function NeedsThumbnailPosts() {
 
   // 현재 탭의 데이터 가져오기
   const currentData = activeTab === 'korean' ? data.korean : data.english
-  const currentPosts = currentData.posts
+
+  // Apply post type filter
+  const currentPosts = postTypeFilter === 'all'
+    ? [...currentData.manual, ...currentData.youtube]
+    : postTypeFilter === 'manual'
+    ? currentData.manual
+    : currentData.youtube
+
   const currentStats = currentData.stats
+  const totalCount = currentStats.manual.total + currentStats.youtube.total
 
   return (
     <div className="space-y-8">
@@ -281,7 +305,7 @@ export default function NeedsThumbnailPosts() {
           </p>
         </div>
         <div className="text-right">
-          <p className="text-3xl font-bold text-gray-900">{currentStats.total}</p>
+          <p className="text-3xl font-bold text-gray-900">{totalCount}</p>
           <p className="text-sm text-gray-500">Total Posts</p>
         </div>
       </div>
@@ -300,7 +324,7 @@ export default function NeedsThumbnailPosts() {
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            🇰🇷 한글 썸네일 ({data.korean.stats.total}개)
+            🇰🇷 한글 썸네일 ({data.korean.stats.manual.total + data.korean.stats.youtube.total}개)
           </button>
           <button
             onClick={() => {
@@ -313,7 +337,42 @@ export default function NeedsThumbnailPosts() {
                 : 'border-transparent text-gray-500 hover:text-gray-700'
             }`}
           >
-            🇬🇧 영어 썸네일 ({data.english.stats.total}개)
+            🇬🇧 영어 썸네일 ({data.english.stats.manual.total + data.english.stats.youtube.total}개)
+          </button>
+        </div>
+
+        {/* Post Type Filter */}
+        <div className="flex gap-2 px-6 py-3 bg-gray-50 border-t border-gray-200">
+          <span className="text-sm font-medium text-gray-700 self-center mr-2">필터:</span>
+          <button
+            onClick={() => setPostTypeFilter('all')}
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+              postTypeFilter === 'all'
+                ? 'bg-blue-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+            }`}
+          >
+            전체 ({currentStats.manual.total + currentStats.youtube.total})
+          </button>
+          <button
+            onClick={() => setPostTypeFilter('manual')}
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+              postTypeFilter === 'manual'
+                ? 'bg-green-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+            }`}
+          >
+            ✍️ 직접 쓴 글 ({currentStats.manual.total})
+          </button>
+          <button
+            onClick={() => setPostTypeFilter('youtube')}
+            className={`px-3 py-1 text-sm font-medium rounded-md transition-colors ${
+              postTypeFilter === 'youtube'
+                ? 'bg-red-600 text-white'
+                : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-100'
+            }`}
+          >
+            📺 YouTube 글 ({currentStats.youtube.total})
           </button>
         </div>
 
@@ -329,11 +388,11 @@ export default function NeedsThumbnailPosts() {
                   📊 Unified Numbering System
                 </p>
                 <p className="mt-1 text-xs text-blue-700">
-                  Posts are numbered chronologically across all languages ({currentStats.totalAvailable} total non-YouTube posts).
+                  Posts are numbered chronologically across all languages ({currentStats.totalAvailable} total posts).
                   English translations use the <strong>same numbers</strong> as Korean originals
                   (e.g., Post #74 is always Post #74 in both languages).
-                  {currentStats.totalAvailable > 0 && currentStats.total > 0 && (
-                    <> Numbers may appear non-sequential (e.g., #74, #76, #78) because only {currentStats.total} of {currentStats.totalAvailable} posts have English translations.</>
+                  {currentStats.totalAvailable > 0 && totalCount > 0 && (
+                    <> Numbers may appear non-sequential (e.g., #74, #76, #78) because only {totalCount} of {currentStats.totalAvailable} posts have English translations.</>
                   )}
                 </p>
               </div>
@@ -452,22 +511,28 @@ export default function NeedsThumbnailPosts() {
         </div>
       )}
 
-      {/* Stats: Language + Status */}
+      {/* Stats: Post Type + Status */}
       <div className="grid grid-cols-4 gap-4">
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-            Korean Original
+        <div className="bg-green-50 p-4 rounded-lg shadow border border-green-200">
+          <h3 className="text-sm font-medium text-green-700 uppercase tracking-wider">
+            ✍️ Manual Posts
           </h3>
-          <p className="mt-2 text-2xl font-bold text-gray-900">
-            {currentStats.byLanguage.ko}
+          <p className="mt-2 text-2xl font-bold text-green-800">
+            {currentStats.manual.total}
+          </p>
+          <p className="text-xs text-green-600 mt-1">
+            D:{currentStats.manual.byStatus.DRAFT} / P:{currentStats.manual.byStatus.PUBLISHED}
           </p>
         </div>
-        <div className="bg-white p-4 rounded-lg shadow">
-          <h3 className="text-sm font-medium text-gray-500 uppercase tracking-wider">
-            English Original
+        <div className="bg-red-50 p-4 rounded-lg shadow border border-red-200">
+          <h3 className="text-sm font-medium text-red-700 uppercase tracking-wider">
+            📺 YouTube Posts
           </h3>
-          <p className="mt-2 text-2xl font-bold text-gray-900">
-            {currentStats.byLanguage.en}
+          <p className="mt-2 text-2xl font-bold text-red-800">
+            {currentStats.youtube.total}
+          </p>
+          <p className="text-xs text-red-600 mt-1">
+            D:{currentStats.youtube.byStatus.DRAFT} / P:{currentStats.youtube.byStatus.PUBLISHED}
           </p>
         </div>
         <div className="bg-yellow-50 p-4 rounded-lg shadow border border-yellow-200">
@@ -475,15 +540,15 @@ export default function NeedsThumbnailPosts() {
             DRAFT
           </h3>
           <p className="mt-2 text-2xl font-bold text-yellow-800">
-            {currentStats.byStatus.DRAFT}
+            {currentStats.manual.byStatus.DRAFT + currentStats.youtube.byStatus.DRAFT}
           </p>
         </div>
-        <div className="bg-green-50 p-4 rounded-lg shadow border border-green-200">
-          <h3 className="text-sm font-medium text-green-700 uppercase tracking-wider">
+        <div className="bg-blue-50 p-4 rounded-lg shadow border border-blue-200">
+          <h3 className="text-sm font-medium text-blue-700 uppercase tracking-wider">
             PUBLISHED
           </h3>
-          <p className="mt-2 text-2xl font-bold text-green-800">
-            {currentStats.byStatus.PUBLISHED}
+          <p className="mt-2 text-2xl font-bold text-blue-800">
+            {currentStats.manual.byStatus.PUBLISHED + currentStats.youtube.byStatus.PUBLISHED}
           </p>
         </div>
       </div>
@@ -529,19 +594,24 @@ export default function NeedsThumbnailPosts() {
                       >
                         {post.status}
                       </span>
+                      {post.isYoutube && (
+                        <span
+                          className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 text-red-800"
+                          title="YouTube post"
+                        >
+                          📺 YouTube
+                        </span>
+                      )}
                       <div className="flex flex-col gap-1">
                         <h4
-                          onClick={() => copyTitle(activeTab === 'english' && post.englishTitle ? post.englishTitle : post.title, post.id)}
+                          onClick={() => copyTitle(post.title, post.id)}
                           className="text-lg font-medium text-gray-900 cursor-pointer hover:text-blue-600 transition-colors relative group"
                         >
-                          {activeTab === 'english' && post.englishTitle ? post.englishTitle : post.title}
+                          {post.title}
                           <span className="ml-2 text-xs text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">
                             {copiedId === post.id ? '✓ 복사됨!' : '📋 클릭하여 복사'}
                           </span>
                         </h4>
-                        {activeTab === 'english' && post.englishTitle && (
-                          <p className="text-sm text-gray-500">원본: {post.title}</p>
-                        )}
                       </div>
                     </div>
                     {post.excerpt && (

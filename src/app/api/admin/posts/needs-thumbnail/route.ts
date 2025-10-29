@@ -5,13 +5,12 @@ import { tagsToArray } from '@/lib/utils/tags'
 export async function GET() {
   try {
     // 1. Get posts without Korean thumbnails (coverImage)
-    // Use globalRank for numbering (unified ranking system)
-    // Include both PUBLISHED and DRAFT posts (user needs to add thumbnails before publishing)
-    const koreanThumbnailPosts = await prisma.post.findMany({
+    // Separated into manual posts and YouTube posts
+    const koreanManualPosts = await prisma.post.findMany({
       where: {
-        youtubeVideoId: null,
+        youtubeVideoId: null, // Manual posts only
         status: { in: ['PUBLISHED', 'DRAFT'] },
-        originalLanguage: 'ko', // Only Korean posts for Korean thumbnail section
+        originalLanguage: 'ko',
         OR: [
           { coverImage: null },
           { coverImage: '' }
@@ -29,21 +28,18 @@ export async function GET() {
         originalLanguage: true,
         views: true,
         globalRank: true,
+        youtubeVideoId: true,
       },
       orderBy: {
-        createdAt: 'asc' // Changed to creation date for clear sequential numbering
+        createdAt: 'asc'
       }
     })
 
-    // 2. Get English original posts that need English thumbnails
-    // Use globalRank for numbering (same unified ranking)
-    // Include both PUBLISHED and DRAFT posts
-    // Only show English original posts missing thumbnails (not Korean posts with English translations)
-    const englishThumbnailPosts = await prisma.post.findMany({
+    const koreanYoutubePosts = await prisma.post.findMany({
       where: {
-        youtubeVideoId: null,
+        youtubeVideoId: { not: null }, // YouTube posts only
         status: { in: ['PUBLISHED', 'DRAFT'] },
-        originalLanguage: 'en', // Only English original posts for English thumbnail section
+        originalLanguage: 'ko',
         OR: [
           { coverImage: null },
           { coverImage: '' }
@@ -61,70 +57,175 @@ export async function GET() {
         originalLanguage: true,
         views: true,
         globalRank: true,
+        youtubeVideoId: true,
       },
       orderBy: {
-        createdAt: 'asc' // Changed to creation date for clear sequential numbering
+        createdAt: 'asc'
       }
     })
 
-    // 3. Format response with sequential numbering (1, 2, 3...)
-    // Simple sequential numbering based on creation date order
-    // Convert tags to array for client-side compatibility
-    const koreanPostsWithNumbers = koreanThumbnailPosts.map((post, index) => ({
+    // 2. Get English translations that need thumbnails
+    // Find all PostTranslations with locale='en' that don't have coverImage
+    const englishTranslationsNeedingThumbnails = await prisma.postTranslation.findMany({
+      where: {
+        locale: 'en',
+        OR: [
+          { coverImage: null },
+          { coverImage: '' }
+        ],
+      },
+      select: {
+        id: true,
+        postId: true,
+        locale: true,
+        title: true,
+        excerpt: true,
+        coverImage: true,
+        createdAt: true,
+        updatedAt: true,
+        post: {
+          select: {
+            slug: true,
+            status: true,
+            tags: true,
+            youtubeVideoId: true,
+            originalLanguage: true,
+            views: true,
+            globalRank: true,
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    })
+
+    // Separate English translations into manual and YouTube
+    const englishManualPosts = englishTranslationsNeedingThumbnails
+      .filter(t => t.post.youtubeVideoId === null)
+      .map(translation => ({
+        id: translation.postId,
+        translationId: translation.id,
+        title: translation.title,
+        slug: translation.post.slug,
+        excerpt: translation.excerpt,
+        createdAt: translation.createdAt,
+        updatedAt: translation.updatedAt,
+        tags: translation.post.tags,
+        status: translation.post.status,
+        originalLanguage: translation.post.originalLanguage,
+        views: translation.post.views,
+        globalRank: translation.post.globalRank,
+        youtubeVideoId: translation.post.youtubeVideoId,
+      }))
+
+    const englishYoutubePosts = englishTranslationsNeedingThumbnails
+      .filter(t => t.post.youtubeVideoId !== null)
+      .map(translation => ({
+        id: translation.postId,
+        translationId: translation.id,
+        title: translation.title,
+        slug: translation.post.slug,
+        excerpt: translation.excerpt,
+        createdAt: translation.createdAt,
+        updatedAt: translation.updatedAt,
+        tags: translation.post.tags,
+        status: translation.post.status,
+        originalLanguage: translation.post.originalLanguage,
+        views: translation.post.views,
+        globalRank: translation.post.globalRank,
+        youtubeVideoId: translation.post.youtubeVideoId,
+      }))
+
+    // 3. Format response with sequential numbering
+    const koreanManualPostsWithNumbers = koreanManualPosts.map((post, index) => ({
       ...post,
-      tags: tagsToArray(post.tags), // Convert string tags to array
-      postNumber: index + 1 // Simple 1, 2, 3... numbering
+      tags: tagsToArray(post.tags),
+      postNumber: index + 1,
+      isYoutube: false
     }))
 
-    // 4. Format English posts with sequential numbering
-    // Convert tags to array for client-side compatibility
-    const englishPostsWithNumbers = englishThumbnailPosts.map((post, index) => ({
+    const koreanYoutubePostsWithNumbers = koreanYoutubePosts.map((post, index) => ({
       ...post,
-      tags: tagsToArray(post.tags), // Convert string tags to array
-      postNumber: index + 1 // Simple 1, 2, 3... numbering
+      tags: tagsToArray(post.tags),
+      postNumber: index + 1,
+      isYoutube: true
     }))
 
-    // Get total count of all non-YouTube posts (PUBLISHED + DRAFT) for context
-    const totalNonYoutubePosts = await prisma.post.count({
+    const englishManualPostsWithNumbers = englishManualPosts.map((post, index) => ({
+      ...post,
+      tags: tagsToArray(post.tags),
+      postNumber: index + 1,
+      isYoutube: false
+    }))
+
+    const englishYoutubePostsWithNumbers = englishYoutubePosts.map((post, index) => ({
+      ...post,
+      tags: tagsToArray(post.tags),
+      postNumber: index + 1,
+      isYoutube: true
+    }))
+
+    // Get total counts for statistics
+    const totalManualPosts = await prisma.post.count({
       where: {
         youtubeVideoId: null,
         status: { in: ['PUBLISHED', 'DRAFT'] }
       }
     })
 
-    const koreanStats = {
-      total: koreanPostsWithNumbers.length,
-      totalAvailable: totalNonYoutubePosts,
-      byLanguage: {
-        ko: koreanPostsWithNumbers.filter(p => p.originalLanguage === 'ko').length,
-        en: koreanPostsWithNumbers.filter(p => p.originalLanguage === 'en').length,
-      },
-      byStatus: {
-        DRAFT: koreanPostsWithNumbers.filter(p => p.status === 'DRAFT').length,
-        PUBLISHED: koreanPostsWithNumbers.filter(p => p.status === 'PUBLISHED').length,
+    const totalYoutubePosts = await prisma.post.count({
+      where: {
+        youtubeVideoId: { not: null },
+        status: { in: ['PUBLISHED', 'DRAFT'] }
       }
+    })
+
+    const koreanStats = {
+      manual: {
+        total: koreanManualPostsWithNumbers.length,
+        byStatus: {
+          DRAFT: koreanManualPostsWithNumbers.filter(p => p.status === 'DRAFT').length,
+          PUBLISHED: koreanManualPostsWithNumbers.filter(p => p.status === 'PUBLISHED').length,
+        }
+      },
+      youtube: {
+        total: koreanYoutubePostsWithNumbers.length,
+        byStatus: {
+          DRAFT: koreanYoutubePostsWithNumbers.filter(p => p.status === 'DRAFT').length,
+          PUBLISHED: koreanYoutubePostsWithNumbers.filter(p => p.status === 'PUBLISHED').length,
+        }
+      },
+      totalAvailable: totalManualPosts + totalYoutubePosts
     }
 
     const englishStats = {
-      total: englishPostsWithNumbers.length,
-      totalAvailable: totalNonYoutubePosts,
-      byLanguage: {
-        ko: englishPostsWithNumbers.filter(p => p.originalLanguage === 'ko').length,
-        en: englishPostsWithNumbers.filter(p => p.originalLanguage === 'en').length,
+      manual: {
+        total: englishManualPostsWithNumbers.length,
+        byStatus: {
+          DRAFT: englishManualPostsWithNumbers.filter(p => p.status === 'DRAFT').length,
+          PUBLISHED: englishManualPostsWithNumbers.filter(p => p.status === 'PUBLISHED').length,
+        }
       },
-      byStatus: {
-        DRAFT: englishPostsWithNumbers.filter(p => p.status === 'DRAFT').length,
-        PUBLISHED: englishPostsWithNumbers.filter(p => p.status === 'PUBLISHED').length,
-      }
+      youtube: {
+        total: englishYoutubePostsWithNumbers.length,
+        byStatus: {
+          DRAFT: englishYoutubePostsWithNumbers.filter(p => p.status === 'DRAFT').length,
+          PUBLISHED: englishYoutubePostsWithNumbers.filter(p => p.status === 'PUBLISHED').length,
+        }
+      },
+      totalAvailable: totalManualPosts + totalYoutubePosts
     }
 
     return NextResponse.json({
       korean: {
-        posts: koreanPostsWithNumbers,
+        manual: koreanManualPostsWithNumbers,
+        youtube: koreanYoutubePostsWithNumbers,
         stats: koreanStats
       },
       english: {
-        posts: englishPostsWithNumbers,
+        manual: englishManualPostsWithNumbers,
+        youtube: englishYoutubePostsWithNumbers,
         stats: englishStats
       }
     })
@@ -140,21 +241,21 @@ export async function GET() {
     )) {
       return NextResponse.json({
         korean: {
-          posts: [],
+          manual: [],
+          youtube: [],
           stats: {
-            total: 0,
-            totalAvailable: 0,
-            byLanguage: { ko: 0, en: 0 },
-            byStatus: { DRAFT: 0, PUBLISHED: 0 }
+            manual: { total: 0, byStatus: { DRAFT: 0, PUBLISHED: 0 } },
+            youtube: { total: 0, byStatus: { DRAFT: 0, PUBLISHED: 0 } },
+            totalAvailable: 0
           }
         },
         english: {
-          posts: [],
+          manual: [],
+          youtube: [],
           stats: {
-            total: 0,
-            totalAvailable: 0,
-            byLanguage: { ko: 0, en: 0 },
-            byStatus: { DRAFT: 0, PUBLISHED: 0 }
+            manual: { total: 0, byStatus: { DRAFT: 0, PUBLISHED: 0 } },
+            youtube: { total: 0, byStatus: { DRAFT: 0, PUBLISHED: 0 } },
+            totalAvailable: 0
           }
         },
         message: 'Database quota exceeded. Please check back later.'
