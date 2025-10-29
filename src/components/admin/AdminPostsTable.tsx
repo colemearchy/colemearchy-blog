@@ -13,6 +13,7 @@ interface Post {
   id: string
   title: string
   slug: string
+  status: 'DRAFT' | 'PUBLISHED'
   publishedAt: Date | null
   views: number
   coverImage: string | null
@@ -34,6 +35,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState<string | null>(null)
   const [categoryFilter, setCategoryFilter] = useState<'all' | 'manual' | 'youtube'>('all')
   const [languageFilter, setLanguageFilter] = useState<'all' | 'ko' | 'en' | 'no-en' | 'no-ko'>('all')
+  const [statusFilter, setStatusFilter] = useState<'all' | 'published' | 'draft'>('all')
   const [selectedPosts, setSelectedPosts] = useState<Set<string>>(new Set())
   const [isTranslating, setIsTranslating] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -121,6 +123,33 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
     }
   }
 
+  const handlePublish = async (postId: string) => {
+    if (!confirm('이 초안을 발행하시겠습니까?')) {
+      return
+    }
+
+    try {
+      const response = await fetch(`/api/admin/posts/${postId}/publish`, {
+        method: 'POST',
+      })
+
+      if (!response.ok) {
+        throw new Error('Failed to publish post')
+      }
+
+      const result = await response.json()
+
+      if (result.success) {
+        alert(result.alreadyPublished ? '이미 발행된 글입니다.' : '글이 성공적으로 발행되었습니다!')
+        // Refresh the posts list
+        fetchPosts()
+      }
+    } catch (error) {
+      console.error('Error publishing post:', error)
+      alert('글 발행에 실패했습니다.')
+    }
+  }
+
   const handleSelectAll = () => {
     if (selectedPosts.size === filteredPosts.length) {
       setSelectedPosts(new Set())
@@ -194,6 +223,10 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
     if (categoryFilter === 'manual' && post.youtubeVideoId !== null) return false
     if (categoryFilter === 'youtube' && post.youtubeVideoId === null) return false
 
+    // Status filter
+    if (statusFilter === 'published' && post.status !== 'PUBLISHED') return false
+    if (statusFilter === 'draft' && post.status !== 'DRAFT') return false
+
     // Language filter
     if (languageFilter === 'all') return true
     if (languageFilter === 'ko') return post.translations?.some(t => t.locale === 'ko')
@@ -257,6 +290,20 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
               <option value="youtube">YouTube 영상</option>
             </select>
 
+            {/* 상태 필터 */}
+            <select
+              value={statusFilter}
+              onChange={(e) => {
+                setStatusFilter(e.target.value as any)
+                setSelectedPosts(new Set())
+              }}
+              className="rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm"
+            >
+              <option value="all">모든 상태</option>
+              <option value="published">발행됨</option>
+              <option value="draft">초안</option>
+            </select>
+
             {/* 언어 필터 */}
             <select
               value={languageFilter}
@@ -272,7 +319,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
               <option value="no-en">영어 번역 없음</option>
               <option value="no-ko">한국어 번역 없음</option>
             </select>
-            
+
             {/* 일괄 번역 버튼 */}
             {(languageFilter === 'no-en' || languageFilter === 'no-ko') && selectedPosts.size > 0 && (
               <button
@@ -410,7 +457,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
                     </div>
                   </td>
                   <td className="px-3 py-4 text-sm">
-                    {post.publishedAt ? (
+                    {post.status === 'PUBLISHED' ? (
                       <span className="inline-flex items-center rounded-md bg-green-50 px-2 py-1 text-xs font-medium text-green-700 ring-1 ring-inset ring-green-600/20">
                         발행됨
                       </span>
@@ -489,7 +536,20 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                         </svg>
                       </Link>
-                      
+
+                      {/* 발행 (초안일 때만) */}
+                      {post.status === 'DRAFT' && (
+                        <button
+                          onClick={() => handlePublish(post.id)}
+                          className="text-green-600 hover:text-green-900 font-medium"
+                          title="발행"
+                        >
+                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                        </button>
+                      )}
+
                       {/* 삭제 */}
                       <button
                         onClick={() => handleDelete(post.id)}
