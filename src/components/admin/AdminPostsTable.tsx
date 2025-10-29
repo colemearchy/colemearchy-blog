@@ -363,7 +363,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
             </select>
 
             {/* 일괄 발행 버튼 */}
-            {statusFilter === 'draft' && selectedPosts.size > 0 && (
+            {selectedPosts.size > 0 && (
               <button
                 onClick={handleBulkPublish}
                 disabled={isTranslating}
