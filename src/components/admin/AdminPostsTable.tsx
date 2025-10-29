@@ -151,10 +151,13 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
   }
 
   const handleSelectAll = () => {
-    if (selectedPosts.size === filteredPosts.length) {
+    // Only select draft posts
+    const draftPosts = filteredPosts.filter(p => p.status === 'DRAFT')
+
+    if (selectedPosts.size === draftPosts.length && draftPosts.length > 0) {
       setSelectedPosts(new Set())
     } else {
-      setSelectedPosts(new Set(filteredPosts.map(p => p.id)))
+      setSelectedPosts(new Set(draftPosts.map(p => p.id)))
     }
   }
 
@@ -280,6 +283,9 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
 
   const postsWithoutEnglish = posts.filter(post => !post.translations?.some(t => t.locale === 'en'))
   const postsWithoutKorean = posts.filter(post => !post.translations?.some(t => t.locale === 'ko'))
+
+  // Draft posts for selection
+  const draftPosts = filteredPosts.filter(post => post.status === 'DRAFT')
 
   if (loading) {
     return (
@@ -411,13 +417,14 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
         <table className="min-w-full">
           <thead className="bg-gray-50">
             <tr>
-              {(languageFilter === 'no-en' || languageFilter === 'no-ko' || languageFilter === 'all' || statusFilter === 'draft') && (
+              {draftPosts.length > 0 && (
                 <th className="w-4 px-3 py-3.5">
                   <input
                     type="checkbox"
-                    checked={selectedPosts.size === filteredPosts.length && filteredPosts.length > 0}
+                    checked={selectedPosts.size === draftPosts.length && draftPosts.length > 0}
                     onChange={handleSelectAll}
                     className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                    title="초안만 전체 선택"
                   />
                 </th>
               )}
@@ -469,19 +476,15 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
               
               return (
                 <tr key={post.id} className="hover:bg-gray-50">
-                  {(languageFilter === 'no-en' || languageFilter === 'no-ko' || languageFilter === 'all' || statusFilter === 'draft') && (
+                  {draftPosts.length > 0 && (
                     <td className="px-3 py-4">
-                      {(
-                        (languageFilter === 'no-en' && !hasEnglishTranslation) ||
-                        (languageFilter === 'no-ko' && !hasKoreanTranslation) ||
-                        (languageFilter === 'all' && (!hasEnglishTranslation || !hasKoreanTranslation)) ||
-                        (statusFilter === 'draft' && post.status === 'DRAFT')
-                      ) && (
+                      {post.status === 'DRAFT' && (
                         <input
                           type="checkbox"
                           checked={selectedPosts.has(post.id)}
                           onChange={() => handleSelectPost(post.id)}
                           className="h-4 w-4 rounded border-gray-300 text-indigo-600 focus:ring-indigo-500"
+                          title="초안 선택"
                         />
                       )}
                     </td>
