@@ -33,7 +33,8 @@ export default function ThreadsContentGenerator({ post }: ThreadsContentGenerato
     }
     
     // Generate hashtags from tags
-    const hashtags = post.tags
+    const tags = Array.isArray(post.tags) ? post.tags : []
+    const hashtags = tags
       .slice(0, 5) // Limit to 5 hashtags
       .map(tag => `#${tag.replace(/\s+/g, '')}`)
       .join(' ')

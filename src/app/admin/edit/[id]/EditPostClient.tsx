@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import PostEditor from '@/components/PostEditor'
 import ThreadsContentGenerator from '@/components/ThreadsContentGenerator'
 import TranslationEditor from '@/components/TranslationEditor'
+import { tagsToArray } from '@/lib/utils/tags'
 
 interface Translation {
   id: string
@@ -314,7 +315,7 @@ export default function EditPostClient({ id }: { id: string }) {
           title: post.title,
           excerpt: post.excerpt || null,
           content: post.content,
-          tags: post.tags || [],
+          tags: tagsToArray(post.tags),
           slug: post.slug
         }} />
       </div>
