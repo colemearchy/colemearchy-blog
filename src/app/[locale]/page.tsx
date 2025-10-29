@@ -148,24 +148,24 @@ export default async function HomePage({
   const morePosts = posts.slice(5)
 
   return (
-    <div className="min-h-screen bg-white w-full overflow-x-hidden">
+    <div className="min-h-screen bg-white">
       {/* Header with Logo */}
       <header className="border-b border-gray-200">
-        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden">
+        <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-8">
             <Link href={`/${locale}`} className="text-3xl font-serif italic">
               Cole IT AI
             </Link>
-            <div className="flex gap-2">
+            <div className="flex gap-2 flex-shrink-0">
               <Link
                 href="/ko"
-                className={`px-3 py-1 rounded font-medium ${lang === 'ko' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                className={`px-3 py-1 rounded font-medium whitespace-nowrap ${lang === 'ko' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
               >
                 KOR
               </Link>
               <Link
                 href="/en"
-                className={`px-3 py-1 rounded font-medium ${lang === 'en' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                className={`px-3 py-1 rounded font-medium whitespace-nowrap ${lang === 'en' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
               >
                 ENG
               </Link>
@@ -190,7 +190,7 @@ export default async function HomePage({
         </div>
       </header>
 
-      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full overflow-x-hidden">
+      <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
         {posts.length > 0 && (
           <>
             {/* Featured Post */}

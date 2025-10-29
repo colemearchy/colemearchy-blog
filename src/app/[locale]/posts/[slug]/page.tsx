@@ -301,23 +301,23 @@ export default async function PostPage({
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
       
-      <div className="min-h-screen bg-white w-full overflow-x-hidden">
+      <div className="min-h-screen bg-white">
         <header className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="border-b border-gray-100">
             <div className="flex justify-between items-center py-8">
               <Link href={`/${locale}`} className="text-3xl font-serif italic">
                 Cole IT AI
               </Link>
-              <div className="flex gap-2">
+              <div className="flex gap-2 flex-shrink-0">
                 <Link
                   href={`/ko/posts/${slug}`}
-                  className={`px-3 py-1 rounded font-medium ${lang === 'ko' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                  className={`px-3 py-1 rounded font-medium whitespace-nowrap ${lang === 'ko' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                 >
                   KOR
                 </Link>
                 <Link
                   href={`/en/posts/${slug}`}
-                  className={`px-3 py-1 rounded font-medium ${lang === 'en' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
+                  className={`px-3 py-1 rounded font-medium whitespace-nowrap ${lang === 'en' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
                 >
                   ENG
                 </Link>
