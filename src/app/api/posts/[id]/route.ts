@@ -36,10 +36,12 @@ export const PUT = withErrorHandler(async (
   const { id } = await params;
   const body = await request.json();
 
+  logger.info('PUT request received', { postId: id, body });
+
   // Validate input data
   const data = updatePostSchema.parse(body);
 
-  logger.info('Updating post', { postId: id });
+  logger.info('Validation passed, updating post', { postId: id, validatedData: data });
 
   const post = await prisma.post.update({
     where: { id },
@@ -49,7 +51,8 @@ export const PUT = withErrorHandler(async (
       content: data.content,
       excerpt: data.excerpt,
       coverImage: data.coverImage,
-      tags: Array.isArray(data.tags) ? data.tags.join(',') : data.tags,
+      // tagsSchema always transforms to array, so we join it for DB storage
+      tags: data.tags ? (Array.isArray(data.tags) ? data.tags.join(',') : data.tags) : undefined,
       seoTitle: data.seoTitle,
       seoDescription: data.seoDescription,
       publishedAt: data.publishedAt ? new Date(data.publishedAt) : null,
@@ -91,7 +94,10 @@ export const PATCH = withErrorHandler(async (
   if (data.title !== undefined) updateData.title = data.title;
   if (data.content !== undefined) updateData.content = data.content;
   if (data.excerpt !== undefined) updateData.excerpt = data.excerpt;
-  if (data.tags !== undefined) updateData.tags = data.tags;
+  if (data.tags !== undefined) {
+    // Convert array to comma-separated string for DB storage
+    updateData.tags = Array.isArray(data.tags) ? data.tags.join(',') : data.tags;
+  }
   if (data.seoTitle !== undefined) updateData.seoTitle = data.seoTitle;
   if (data.seoDescription !== undefined) updateData.seoDescription = data.seoDescription;
   if (data.publishedAt !== undefined) updateData.publishedAt = data.publishedAt ? new Date(data.publishedAt) : null;

@@ -7,9 +7,18 @@ export const slugSchema = z
   .regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens');
 
 export const tagsSchema = z
-  .array(z.string().min(1))
-  .min(1, 'At least one tag is required')
-  .max(10, 'Maximum 10 tags allowed');
+  .union([
+    z.array(z.string().min(1)),
+    z.string()
+  ])
+  .transform((val) => {
+    if (typeof val === 'string') {
+      return val.split(',').map(tag => tag.trim()).filter(Boolean);
+    }
+    return val;
+  })
+  .refine((tags) => tags.length >= 1, { message: 'At least one tag is required' })
+  .refine((tags) => tags.length <= 10, { message: 'Maximum 10 tags allowed' });
 
 export const youtubeVideoIdSchema = z
   .string()
