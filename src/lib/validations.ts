@@ -32,11 +32,11 @@ export const createPostSchema = z.object({
   slug: slugSchema,
   content: z.string().min(1, 'Content is required'),
   excerpt: z.string().max(500, 'Excerpt too long').optional(),
-  coverImage: z.string().url('Invalid image URL').optional(),
+  coverImage: z.string().url('Invalid image URL').or(z.literal('')).optional(),
   tags: tagsSchema.optional(),
   seoTitle: z.string().max(70, 'SEO title too long').optional(),
   seoDescription: z.string().max(160, 'SEO description too long').optional(),
-  publishedAt: z.string().datetime().nullable().optional(),
+  publishedAt: z.string().datetime().or(z.literal('')).nullable().optional(),
   youtubeVideoId: youtubeVideoIdSchema,
   socialLinks: z
     .object({

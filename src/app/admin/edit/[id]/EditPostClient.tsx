@@ -64,6 +64,8 @@ export default function EditPostClient({ id }: { id: string }) {
   }, [id])
 
   const handleSubmit = async (data: PostFormData) => {
+    console.log('📤 Submitting data:', data)
+
     const response = await fetch(`/api/posts/${id}`, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
@@ -74,7 +76,9 @@ export default function EditPostClient({ id }: { id: string }) {
       alert('저장이 완료되었습니다!')
       router.push('/admin')
     } else {
-      alert('저장 중 오류가 발생했습니다.')
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
+      console.error('❌ Error response:', errorData)
+      alert(`저장 중 오류가 발생했습니다:\n${JSON.stringify(errorData, null, 2)}`)
     }
   }
 
