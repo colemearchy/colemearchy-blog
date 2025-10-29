@@ -200,7 +200,7 @@ export default async function HomePage({
                   <Link href={`/${locale}/posts/${featuredPost.slug}`} className="block">
                     <div className="grid lg:grid-cols-2 gap-8 items-center">
                       {featuredPost.coverImage && (
-                        <div className="relative aspect-[16/10] overflow-hidden rounded-xl bg-white w-full max-w-none">
+                        <div className="relative aspect-[16/9] overflow-hidden rounded-xl bg-white w-full max-w-none">
                           {shouldUseNextImage(featuredPost.coverImage) ? (
                             <Image
                               src={featuredPost.coverImage}
@@ -273,7 +273,7 @@ export default async function HomePage({
                       <Link href={`/${locale}/posts/${post.slug}`} className="block">
                         <div className="space-y-3">
                           {post.coverImage && (
-                            <div className="relative aspect-[4/3] overflow-hidden rounded-lg bg-gray-100 w-full">
+                            <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-gray-100 w-full">
                               {shouldUseNextImage(post.coverImage) ? (
                                 <Image
                                   src={post.coverImage}
@@ -332,7 +332,7 @@ export default async function HomePage({
                       <Link href={`/${locale}/posts/${post.slug}`} className="block">
                         <div className="grid md:grid-cols-3 gap-6 items-start">
                           {post.coverImage && (
-                            <div className="relative aspect-[16/10] overflow-hidden rounded-lg bg-gray-100">
+                            <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-gray-100">
                               {shouldUseNextImage(post.coverImage) ? (
                                 <Image
                                   src={post.coverImage}
