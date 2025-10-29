@@ -51,6 +51,7 @@ export const POST = withErrorHandler(async (
   return NextResponse.json({
     success: true,
     message: 'Post published successfully',
+    alreadyPublished: false,
     post: {
       id: post.id,
       status: post.status,
