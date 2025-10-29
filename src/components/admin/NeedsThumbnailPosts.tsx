@@ -632,16 +632,19 @@ export default function NeedsThumbnailPosts() {
                       {previewPost.excerpt}
                     </p>
                   )}
-                  {tagsToArray(previewPost.tags).length > 0 && (
-                    <div className="mb-4">
-                      <span className="text-sm text-gray-500">태그: </span>
-                      {tagsToArray(previewPost.tags).map((tag: string, index: number) => (
-                        <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2">
-                          {tag}
-                        </span>
-                      ))}
-                    </div>
-                  )}
+                  {(() => {
+                    const tags = tagsToArray(previewPost.tags)
+                    return tags.length > 0 && (
+                      <div className="mb-4">
+                        <span className="text-sm text-gray-500">태그: </span>
+                        {tags.map((tag: string, index: number) => (
+                          <span key={index} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-2">
+                            {tag}
+                          </span>
+                        ))}
+                      </div>
+                    )
+                  })()}
                 </div>
                 <div className="border-t pt-4">
                   <h3 className="text-lg font-medium text-gray-900 mb-3">본문 내용</h3>
