@@ -1,5 +1,5 @@
 import PageLayout from '@/components/PageLayout'
-import Link from 'next/link'
+import ArchiveClient from '@/components/ArchiveClient'
 import { prisma } from '@/lib/prisma'
 
 // Temporarily disable static generation to avoid DB quota issues during build
@@ -14,73 +14,64 @@ export default async function ArchivePage({
     const { locale } = await params
     const lang = locale === 'en' ? 'en' : 'ko'
 
-    // 언어별 포스트 가져오기
+    // 언어별 포스트 가져오기 (manual + YouTube 모두)
     const posts = await prisma.post.findMany({
-    where: {
-      status: 'PUBLISHED',
-      publishedAt: { not: null },
-      // 썸네일이 있는 포스트만 노출
-      coverImage: {
-        not: null
-      },
-      OR: [
-        { originalLanguage: lang },
-        {
-          translations: {
-            some: {
-              locale: lang
+      where: {
+        status: 'PUBLISHED',
+        publishedAt: { not: null },
+        // 썸네일이 있는 포스트만 노출
+        coverImage: {
+          not: null
+        },
+        OR: [
+          { originalLanguage: lang },
+          {
+            translations: {
+              some: {
+                locale: lang
+              }
             }
           }
-        }
-      ]
-    },
-    orderBy: { publishedAt: 'desc' },
-    include: {
-      translations: {
-        where: {
-          locale: lang
+        ]
+      },
+      orderBy: { publishedAt: 'desc' },
+      select: {
+        id: true,
+        slug: true,
+        title: true,
+        excerpt: true,
+        publishedAt: true,
+        youtubeVideoId: true,
+        originalLanguage: true,
+        translations: {
+          where: {
+            locale: lang
+          },
+          select: {
+            title: true,
+            excerpt: true
+          }
         }
       }
-    }
-  })
-  
-  return (
-    <PageLayout locale={locale} currentPath="/archive">
-      <h1 className="text-4xl font-bold text-gray-900 mb-8">
-        {lang === 'ko' ? '아카이브' : 'Archive'}
-      </h1>
-      
-      <div className="space-y-4">
-        {posts.map((post) => {
-          const title = lang === 'en' && post.translations?.[0]?.title
-            ? post.translations[0].title
-            : post.title
-            
-          return (
-            <article key={post.id} className="border-b border-gray-200 pb-4">
-              <Link
-                href={`/${locale}/posts/${post.slug}`}
-                className="block hover:bg-gray-50 -mx-4 px-4 py-2"
-              >
-                <div className="flex justify-between items-baseline">
-                  <h2 className="text-lg font-medium text-gray-900 hover:text-gray-700">
-                    {title}
-                  </h2>
-                  <time className="text-sm text-gray-500">
-                    {new Date(post.publishedAt!).toLocaleDateString(lang === 'ko' ? 'ko-KR' : 'en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric'
-                    })}
-                  </time>
-                </div>
-              </Link>
-            </article>
-          )
-        })}
-      </div>
-    </PageLayout>
-  )
+    })
+
+    // Serialize data for client component
+    const serializedPosts = posts.map(post => ({
+      id: post.id,
+      slug: post.slug,
+      title: post.title,
+      excerpt: post.excerpt,
+      publishedAt: post.publishedAt?.toISOString() || null,
+      youtubeVideoId: post.youtubeVideoId,
+      originalLanguage: post.originalLanguage,
+      translations: post.translations
+    }))
+
+    return (
+      <PageLayout locale={locale} currentPath="/archive">
+        <ArchiveClient posts={serializedPosts} locale={locale} lang={lang} />
+      </PageLayout>
+    )
   } catch (error) {
     console.error('Error loading archive page:', error)
 
@@ -108,13 +99,7 @@ export default async function ArchivePage({
 
     return (
       <PageLayout locale={locale} currentPath="/archive">
-        <h1 className="text-4xl font-bold text-gray-900 mb-8">
-          {lang === 'ko' ? '아카이브' : 'Archive'}
-        </h1>
-
-        <p className="text-gray-600">
-          {lang === 'ko' ? '아카이브를 불러올 수 없습니다. 잠시 후 다시 시도해주세요.' : 'Unable to load archive. Please try again later.'}
-        </p>
+        <ArchiveClient posts={[]} locale={locale} lang={lang} />
       </PageLayout>
     )
   }
