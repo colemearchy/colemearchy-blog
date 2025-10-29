@@ -195,14 +195,14 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
       })
 
       const result = await response.json()
-      
+
       if (response.ok) {
         const successCount = result.results.filter((r: any) => r.status === 'success').length
         const skippedCount = result.results.filter((r: any) => r.status === 'skipped').length
         const errorCount = result.results.filter((r: any) => r.status === 'error').length
-        
+
         alert(`번역 완료!\n성공: ${successCount}개\n이미 번역됨: ${skippedCount}개\n실패: ${errorCount}개`)
-        
+
         // Refresh posts
         await fetchPosts()
         setSelectedPosts(new Set())
@@ -212,6 +212,48 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
     } catch (error) {
       console.error('Error translating posts:', error)
       alert('번역 중 오류가 발생했습니다.')
+    } finally {
+      setIsTranslating(false)
+    }
+  }
+
+  const handleBulkPublish = async () => {
+    if (selectedPosts.size === 0) {
+      alert('발행할 포스트를 선택해주세요.')
+      return
+    }
+
+    if (!confirm(`${selectedPosts.size}개의 초안을 발행하시겠습니까?`)) {
+      return
+    }
+
+    setIsTranslating(true) // Reuse the same loading state
+    try {
+      const response = await fetch('/api/admin/posts/bulk-publish', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          postIds: Array.from(selectedPosts)
+        })
+      })
+
+      const result = await response.json()
+
+      if (response.ok) {
+        const { summary } = result
+        alert(`발행 완료!\n성공: ${summary.published}개\n이미 발행됨: ${summary.skipped}개\n실패: ${summary.errors}개`)
+
+        // Refresh posts
+        await fetchPosts()
+        setSelectedPosts(new Set())
+      } else {
+        throw new Error(result.error || 'Bulk publish failed')
+      }
+    } catch (error) {
+      console.error('Error publishing posts:', error)
+      alert('발행 중 오류가 발생했습니다.')
     } finally {
       setIsTranslating(false)
     }
@@ -320,6 +362,27 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
               <option value="no-ko">한국어 번역 없음</option>
             </select>
 
+            {/* 일괄 발행 버튼 */}
+            {statusFilter === 'draft' && selectedPosts.size > 0 && (
+              <button
+                onClick={handleBulkPublish}
+                disabled={isTranslating}
+                className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 disabled:opacity-50"
+              >
+                {isTranslating ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    발행 중...
+                  </>
+                ) : (
+                  <>일괄 발행 ({selectedPosts.size}개)</>
+                )}
+              </button>
+            )}
+
             {/* 일괄 번역 버튼 */}
             {(languageFilter === 'no-en' || languageFilter === 'no-ko') && selectedPosts.size > 0 && (
               <button
@@ -348,7 +411,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
         <table className="min-w-full">
           <thead className="bg-gray-50">
             <tr>
-              {(languageFilter === 'no-en' || languageFilter === 'no-ko' || languageFilter === 'all') && (
+              {(languageFilter === 'no-en' || languageFilter === 'no-ko' || languageFilter === 'all' || statusFilter === 'draft') && (
                 <th className="w-4 px-3 py-3.5">
                   <input
                     type="checkbox"
@@ -406,11 +469,14 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
               
               return (
                 <tr key={post.id} className="hover:bg-gray-50">
-                  {(languageFilter === 'no-en' || languageFilter === 'no-ko' || languageFilter === 'all') && (
+                  {(languageFilter === 'no-en' || languageFilter === 'no-ko' || languageFilter === 'all' || statusFilter === 'draft') && (
                     <td className="px-3 py-4">
-                      {((languageFilter === 'no-en' && !hasEnglishTranslation) || 
+                      {(
+                        (languageFilter === 'no-en' && !hasEnglishTranslation) ||
                         (languageFilter === 'no-ko' && !hasKoreanTranslation) ||
-                        (languageFilter === 'all' && (!hasEnglishTranslation || !hasKoreanTranslation))) && (
+                        (languageFilter === 'all' && (!hasEnglishTranslation || !hasKoreanTranslation)) ||
+                        (statusFilter === 'draft' && post.status === 'DRAFT')
+                      ) && (
                         <input
                           type="checkbox"
                           checked={selectedPosts.has(post.id)}
