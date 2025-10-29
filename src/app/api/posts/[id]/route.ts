@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { withErrorHandler, logger, ApiError } from '@/lib/error-handler'
 import { updatePostSchema } from '@/lib/validations'
+import { normalizePostTags } from '@/lib/utils/tags'
 
 export const GET = withErrorHandler(async (
   _request: NextRequest,
@@ -22,7 +23,10 @@ export const GET = withErrorHandler(async (
     throw new ApiError(404, 'Post not found', { postId: id });
   }
 
-  return NextResponse.json(post);
+  // Normalize tags from string to array before returning
+  const normalizedPost = normalizePostTags(post);
+
+  return NextResponse.json(normalizedPost);
 });
 
 export const PUT = withErrorHandler(async (
@@ -53,7 +57,7 @@ export const PUT = withErrorHandler(async (
   });
 
   logger.info('Post updated successfully', { postId: id });
-  return NextResponse.json(post);
+  return NextResponse.json(normalizePostTags(post));
 });
 
 export const DELETE = withErrorHandler(async (
@@ -98,5 +102,5 @@ export const PATCH = withErrorHandler(async (
   });
 
   logger.info('Post patched successfully', { postId: id });
-  return NextResponse.json(post);
+  return NextResponse.json(normalizePostTags(post));
 });
