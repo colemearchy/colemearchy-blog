@@ -1,10 +1,18 @@
 import { z } from 'zod';
 
 // 공통 검증 규칙
+// Slug validation: allow URL-encoded characters (Korean slugs are URL-encoded in practice)
 export const slugSchema = z
   .string()
   .min(1, 'Slug is required')
-  .regex(/^[a-z0-9-]+$/, 'Slug must contain only lowercase letters, numbers, and hyphens');
+  .refine(
+    (slug) => {
+      // Allow lowercase letters, numbers, hyphens, and Korean characters
+      // Korean range: \uAC00-\uD7A3
+      return /^[a-z0-9-\uAC00-\uD7A3%]+$/i.test(slug)
+    },
+    { message: 'Slug contains invalid characters' }
+  );
 
 export const tagsSchema = z
   .union([
