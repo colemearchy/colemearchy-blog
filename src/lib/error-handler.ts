@@ -86,7 +86,7 @@ export function handleApiError(
     );
   }
 
-  // Prisma 에러
+  // Prisma 에러 - Known Request Error
   if (error instanceof Prisma.PrismaClientKnownRequestError) {
     let message = 'Database operation failed';
     let statusCode = 500;
@@ -112,11 +112,71 @@ export function handleApiError(
         error: message,
         message,
         // TEMPORARY: Always show details to debug Turso issues
-        details: { code: error.code, meta: error.meta, fullError: error.message },
+        details: { type: 'PrismaClientKnownRequestError', code: error.code, meta: error.meta, fullError: error.message },
         timestamp: new Date().toISOString(),
         path,
       },
       { status: statusCode }
+    );
+  }
+
+  // Prisma 에러 - Initialization Error
+  if (error instanceof Prisma.PrismaClientInitializationError) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Database connection failed',
+        message: 'Failed to initialize database connection',
+        details: { type: 'PrismaClientInitializationError', errorCode: error.errorCode, message: error.message },
+        timestamp: new Date().toISOString(),
+        path,
+      },
+      { status: 500 }
+    );
+  }
+
+  // Prisma 에러 - Validation Error
+  if (error instanceof Prisma.PrismaClientValidationError) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Database validation failed',
+        message: 'Invalid data provided to database',
+        details: { type: 'PrismaClientValidationError', message: error.message },
+        timestamp: new Date().toISOString(),
+        path,
+      },
+      { status: 400 }
+    );
+  }
+
+  // Prisma 에러 - Unknown Request Error
+  if (error instanceof Prisma.PrismaClientUnknownRequestError) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Database operation failed',
+        message: 'Unknown database error occurred',
+        details: { type: 'PrismaClientUnknownRequestError', message: error.message },
+        timestamp: new Date().toISOString(),
+        path,
+      },
+      { status: 500 }
+    );
+  }
+
+  // Prisma 에러 - Rust Panic
+  if (error instanceof Prisma.PrismaClientRustPanicError) {
+    return NextResponse.json(
+      {
+        success: false,
+        error: 'Database engine crashed',
+        message: 'Critical database engine error',
+        details: { type: 'PrismaClientRustPanicError', message: error.message },
+        timestamp: new Date().toISOString(),
+        path,
+      },
+      { status: 500 }
     );
   }
 
