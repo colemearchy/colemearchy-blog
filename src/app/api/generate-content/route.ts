@@ -48,13 +48,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     keywordsCount: keywords?.length || 0
   });
 
-  // Step 1: Generate embedding for the user's prompt
-  logger.info('Generating embedding for prompt');
-  const promptEmbedding = await generateEmbedding(prompt);
-
-  // Step 2: Search for similar knowledge
-  logger.info('Searching for similar knowledge');
-  const similarKnowledge = await searchSimilarKnowledge(promptEmbedding);
+  // Step 1 & 2: RAG temporarily disabled for SQLite/Turso compatibility
+  // TODO: Implement SQLite-compatible vector search or use external vector DB
+  logger.info('RAG disabled (pgvector not compatible with SQLite/Turso)');
+  const similarKnowledge: Array<{id: string; content: string; source: string | null; similarity: number}> = [];
 
   // Step 3a: Get existing posts for deduplication check
   logger.info('Fetching existing posts for deduplication');
