@@ -53,28 +53,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
   logger.info('RAG disabled (pgvector not compatible with SQLite/Turso)');
   const similarKnowledge: Array<{id: string; content: string; source: string | null; similarity: number}> = [];
 
-  // Step 3a: Get existing posts for deduplication check
-  logger.info('Fetching existing posts for deduplication');
-    const existingPosts = await prisma.post.findMany({
-      where: {
-        status: 'PUBLISHED'
-      },
-      select: {
-        title: true,
-        slug: true,
-        tags: true
-      },
-      orderBy: {
-        publishedAt: 'desc'
-      },
-      take: 100 // Get recent 100 posts
-    });
-
-    const existingPostsContext = existingPosts.length > 0
-      ? `\n\n**EXISTING POSTS IN DATABASE (for deduplication check):**\n${
-          existingPosts.map(p => `- Title: "${p.title}" | Slug: "${p.slug}" | Tags: [${tagsToArray(p.tags).join(', ')}]`).join('\n')
-        }\n\n**IMPORTANT: Do NOT create content that duplicates any of the above topics. If the requested topic is similar to an existing post, create content that extends or provides a new angle on the topic.**\n\n`
-      : '';
+  // Step 3a: Temporarily disabled - deduplication check causing issues
+  logger.info('Deduplication check temporarily disabled');
+    const existingPosts: Array<{title: string; slug: string; tags: string}> = [];
+    const existingPostsContext = '';
 
     // Step 3b: Create RAG context
     const ragContext = similarKnowledge.length > 0 
