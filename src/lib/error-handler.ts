@@ -111,7 +111,8 @@ export function handleApiError(
         success: false,
         error: message,
         message,
-        details: isDevelopment ? { code: error.code, meta: error.meta } : undefined,
+        // TEMPORARY: Always show details to debug Turso issues
+        details: { code: error.code, meta: error.meta, fullError: error.message },
         timestamp: new Date().toISOString(),
         path,
       },
