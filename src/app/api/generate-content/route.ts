@@ -8,7 +8,7 @@ import { generateContentSchema } from '@/lib/validations';
 import { generateSlug, generateUniqueSlugWithTimestamp } from '@/lib/utils/slug';
 import { detectLanguage } from '@/lib/translation';
 import { autoGenerateThumbnailUrl } from '@/lib/utils/thumbnail';
-import { tagsToArray } from '@/lib/utils/tags'
+import { tagsToArray, tagsToString } from '@/lib/utils/tags'
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
@@ -151,7 +151,7 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
         slug,
         content: parsedContent.content || responseText,
         excerpt: parsedContent.excerpt || responseText.substring(0, 160),
-        tags: parsedContent.tags || [],
+        tags: tagsToString(parsedContent.tags || []),
         seoTitle: parsedContent.seoTitle || parsedContent.title,
         seoDescription: parsedContent.seoDescription || parsedContent.excerpt,
         coverImage: coverImageUrl,
