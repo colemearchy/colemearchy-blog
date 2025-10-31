@@ -5,7 +5,7 @@ import { MASTER_SYSTEM_PROMPT, generateContentPrompt } from '@/lib/ai-prompts';
 import { env } from '@/lib/env';
 import { withErrorHandler, logger, ApiError, createSuccessResponse, validateRequest } from '@/lib/error-handler';
 import { generateContentSchema } from '@/lib/validations';
-import { generateSlug, generateUniqueSlug } from '@/lib/utils/slug';
+import { generateSlug, generateUniqueSlugWithTimestamp } from '@/lib/utils/slug';
 import { detectLanguage } from '@/lib/translation';
 import { autoGenerateThumbnailUrl } from '@/lib/utils/thumbnail';
 import { tagsToArray } from '@/lib/utils/tags'
@@ -121,14 +121,10 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     }
 
     // Step 6: Save to database as draft
-    const baseSlug = generateSlug(parsedContent.title || prompt);
     const scheduledAt = publishDate ? new Date(publishDate) : null;
 
-    // Generate unique slug by checking for duplicates
-    const slug = await generateUniqueSlug(baseSlug, async (s) => {
-      const existing = await prisma.post.findUnique({ where: { slug: s } });
-      return !!existing;
-    });
+    // Generate unique slug with timestamp (Turso compatibility)
+    const slug = generateUniqueSlugWithTimestamp(parsedContent.title || prompt);
 
     // Auto-detect language from generated content
     const detectedLanguage = detectLanguage(
