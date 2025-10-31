@@ -126,8 +126,9 @@ export function handleApiError(
       {
         success: false,
         error: 'Internal Server Error',
-        message: isDevelopment ? error.message : 'An unexpected error occurred',
-        details: isDevelopment ? { stack: error.stack } : undefined,
+        // TEMPORARY: Always show error message to debug Turso issues
+        message: error.message || 'An unexpected error occurred',
+        details: { stack: error.stack, name: error.name, fullMessage: error.toString() },
         timestamp: new Date().toISOString(),
         path,
       },
