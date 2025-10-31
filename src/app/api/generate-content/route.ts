@@ -68,9 +68,11 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       : '';
 
     // Step 4: Generate content with RAG context and existing posts
+    logger.info('Starting Gemini content generation');
     const fullPrompt = `${MASTER_SYSTEM_PROMPT}\n\n------\n\n${existingPostsContext}${ragContext}**EXECUTE TASK:**\n\n${generateContentPrompt(prompt, keywords, affiliateProducts)}`;
 
     const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    logger.info('Calling Gemini API');
     const result = await model.generateContent({
       contents: [{
         role: 'user',
@@ -82,7 +84,9 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       }
     });
 
+    logger.info('Gemini API call successful');
     const responseText = result.response.text();
+    logger.info('Response text length', { length: responseText.length });
 
     // Step 5: Parse the generated content
     let parsedContent;
