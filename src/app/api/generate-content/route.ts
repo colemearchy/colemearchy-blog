@@ -145,6 +145,13 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
       generatedThumbnailUrl: !parsedContent.coverImage ? coverImageUrl : null
     });
 
+    // TEMPORARY DEBUG: Log tags type and value
+    logger.info('DEBUG: tags before conversion', {
+      tagsType: typeof parsedContent.tags,
+      tagsValue: parsedContent.tags,
+      isArray: Array.isArray(parsedContent.tags)
+    });
+
     const post = await prisma.post.create({
       data: {
         title: postTitle,
