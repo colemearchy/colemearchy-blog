@@ -12,14 +12,7 @@ const bulkPublishSchema = z.object({
  * POST /api/admin/posts/bulk-publish
  * Publish multiple draft posts at once
  */
-export const POST = withErrorHandler(async (request: NextRequest) => {
-  // 🔒 인증 체크
-  if (!verifyAdminAuth(request)) {
-    return NextResponse.json(
-      { error: 'Unauthorized - Admin access required' },
-      { status: 401 }
-    )
-  }
+async function bulkPublishHandler(request: NextRequest) {
   const body = await request.json()
 
   logger.info('Bulk publish request received', { body })
@@ -106,4 +99,16 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     },
     results
   })
-})
+}
+
+export async function POST(request: NextRequest) {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
+  return withErrorHandler(bulkPublishHandler)(request)
+}

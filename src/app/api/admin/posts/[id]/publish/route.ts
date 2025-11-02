@@ -7,18 +7,10 @@ import { verifyAdminAuth } from '@/lib/auth'
  * POST /api/admin/posts/[id]/publish
  * Publish a draft post
  */
-export const POST = withErrorHandler(async (
+async function publishHandler(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
-) => {
-  // 🔒 인증 체크
-  if (!verifyAdminAuth(request)) {
-    return NextResponse.json(
-      { error: 'Unauthorized - Admin access required' },
-      { status: 401 }
-    )
-  }
-
+) {
   const { id } = await params
 
   logger.info('Publishing post', { postId: id })
@@ -67,4 +59,19 @@ export const POST = withErrorHandler(async (
       publishedAt: post.publishedAt
     }
   })
-})
+}
+
+export async function POST(
+  request: NextRequest,
+  context: { params: Promise<{ id: string }> }
+) {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
+  return withErrorHandler(publishHandler)(request, context)
+}

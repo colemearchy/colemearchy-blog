@@ -40,30 +40,7 @@ async function searchSimilarKnowledge(queryEmbedding: number[], limit: number = 
   }>;
 }
 
-export const POST = withErrorHandler(async (request: NextRequest) => {
-  // 🔒 인증 체크 (Admin만 AI 콘텐츠 생성 가능)
-  if (!verifyAdminAuth(request)) {
-    return NextResponse.json(
-      { error: 'Unauthorized - Admin access required' },
-      { status: 401 }
-    )
-  }
-
-  // 💰 Rate Limiting 체크 (비용 폭탄 방지)
-  const rateLimit = checkGeminiRateLimit()
-  if (!rateLimit.success) {
-    return NextResponse.json(
-      createRateLimitResponse(rateLimit.resetTime),
-      {
-        status: 429,
-        headers: {
-          'X-RateLimit-Remaining': '0',
-          'X-RateLimit-Reset': new Date(rateLimit.resetTime).toISOString()
-        }
-      }
-    )
-  }
-
+async function generateContentHandler(request: NextRequest) {
   // Validate input data
   const validatedData = await validateRequest(request, generateContentSchema);
   const { prompt, keywords, affiliateProducts, publishDate } = validatedData;
@@ -212,4 +189,31 @@ export const POST = withErrorHandler(async (request: NextRequest) => {
     scheduledAt: post.scheduledAt,
     ragContextUsed: similarKnowledge.length > 0
   }, new URL(request.url).pathname);
-});
+}
+
+export async function POST(request: NextRequest) {
+  // 🔒 인증 체크 (Admin만 AI 콘텐츠 생성 가능)
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
+  // 💰 Rate Limiting 체크 (비용 폭탄 방지)
+  const rateLimit = checkGeminiRateLimit()
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      createRateLimitResponse(rateLimit.resetTime),
+      {
+        status: 429,
+        headers: {
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': new Date(rateLimit.resetTime).toISOString()
+        }
+      }
+    )
+  }
+
+  return withErrorHandler(generateContentHandler)(request)
+}

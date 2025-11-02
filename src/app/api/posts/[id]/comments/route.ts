@@ -112,7 +112,7 @@ export async function POST(
     // AI Devil's Advocate 응답 생성 (비동기로 처리)
     if (!parentId) {
       // 최상위 댓글에만 AI 응답 생성
-      generateAIResponse(comment.id, content)
+      generateAIResponse(comment.id, sanitizedContent)
     }
 
     return NextResponse.json(comment, { status: 201 })
