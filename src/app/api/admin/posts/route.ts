@@ -1,14 +1,27 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { verifyAdminAuth } from '@/lib/auth'
 
 export async function GET(request: NextRequest) {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
   try {
     const searchParams = request.nextUrl.searchParams
-    const orderBy = searchParams.get('orderBy') || 'createdAt'
+    const orderByParam = searchParams.get('orderBy') || 'createdAt'
     const order = searchParams.get('order') || 'desc'
 
+    // 🔒 orderBy 화이트리스트 검증 (SQL Injection 방지)
+    const allowedOrderBy = ['createdAt', 'updatedAt', 'publishedAt', 'title', 'views']
+    const orderBy = allowedOrderBy.includes(orderByParam) ? orderByParam : 'createdAt'
+
     const posts = await prisma.post.findMany({
-      orderBy: { [orderBy]: order },
+      orderBy: { [orderBy]: order as 'asc' | 'desc' },
       select: {
         id: true,
         title: true,

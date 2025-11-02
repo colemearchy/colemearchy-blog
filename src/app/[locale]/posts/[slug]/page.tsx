@@ -379,18 +379,18 @@ export default async function PostPage({
           </header>
 
           {post.coverImage && (
-            <div className="relative w-full max-w-4xl mb-8 rounded-lg overflow-hidden">
-              <div className="relative aspect-[16/9] w-full">
+            <div className="relative w-full max-w-4xl mb-8 rounded-lg overflow-hidden bg-gray-100">
+              <div className="relative aspect-[16/9] w-full min-h-[400px]">
                 {(() => {
                   const isYouTubeThumbnail = post.coverImage.includes('ytimg.com') || post.coverImage.includes('img.youtube.com')
                   const youtubeVideoIdMatch = post.coverImage.match(/\/vi\/([a-zA-Z0-9_-]{11})\//)
                   const youtubeVideoId = youtubeVideoIdMatch ? youtubeVideoIdMatch[1] : null
-                  
+
                   if (isYouTubeThumbnail && youtubeVideoId) {
                     return (
                       <YouTubeThumbnail
                         videoId={youtubeVideoId}
-                        alt={post.title}
+                        alt={displayTitle}
                         fill
                         className="object-contain bg-gray-100"
                         priority
@@ -398,15 +398,15 @@ export default async function PostPage({
                       />
                     )
                   }
-                  
+
                   // Use conditional rendering based on image source to avoid 402 Payment Required errors
                   if (shouldUseNextImage(post.coverImage)) {
                     return (
                       <Image
                         src={post.coverImage}
-                        alt={post.title}
+                        alt={displayTitle}
                         fill
-                        className="object-contain bg-gray-100"
+                        className="object-cover bg-gray-100"
                         priority
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                       />
@@ -417,9 +417,10 @@ export default async function PostPage({
                   return (
                     <img
                       src={post.coverImage}
-                      alt={post.title}
-                      className="absolute inset-0 w-full h-full object-contain bg-gray-100"
+                      alt={displayTitle}
+                      className="absolute inset-0 w-full h-full object-cover bg-gray-100"
                       loading="eager"
+                      style={{ display: 'block', minHeight: '400px' }}
                     />
                   )
                 })()}

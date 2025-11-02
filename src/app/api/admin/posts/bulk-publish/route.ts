@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { withErrorHandler, logger, ApiError } from '@/lib/error-handler'
+import { verifyAdminAuth } from '@/lib/auth'
 import { z } from 'zod'
 
 const bulkPublishSchema = z.object({
@@ -12,6 +13,13 @@ const bulkPublishSchema = z.object({
  * Publish multiple draft posts at once
  */
 export const POST = withErrorHandler(async (request: NextRequest) => {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
   const body = await request.json()
 
   logger.info('Bulk publish request received', { body })

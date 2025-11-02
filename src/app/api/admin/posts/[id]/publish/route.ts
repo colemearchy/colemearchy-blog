@@ -1,15 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { withErrorHandler, logger, ApiError } from '@/lib/error-handler'
+import { verifyAdminAuth } from '@/lib/auth'
 
 /**
  * POST /api/admin/posts/[id]/publish
  * Publish a draft post
  */
 export const POST = withErrorHandler(async (
-  _request: NextRequest,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) => {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
   const { id } = await params
 
   logger.info('Publishing post', { postId: id })

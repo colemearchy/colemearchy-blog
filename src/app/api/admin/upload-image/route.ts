@@ -2,8 +2,17 @@ import { NextRequest, NextResponse } from 'next/server'
 import { put } from '@vercel/blob'
 import { prisma } from '@/lib/prisma'
 import { generateUniqueFileName, validateImageFile } from '@/lib/upload-utils'
+import { verifyAdminAuth } from '@/lib/auth'
 
 export async function POST(request: NextRequest) {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
   try {
     // 환경 변수 체크
     if (!process.env.BLOB_READ_WRITE_TOKEN) {

@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { verifyAdminAuth } from '@/lib/auth'
 
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
   try {
     const { id } = await params
     const data = await request.json()
@@ -41,6 +50,14 @@ export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
   try {
     const { id } = await params
     

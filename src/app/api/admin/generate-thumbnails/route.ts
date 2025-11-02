@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { autoGenerateThumbnailUrl } from '@/lib/utils/thumbnail';
+import { verifyAdminAuth } from '@/lib/auth';
 
 /**
  * Batch generate thumbnails for posts without coverImage
@@ -8,7 +9,15 @@ import { autoGenerateThumbnailUrl } from '@/lib/utils/thumbnail';
  * POST: Generate thumbnails for posts without coverImage
  */
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
   try {
     // Find posts without coverImage
     const postsWithoutThumbnails = await prisma.post.findMany({
@@ -49,6 +58,14 @@ export async function GET() {
 }
 
 export async function POST(request: NextRequest) {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
   try {
     const { postIds, limit = 10 } = await request.json();
 

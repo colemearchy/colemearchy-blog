@@ -1,8 +1,16 @@
-import { NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { tagsToArray } from '@/lib/utils/tags'
+import { verifyAdminAuth } from '@/lib/auth'
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
   try {
     // 1. Get posts without Korean thumbnails (coverImage)
     // Separated into manual posts and YouTube posts

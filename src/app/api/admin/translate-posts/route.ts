@@ -1,15 +1,48 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
 import { createPostTranslation } from '@/lib/translation'
+import { verifyAdminAuth } from '@/lib/auth'
+import { checkGeminiRateLimit, createRateLimitResponse } from '@/lib/rate-limit'
 
 export async function POST(request: NextRequest) {
+  // 🔒 인증 체크
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
+  // 💰 Rate Limiting 체크 (비용 폭탄 방지)
+  const rateLimit = checkGeminiRateLimit()
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      createRateLimitResponse(rateLimit.resetTime),
+      {
+        status: 429,
+        headers: {
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': new Date(rateLimit.resetTime).toISOString()
+        }
+      }
+    )
+  }
+
   try {
     const { postIds, targetLang = 'en' } = await request.json()
-    
+
     if (!postIds || !Array.isArray(postIds) || postIds.length === 0) {
       return NextResponse.json({ error: 'Invalid post IDs' }, { status: 400 })
     }
-    
+
+    // 🛡️ 배치 크기 제한 (한 번에 최대 10개)
+    if (postIds.length > 10) {
+      return NextResponse.json(
+        { error: 'Too many posts. Maximum 10 posts per batch.' },
+        { status: 400 }
+      )
+    }
+
     // Get posts that need translation
     const posts = await prisma.post.findMany({
       where: {

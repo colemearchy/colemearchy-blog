@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { prisma } from '@/lib/prisma'
+import { validateAndSanitizeComment } from '@/lib/comment-validation'
+import { checkCommentRateLimit, createRateLimitResponse } from '@/lib/rate-limit'
 
 // GET /api/posts/[id]/comments - 게시물의 댓글 조회
 export async function GET(
@@ -52,8 +54,36 @@ export async function POST(
   const { id } = await props.params
 
   try {
+    // 💰 Rate Limiting (IP 기반 스팸 방지)
+    const ip = request.headers.get('x-forwarded-for') || request.headers.get('x-real-ip') || 'unknown'
+    const rateLimit = checkCommentRateLimit(ip)
+
+    if (!rateLimit.success) {
+      return NextResponse.json(
+        createRateLimitResponse(rateLimit.resetTime),
+        {
+          status: 429,
+          headers: {
+            'X-RateLimit-Remaining': '0',
+            'X-RateLimit-Reset': new Date(rateLimit.resetTime).toISOString()
+          }
+        }
+      )
+    }
+
     const body = await request.json()
-    const { authorName, authorEmail, content, parentId } = body
+
+    // 🛡️ 입력 검증 및 Sanitization
+    const validation = validateAndSanitizeComment(body)
+
+    if (!validation.success) {
+      return NextResponse.json(
+        { error: validation.error },
+        { status: 400 }
+      )
+    }
+
+    const { authorName, authorEmail, sanitizedContent, parentId } = validation.data!
 
     // 게시물 확인
     const post = await prisma.post.findUnique({
@@ -67,13 +97,13 @@ export async function POST(
       )
     }
 
-    // 댓글 생성
+    // 댓글 생성 (sanitized content 사용)
     const comment = await prisma.comment.create({
       data: {
         postId: post.id,
         authorName,
         authorEmail,
-        content,
+        content: sanitizedContent, // XSS 방지된 콘텐츠
         parentId,
         isApproved: true, // 자동 승인
       },

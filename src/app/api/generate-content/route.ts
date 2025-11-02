@@ -9,6 +9,8 @@ import { generateSlug, generateUniqueSlugWithTimestamp } from '@/lib/utils/slug'
 import { detectLanguage } from '@/lib/translation';
 import { autoGenerateThumbnailUrl } from '@/lib/utils/thumbnail';
 import { tagsToArray, tagsToString } from '@/lib/utils/tags'
+import { checkGeminiRateLimit, createRateLimitResponse } from '@/lib/rate-limit';
+import { verifyAdminAuth } from '@/lib/auth';
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY);
 
@@ -39,6 +41,29 @@ async function searchSimilarKnowledge(queryEmbedding: number[], limit: number = 
 }
 
 export const POST = withErrorHandler(async (request: NextRequest) => {
+  // 🔒 인증 체크 (Admin만 AI 콘텐츠 생성 가능)
+  if (!verifyAdminAuth(request)) {
+    return NextResponse.json(
+      { error: 'Unauthorized - Admin access required' },
+      { status: 401 }
+    )
+  }
+
+  // 💰 Rate Limiting 체크 (비용 폭탄 방지)
+  const rateLimit = checkGeminiRateLimit()
+  if (!rateLimit.success) {
+    return NextResponse.json(
+      createRateLimitResponse(rateLimit.resetTime),
+      {
+        status: 429,
+        headers: {
+          'X-RateLimit-Remaining': '0',
+          'X-RateLimit-Reset': new Date(rateLimit.resetTime).toISOString()
+        }
+      }
+    )
+  }
+
   // Validate input data
   const validatedData = await validateRequest(request, generateContentSchema);
   const { prompt, keywords, affiliateProducts, publishDate } = validatedData;
