@@ -136,3 +136,140 @@ IMPORTANT: You MUST include a coverImage URL. Search for a high-quality, relevan
 
   return prompt
 }
+
+/**
+ * 쿠팡 파트너스 제휴 콘텐츠 생성 프롬프트
+ * @param productName - 상품명
+ * @param productUrl - 쿠팡 파트너스 링크
+ * @param keywords - SEO 키워드 배열
+ * @param contentType - 콘텐츠 유형 (review, comparison, guide)
+ * @param additionalContext - 추가 컨텍스트 (카테고리, 가격 등)
+ */
+export function generateAffiliateContentPrompt(
+  productName: string,
+  productUrl: string,
+  keywords: string[],
+  contentType: 'review' | 'comparison' | 'guide',
+  additionalContext?: {
+    category?: string
+    price?: number
+    description?: string
+    competitorProducts?: string[]
+  }
+) {
+  const contentTypePrompts = {
+    review: `
+**콘텐츠 유형: 실사용 후기 (Review)**
+
+구조:
+1. 도입부: 왜 이 제품을 샀는가? (개인적 문제/니즈)
+   - ADHD로 인한 집중력 문제, PM 업무 중 불편함, 바이오해킹 실험 등과 연결
+   - 예: "목 통증이 심해져서 3개월 동안 5개의 인체공학 의자를 테스트했다..."
+
+2. 본문: 3개월 실사용 후기
+   - 장점 3가지 (구체적 예시와 함께)
+   - 단점 2가지 (솔직하게)
+   - 비교 대상이 있다면 간단히 언급
+
+3. 결론: 누구에게 추천하는가
+   - 가격 대비 가치 평가
+   - 특정 상황/사용자에게만 추천
+`,
+    comparison: `
+**콘텐츠 유형: 상품 비교 (Comparison)**
+
+구조:
+1. 도입부: 왜 이 비교가 필요한가?
+   - 시장 현황, 선택의 어려움
+   - 예: "노트북 50만원대 vs 100만원대, 정말 2배 차이가 날까?"
+
+2. 본문: 항목별 비교
+   - 비교표 (가격, 성능, 내구성, 디자인 etc.)
+   - 각 항목에 대한 분석 (1-2문단씩)
+   - 실사용 경험 기반 차이점
+
+3. 결론: 상황별 추천
+   - "이런 사람은 A를, 저런 사람은 B를"
+   - 명확한 선택 가이드
+`,
+    guide: `
+**콘텐츠 유형: 선택 가이드 (Buying Guide)**
+
+구조:
+1. 도입부: 왜 이 가이드가 필요한가
+   - 일반인들이 겪는 혼란
+   - 잘못된 선택의 대가
+
+2. 본문: 단계별 선택 기준
+   - Step 1: 예산 설정
+   - Step 2: 필수 기능 vs 선택 기능
+   - Step 3: 브랜드/모델 비교
+   - Step 4: 리뷰 체크 포인트
+
+3. 결론: 최종 추천 3가지
+   - 가성비: ${productName}
+   - 프리미엄: [다른 옵션]
+   - 예산형: [다른 옵션]
+`
+  }
+
+  return `${MASTER_SYSTEM_PROMPT}
+
+---
+
+**🎯 특별 미션: 쿠팡 파트너스 제휴 콘텐츠 작성**
+
+**상품 정보:**
+- 상품명: ${productName}
+- 카테고리: ${additionalContext?.category || '일반'}
+${additionalContext?.price ? `- 가격: ₩${additionalContext.price.toLocaleString()}` : ''}
+${additionalContext?.description ? `- 설명: ${additionalContext.description}` : ''}
+
+**타겟 키워드:** ${keywords.join(', ')}
+
+${contentTypePrompts[contentType]}
+
+---
+
+**🚨 절대 원칙 (CRITICAL RULES):**
+
+1. **광고 티 절대 내지 마라**
+   - Colemearchy 스타일의 "날것의 솔직 후기"처럼 작성
+   - 마치 친구에게 추천하듯 자연스럽게
+   - 단점도 반드시 언급 (완벽한 상품은 없다)
+
+2. **개인 경험 필수 포함**
+   - ADHD 관련 일화, PM 업무 중 겪은 문제, 바이오해킹 실험 등
+   - 예: "불안 장애 때문에 밤에 잠을 못 자서 이걸 샀는데..."
+   - 구체적 수치 포함 (3개월 사용, 10kg 감량, 업무 효율 30% 증가 등)
+
+3. **쿠팡 링크 자연스럽게 삽입**
+   - 본문 중간에 자연스럽게
+   - 예: "내가 3개월 쓴 건 바로 [이거](링크)인데, 솔직히..."
+   - CTA는 부드럽게: "궁금하면 직접 써보는 게 답이다"
+
+4. **SEO 최적화**
+   - 타겟 키워드를 자연스럽게 5-7회 반복
+   - H2, H3 구조로 읽기 쉽게
+   - 최소 2,000자 이상 (너무 짧으면 SEO 불리)
+
+5. **법적 고지 준수**
+   - 글 끝에 자동으로 쿠팡 파트너스 고지문 추가됨 (직접 작성 X)
+
+---
+
+**JSON 형식으로 응답하세요:**
+
+{
+  "title": "클릭 유도 SEO 제목 (60자 이내)",
+  "content": "Markdown 형식의 본문 (2,000-3,500자)",
+  "excerpt": "150자 이내 요약",
+  "seoTitle": "SEO 최적화 제목 (60자 이내)",
+  "seoDescription": "메타 설명 (160자 이내)",
+  "tags": ["태그1", "태그2", "태그3", "태그4", "태그5"],
+  "coverImage": "https://images.unsplash.com/... (상품 관련 이미지 URL)"
+}
+
+**중요:** 상품 링크는 본문에서 [${productName}](AFFILIATE_LINK_PLACEHOLDER)로 표시하세요. 실제 링크는 자동으로 삽입됩니다.
+`
+}
