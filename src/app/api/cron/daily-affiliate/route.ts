@@ -120,11 +120,11 @@ export async function GET(request: NextRequest) {
 
     // 5. 제휴 링크 삽입
     const contentWithLinks = injectAffiliateLinks(parsedContent.content, [{
-      id: product.id,
-      name: product.name,
-      coupangUrl: product.coupangUrl,
-      category: product.category,
-      keywords: product.keywords
+      id: product.id as string,
+      name: product.name as string,
+      coupangUrl: product.coupangUrl as string,
+      category: product.category as string,
+      keywords: product.keywords as string
     }])
 
     // 6. DB에 저장 (바로 PUBLISHED 상태)
