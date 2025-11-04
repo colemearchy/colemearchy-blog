@@ -478,8 +478,8 @@ export default async function PostPage({
                       <LazyAdSense slot="8561234146" />
                     </div>
 
-                    {/* Coupang Dynamic Banner - Mid Content */}
-                    <CoupangBannerMidContent />
+                    {/* Coupang Dynamic Banner - Only for Coupang-related posts */}
+                    {post.tags?.toLowerCase().includes('쿠팡') && <CoupangBannerMidContent />}
 
                     <MarkdownContent content={secondHalf} />
                   </>
@@ -491,8 +491,8 @@ export default async function PostPage({
                 <LazyAdSense slot="8561234146" />
               </div>
 
-              {/* Coupang Dynamic Banner - End of Post (Carousel) */}
-              <CoupangBannerEndPost />
+              {/* Coupang Dynamic Banner - Only for Coupang-related posts */}
+              {post.tags?.toLowerCase().includes('쿠팡') && <CoupangBannerEndPost />}
 
               <Suspense fallback={<div className="h-20 animate-pulse bg-gray-100 rounded mt-8" />}>
                 <LazyCommentSection postSlug={post.slug} locale={locale} />
