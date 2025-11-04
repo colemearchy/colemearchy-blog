@@ -43,8 +43,32 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
   const fetchPosts = useCallback(async () => {
     setLoading(true)
     try {
-      const response = await fetch('/api/admin/posts?orderBy=publishedAt&order=asc')
+      // Get admin password from sessionStorage
+      const password = sessionStorage.getItem('admin_password')
+
+      if (!password) {
+        // Prompt for password if not in sessionStorage
+        const inputPassword = prompt('Admin 비밀번호를 입력하세요:')
+        if (!inputPassword) {
+          console.error('No password provided')
+          setPosts([])
+          setLoading(false)
+          return
+        }
+        sessionStorage.setItem('admin_password', inputPassword)
+      }
+
+      const authPassword = password || sessionStorage.getItem('admin_password')
+      const response = await fetch(`/api/admin/posts?orderBy=publishedAt&order=asc&password=${authPassword}`)
+
       if (!response.ok) {
+        if (response.status === 401) {
+          // Clear invalid password and retry
+          sessionStorage.removeItem('admin_password')
+          alert('비밀번호가 올바르지 않습니다.')
+          setPosts([])
+          return
+        }
         console.error('Failed to fetch posts:', response.status)
         setPosts([])
         return
@@ -105,7 +129,8 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
 
     setDeletingPostId(postId)
     try {
-      const response = await fetch(`/api/admin/posts/${postId}`, {
+      const password = sessionStorage.getItem('admin_password')
+      const response = await fetch(`/api/admin/posts/${postId}?password=${password}`, {
         method: 'DELETE',
       })
 
@@ -129,7 +154,8 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
     }
 
     try {
-      const response = await fetch(`/api/admin/posts/${postId}/publish`, {
+      const password = sessionStorage.getItem('admin_password')
+      const response = await fetch(`/api/admin/posts/${postId}/publish?password=${password}`, {
         method: 'POST',
       })
 
@@ -186,7 +212,8 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
 
     setIsTranslating(true)
     try {
-      const response = await fetch('/api/admin/translate-posts', {
+      const password = sessionStorage.getItem('admin_password')
+      const response = await fetch(`/api/admin/translate-posts?password=${password}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -232,7 +259,8 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
 
     setIsTranslating(true) // Reuse the same loading state
     try {
-      const response = await fetch('/api/admin/posts/bulk-publish', {
+      const password = sessionStorage.getItem('admin_password')
+      const response = await fetch(`/api/admin/posts/bulk-publish?password=${password}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

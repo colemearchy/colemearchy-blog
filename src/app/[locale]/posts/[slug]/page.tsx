@@ -15,6 +15,7 @@ import Breadcrumb from '@/components/Breadcrumb'
 import YouTubeEmbed from '@/components/YouTubeEmbed'
 import LazyCommentSection from '@/components/LazyCommentSection'
 import { LazyAdSense } from '@/components/LazyAdSense'
+import { CoupangBannerMidContent, CoupangBannerEndPost } from '@/components/CoupangBanner'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 import ViewCounter from '@/components/ViewCounter'
 import { navigationItems } from '@/lib/navigation'
@@ -380,7 +381,7 @@ export default async function PostPage({
 
           {post.coverImage && (
             <div className="relative w-full max-w-4xl mb-8 rounded-lg overflow-hidden bg-gray-100">
-              <div className="relative aspect-[16/9] w-full min-h-[400px]">
+              <div className="relative aspect-[16/9] w-full">
                 {(() => {
                   const isYouTubeThumbnail = post.coverImage.includes('ytimg.com') || post.coverImage.includes('img.youtube.com')
                   const youtubeVideoIdMatch = post.coverImage.match(/\/vi\/([a-zA-Z0-9_-]{11})\//)
@@ -420,7 +421,6 @@ export default async function PostPage({
                       alt={displayTitle}
                       className="absolute inset-0 w-full h-full object-cover bg-gray-100"
                       loading="eager"
-                      style={{ display: 'block', minHeight: '400px' }}
                     />
                   )
                 })()}
@@ -478,6 +478,9 @@ export default async function PostPage({
                       <LazyAdSense slot="8561234146" />
                     </div>
 
+                    {/* Coupang Dynamic Banner - Mid Content */}
+                    <CoupangBannerMidContent />
+
                     <MarkdownContent content={secondHalf} />
                   </>
                 )
@@ -487,7 +490,10 @@ export default async function PostPage({
               <div className="my-12">
                 <LazyAdSense slot="8561234146" />
               </div>
-              
+
+              {/* Coupang Dynamic Banner - End of Post (Carousel) */}
+              <CoupangBannerEndPost />
+
               <Suspense fallback={<div className="h-20 animate-pulse bg-gray-100 rounded mt-8" />}>
                 <LazyCommentSection postSlug={post.slug} locale={locale} />
               </Suspense>
