@@ -9,6 +9,8 @@ import { withErrorHandler, logger, ApiError, createSuccessResponse } from '@/lib
 import { generateSlug, generateUniqueSlug } from '@/lib/utils/slug'
 import { detectLanguage } from '@/lib/translation'
 import { backupSinglePost } from '@/lib/auto-backup'
+import { findMatchingProducts } from '@/lib/utils/affiliate-product-matcher'
+import { injectAffiliateLinks } from '@/lib/utils/affiliate-link-injector'
 
 const genAI = new GoogleGenerativeAI(env.GEMINI_API_KEY)
 
@@ -276,12 +278,39 @@ OUTPUT FORMAT:
     const detectedLanguage = detectLanguage(title + ' ' + (generatedData.content || enhancedContent).substring(0, 500))
     logger.info('Language detected', { language: detectedLanguage, title })
 
+    // 🆕 쿠팡 제휴 제품 매칭 및 링크 삽입
+    let finalContent = generatedData.content || enhancedContent
+    try {
+      const matchedProducts = await findMatchingProducts(
+        title,
+        finalContent,
+        tags,
+        20, // 최소 점수
+        2   // 최대 2개 제품
+      )
+
+      if (matchedProducts.length > 0) {
+        logger.info('Affiliate products matched', {
+          count: matchedProducts.length,
+          products: matchedProducts.map(p => p.name)
+        })
+
+        // 제휴 링크 자동 삽입
+        finalContent = injectAffiliateLinks(finalContent, matchedProducts)
+      } else {
+        logger.info('No affiliate products matched for this post')
+      }
+    } catch (affiliateError) {
+      // 제휴 링크 실패해도 포스트 생성은 계속 진행
+      logger.warn('Affiliate link injection failed', { error: affiliateError })
+    }
+
     // Create post
     const post = await prisma.post.create({
       data: {
         title,
         slug,
-        content: generatedData.content || enhancedContent,
+        content: finalContent,
         excerpt: generatedData.excerpt || `${metadata.title} 영상을 요약하고 핵심 인사이트를 정리했습니다.`,
         tags: Array.isArray(tags) ? tags.join(',') : (tags || ''),
         author: 'Colemearchy',
