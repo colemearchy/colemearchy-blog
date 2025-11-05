@@ -16,7 +16,7 @@ const affiliateProductSchema = z.object({
   coupangUrl: z.string().url('Valid Coupang URL is required'),
   category: z.string().min(1, 'Category is required'),
   price: z.number().int().positive().optional().nullable(),
-  imageUrl: z.string().url().optional().nullable(),
+  imageUrl: z.string().url().optional().or(z.literal('')).nullable(),
   keywords: z.string().optional().default(''),
   description: z.string().optional().nullable()
 })
