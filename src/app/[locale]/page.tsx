@@ -269,11 +269,11 @@ export default async function HomePage({
                 </div>
                 <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
                   {recentPosts.map((post, index) => (
-                    <article key={post.id} className="group">
+                    <article key={post.id} className="group" style={{ minHeight: '280px' }}>
                       <Link href={`/${locale}/posts/${post.slug}`} className="block">
                         <div className="space-y-3">
                           {post.coverImage && (
-                            <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-gray-100 w-full">
+                            <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-gray-100 w-full" style={{ contain: 'layout' }}>
                               {shouldUseNextImage(post.coverImage) ? (
                                 <Image
                                   src={post.coverImage}
@@ -329,11 +329,11 @@ export default async function HomePage({
                 <h2 className="text-xl font-bold text-gray-900 mb-8">Latest</h2>
                 <div className="space-y-8">
                   {morePosts.map((post) => (
-                    <article key={post.id} className="group">
+                    <article key={post.id} className="group" style={{ minHeight: '180px' }}>
                       <Link href={`/${locale}/posts/${post.slug}`} className="block">
                         <div className="grid md:grid-cols-3 gap-6 items-start">
                           {post.coverImage && (
-                            <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-gray-100">
+                            <div className="relative aspect-[16/9] overflow-hidden rounded-lg bg-gray-100" style={{ contain: 'layout' }}>
                               {shouldUseNextImage(post.coverImage) ? (
                                 <Image
                                   src={post.coverImage}

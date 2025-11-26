@@ -128,7 +128,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <GoogleAnalytics />
+        <ServiceWorkerRegistration />
         {children}
+        <AdBlockerNotice />
       </body>
     </html>
   );
