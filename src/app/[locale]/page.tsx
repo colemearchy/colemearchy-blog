@@ -155,10 +155,13 @@ export default async function HomePage({
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-8">
             <Link href="https://gpai.app" className="flex items-center gap-3">
-              <img
+              <Image
                 src="/gpai-logo.png"
                 alt="GPAI logo"
+                width={120}
+                height={40}
                 className="h-10 w-auto"
+                priority
               />
             </Link>
             <div className="flex gap-2 flex-shrink-0">

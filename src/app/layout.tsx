@@ -112,11 +112,14 @@ export default function RootLayout({
         <link rel="icon" href="/icon" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-icon" />
         
-        {/* DNS Prefetch for external resources */}
-        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
-        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
+        {/* DNS Prefetch & Preconnect for external resources */}
+        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
+        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
         <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
         <link rel="dns-prefetch" href="https://i.ytimg.com" />
+
+        {/* Preload critical images */}
+        <link rel="preload" as="image" href="/gpai-logo.png" fetchPriority="high" />
         
         {/* Font preloading is handled automatically by next/font */}
         
