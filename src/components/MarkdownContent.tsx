@@ -20,13 +20,10 @@ function childrenToString(children: React.ReactNode): string {
 }
 
 export default function MarkdownContent({ content }: MarkdownContentProps) {
-  let headingIndex = 0
-
-  const createHeadingId = (text: React.ReactNode, level: number) => {
+  const createHeadingId = (text: React.ReactNode) => {
     const textString = childrenToString(text)
-    const id = `heading-${headingIndex}-${textString.toLowerCase().replace(/[^\w]+/g, '-')}`
-    headingIndex++
-    return id
+    // Use only text content for ID to ensure consistency between server and client
+    return textString.toLowerCase().replace(/[^\w가-힣]+/g, '-').replace(/^-+|-+$/g, '')
   }
   
   return (
@@ -36,15 +33,15 @@ export default function MarkdownContent({ content }: MarkdownContentProps) {
         rehypePlugins={[rehypeRaw]}
         components={{
           h1: ({children}) => {
-            const id = createHeadingId(children, 1)
+            const id = createHeadingId(children)
             return <h1 id={id} style={{fontSize: '2.25rem', fontWeight: 700, marginTop: '2rem', marginBottom: '1rem', lineHeight: 1.2}}>{children}</h1>
           },
           h2: ({children}) => {
-            const id = createHeadingId(children, 2)
+            const id = createHeadingId(children)
             return <h2 id={id} style={{fontSize: '1.875rem', fontWeight: 600, marginTop: '1.75rem', marginBottom: '0.75rem', lineHeight: 1.3}}>{children}</h2>
           },
           h3: ({children}) => {
-            const id = createHeadingId(children, 3)
+            const id = createHeadingId(children)
             return <h3 id={id} style={{fontSize: '1.5rem', fontWeight: 600, marginTop: '1.5rem', marginBottom: '0.5rem', lineHeight: 1.3}}>{children}</h3>
           },
           p: ({children}) => <p style={{marginBottom: '1.25rem', lineHeight: 1.75}}>{children}</p>,

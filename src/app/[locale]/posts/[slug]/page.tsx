@@ -131,7 +131,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   const displayCoverImage = translation?.coverImage || post.coverImage
   
   const ogImageUrl = displayCoverImage ||
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(displayTitle)}&author=${encodeURIComponent(post.author || 'Cole IT AI')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(displayTitle)}&author=${encodeURIComponent(post.author || 'GPAI')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`
 
   return {
     title: post.seoTitle || displayTitle,
@@ -162,7 +162,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   } catch (error) {
     console.error('Error generating metadata:', error)
     return {
-      title: 'Post - Colemearchy Blog',
+      title: 'Post - GPAI Blog',
       description: 'Blog post content unavailable'
     }
   }
@@ -238,17 +238,17 @@ export default async function PostPage({
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
-    image: post.coverImage || `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`,
+    image: post.coverImage || `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'GPAI')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`,
     datePublished: new Date(post.publishedAt).toISOString(),
     dateModified: new Date(post.updatedAt).toISOString(),
     author: {
       '@type': 'Person',
-      name: post.author || 'Cole IT AI',
+      name: post.author || 'GPAI',
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/about`,
     },
     publisher: {
       '@type': 'Organization',
-      name: 'Cole IT AI',
+      name: 'GPAI Blog',
       logo: {
         '@type': 'ImageObject',
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`,
@@ -306,23 +306,9 @@ export default async function PostPage({
         <header className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="border-b border-gray-100">
             <div className="flex justify-between items-center py-8">
-              <Link href={`/${locale}`} className="text-3xl font-serif italic">
-                Cole IT AI
+              <Link href="/en" className="text-3xl font-serif italic">
+                GPAI Blog
               </Link>
-              <div className="flex gap-2 flex-shrink-0">
-                <Link
-                  href={`/ko/posts/${slug}`}
-                  className={`px-3 py-1 rounded font-medium whitespace-nowrap ${lang === 'ko' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                >
-                  KOR
-                </Link>
-                <Link
-                  href={`/en/posts/${slug}`}
-                  className={`px-3 py-1 rounded font-medium whitespace-nowrap ${lang === 'en' ? 'bg-gray-900 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}
-                >
-                  ENG
-                </Link>
-              </div>
             </div>
             {/* Navigation */}
             <nav className="flex justify-center items-center gap-6 pb-4" aria-label="Main navigation">
@@ -380,7 +366,7 @@ export default async function PostPage({
           </header>
 
           {post.coverImage && (
-            <div className="relative w-full max-w-4xl mb-8 rounded-lg overflow-hidden bg-gray-100">
+            <div className="relative w-full max-w-4xl mb-6 rounded-lg overflow-hidden bg-gray-100">
               <div className="relative aspect-[16/9] w-full">
                 {(() => {
                   const isYouTubeThumbnail = post.coverImage.includes('ytimg.com') || post.coverImage.includes('img.youtube.com')
@@ -429,70 +415,13 @@ export default async function PostPage({
           )}
           
           {post.youtubeVideoId && (
-            <YouTubeEmbed 
-              videoId={post.youtubeVideoId} 
+            <YouTubeEmbed
+              videoId={post.youtubeVideoId}
               title={post.title}
             />
           )}
 
-              {/* First Ad - After header, before content */}
-              <div className="my-8">
-                <LazyAdSense slot="8561234146" />
-              </div>
-
-              {(() => {
-                // Check if content is long enough (500+ characters) to insert mid-content ad
-                const shouldInsertMidAd = content.length >= 500
-
-                if (!shouldInsertMidAd) {
-                  // Short content - render normally without mid-content ad
-                  return <MarkdownContent content={content} />
-                }
-
-                // Split content into paragraphs
-                const paragraphs = content.split('\n\n')
-
-                // Find mid-point by character count (aim for ~50% through content)
-                let charCount = 0
-                const midPoint = content.length / 2
-                let splitIndex = Math.floor(paragraphs.length / 2) // fallback to middle paragraph
-
-                for (let i = 0; i < paragraphs.length; i++) {
-                  charCount += paragraphs[i].length + 2 // +2 for \n\n
-                  if (charCount >= midPoint) {
-                    splitIndex = i
-                    break
-                  }
-                }
-
-                // Split content at mid-point
-                const firstHalf = paragraphs.slice(0, splitIndex).join('\n\n')
-                const secondHalf = paragraphs.slice(splitIndex).join('\n\n')
-
-                return (
-                  <>
-                    <MarkdownContent content={firstHalf} />
-
-                    {/* Mid-content Ad - Only for content 500+ chars */}
-                    <div className="my-8">
-                      <LazyAdSense slot="8561234146" />
-                    </div>
-
-                    {/* Coupang Dynamic Banner - Only for Coupang-related posts */}
-                    {post.tags?.toLowerCase().includes('쿠팡') && <CoupangBannerMidContent />}
-
-                    <MarkdownContent content={secondHalf} />
-                  </>
-                )
-              })()}
-
-              {/* Second Ad - After content, before comments */}
-              <div className="my-12">
-                <LazyAdSense slot="8561234146" />
-              </div>
-
-              {/* Coupang Dynamic Banner - Only for Coupang-related posts */}
-              {post.tags?.toLowerCase().includes('쿠팡') && <CoupangBannerEndPost />}
+              <MarkdownContent content={content} />
 
               <Suspense fallback={<div className="h-20 animate-pulse bg-gray-100 rounded mt-8" />}>
                 <LazyCommentSection postSlug={post.slug} locale={locale} />
@@ -511,13 +440,9 @@ export default async function PostPage({
                 />
               </Suspense>
             </article>
-            
+
             <aside className="hidden xl:block">
               <TableOfContents content={content} />
-              {/* Sidebar Ad - Sticky ad below table of contents */}
-              <div className="mt-8 sticky top-24">
-                <LazyAdSense slot="8561234146" style={{ minHeight: '300px' }} />
-              </div>
             </aside>
           </div>
         </div>
@@ -525,7 +450,7 @@ export default async function PostPage({
         <footer className="bg-gray-50 mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <p className="text-center text-gray-500 text-sm">
-              © {new Date().getFullYear()} Cole IT AI. All rights reserved.
+              © {new Date().getFullYear()} GPAI Blog. All rights reserved.
             </p>
           </div>
         </footer>

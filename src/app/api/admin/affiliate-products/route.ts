@@ -43,21 +43,42 @@ async function getProductsHandler(request: NextRequest) {
   })
 
   // Transform rows to match the expected format
-  const products = result.rows.map(row => ({
-    id: row.id,
-    name: row.name,
-    coupangUrl: row.coupangUrl,
-    category: row.category,
-    price: row.price,
-    imageUrl: row.imageUrl,
-    keywords: row.keywords,
-    description: row.description,
-    createdAt: new Date(Number(row.createdAt)).toISOString(),
-    updatedAt: new Date(Number(row.updatedAt)).toISOString(),
-    _count: {
-      posts: Number(row.post_count || 0)
+  const products = result.rows.map(row => {
+    // Handle both integer timestamps and ISO string dates
+    let createdAt: string
+    let updatedAt: string
+
+    try {
+      // Try to parse as integer timestamp
+      const createdNum = Number(row.createdAt)
+      createdAt = isNaN(createdNum) ? String(row.createdAt) : new Date(createdNum).toISOString()
+    } catch {
+      createdAt = new Date().toISOString()
     }
-  }))
+
+    try {
+      const updatedNum = Number(row.updatedAt)
+      updatedAt = isNaN(updatedNum) ? String(row.updatedAt) : new Date(updatedNum).toISOString()
+    } catch {
+      updatedAt = new Date().toISOString()
+    }
+
+    return {
+      id: row.id,
+      name: row.name,
+      coupangUrl: row.coupangUrl,
+      category: row.category,
+      price: row.price,
+      imageUrl: row.imageUrl,
+      keywords: row.keywords,
+      description: row.description,
+      createdAt,
+      updatedAt,
+      _count: {
+        posts: Number(row.post_count || 0)
+      }
+    }
+  })
 
   logger.info('Affiliate products fetched', { count: products.length })
 
@@ -76,22 +97,34 @@ async function createProductHandler(request: NextRequest) {
 
   logger.info('Creating new affiliate product', { name: validatedData.name })
 
-  const product = await prisma.affiliateProduct.create({
-    data: {
-      name: validatedData.name,
-      coupangUrl: validatedData.coupangUrl,
-      category: validatedData.category,
-      price: validatedData.price ?? null,
-      imageUrl: validatedData.imageUrl ?? null,
-      keywords: validatedData.keywords,
-      description: validatedData.description ?? null
-    }
+  // Use raw SQL for Turso to avoid DateTime conversion issues
+  const now = Date.now()
+  const id = `ap_${now}_${Math.random().toString(36).substr(2, 9)}`
+
+  await turso.execute({
+    sql: `
+      INSERT INTO "AffiliateProduct"
+      (id, name, coupangUrl, category, price, imageUrl, keywords, description, createdAt, updatedAt)
+      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `,
+    args: [
+      id,
+      validatedData.name,
+      validatedData.coupangUrl,
+      validatedData.category,
+      validatedData.price ?? null,
+      validatedData.imageUrl ?? null,
+      validatedData.keywords,
+      validatedData.description ?? null,
+      now,
+      now
+    ]
   })
 
-  logger.info('Affiliate product created', { productId: product.id })
+  logger.info('Affiliate product created', { productId: id })
 
   return createSuccessResponse(
-    { product },
+    { product: { id, ...validatedData } },
     new URL(request.url).pathname
   )
 }

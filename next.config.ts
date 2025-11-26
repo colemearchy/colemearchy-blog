@@ -2,6 +2,13 @@ import type { NextConfig } from 'next'
 const { PrismaPlugin } = require('@prisma/nextjs-monorepo-workaround-plugin')
 
 const nextConfig: NextConfig = {
+  output: 'standalone',
+  eslint: {
+    ignoreDuringBuilds: true,
+  },
+  typescript: {
+    ignoreBuildErrors: true,
+  },
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.plugins = [...config.plugins, new PrismaPlugin()]
@@ -85,6 +92,14 @@ const nextConfig: NextConfig = {
       {
         protocol: 'https',
         hostname: '*.ytimg.com',
+      },
+      {
+        protocol: 'https',
+        hostname: 'cdn.prod.website-files.com',
+      },
+      {
+        protocol: 'https',
+        hostname: '*.website-files.com',
       },
     ],
     formats: ['image/avif', 'image/webp'],

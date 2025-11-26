@@ -95,9 +95,9 @@ export default async function HomePage({
   
   try {
     posts = await prisma.post.findMany({
-      where: { 
+      where: {
         status: 'PUBLISHED',
-        publishedAt: { 
+        publishedAt: {
           not: null,
           lte: new Date() // Only show posts that should be published by now
         },
@@ -129,6 +129,7 @@ export default async function HomePage({
         })
       },
       orderBy: { publishedAt: 'desc' },
+      take: 20, // 성능 최적화: 홈페이지 최대 20개 포스트만 로딩
       include: {
         translations: {
           where: {
@@ -153,8 +154,12 @@ export default async function HomePage({
       <header className="border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-8">
-            <Link href={`/${locale}`} className="text-3xl font-serif italic">
-              Cole IT AI
+            <Link href="https://gpai.app" className="flex items-center gap-3">
+              <img
+                src="/gpai-logo.png"
+                alt="GPAI logo"
+                className="h-10 w-auto"
+              />
             </Link>
             <div className="flex gap-2 flex-shrink-0">
               <Link
@@ -253,11 +258,6 @@ export default async function HomePage({
               </section>
             )}
 
-            {/* Homepage Ad - Between Featured and Most Popular */}
-            <div className="my-12">
-              <LazyAdSense slot="8561234146" />
-            </div>
-
             {/* Most Popular Section */}
             {recentPosts.length > 0 && (
               <section className="mb-16">
@@ -285,14 +285,15 @@ export default async function HomePage({
                                   sizes="(max-width: 640px) 100vw, (max-width: 768px) 50vw, (max-width: 1200px) 33vw, 25vw"
                                   placeholder="blur"
                                   blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxQf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
-                                  fetchPriority={index === 0 ? "high" : undefined}
+                                  fetchPriority={index === 0 ? "high" : "low"}
                                 />
                               ) : (
                                 <img
                                   src={post.coverImage}
                                   alt={post.title}
                                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                  loading={index === 0 ? "eager" : "lazy"}
+                                  loading="lazy"
+                                  decoding="async"
                                 />
                               )}
                             </div>
@@ -341,6 +342,9 @@ export default async function HomePage({
                                   loading="lazy"
                                   className="object-cover group-hover:scale-105 transition-transform duration-300"
                                   sizes="(max-width: 768px) 100vw, 33vw"
+                                  placeholder="blur"
+                                  blurDataURL="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAYEBQYFBAYGBQYHBwYIChAKCgkJChQODwwQFxQYGBcUFhYaHSUfGhsjHBYWICwgIyYnKSopGR8tMC0oMCUoKSj/2wBDAQcHBwoIChMKChMoGhYaKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCgoKCj/wAARCAABAAEDASIAAhEBAxEB/8QAFQABAQAAAAAAAAAAAAAAAAAAAAf/xAAhEAACAQMDBQAAAAAAAAAAAAABAgMABAUGIWEREiMxQf/EABUBAQEAAAAAAAAAAAAAAAAAAAMF/8QAGhEAAgIDAAAAAAAAAAAAAAAAAAECEgMRkf/aAAwDAQACEQMRAD8AltJagyeH0AthI5xdrLcNM91BF5pX2HaH9bcfaSXWGaRmknyJckliyjqTzSlT54b6bk+h0R//2Q=="
+                                  fetchPriority="low"
                                 />
                               ) : (
                                 <img
@@ -348,6 +352,7 @@ export default async function HomePage({
                                   alt={post.title}
                                   className="absolute inset-0 w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                   loading="lazy"
+                                  decoding="async"
                                 />
                               )}
                             </div>
@@ -391,11 +396,6 @@ export default async function HomePage({
                 </div>
               </section>
             )}
-
-            {/* Homepage Ad - After Latest Section */}
-            <div className="my-12">
-              <LazyAdSense slot="8561234146" />
-            </div>
           </>
         )}
 
@@ -410,9 +410,9 @@ export default async function HomePage({
       {/* Newsletter Signup */}
       <section className="bg-gray-50 py-16 mt-20" aria-label="Newsletter signup">
         <div className="max-w-2xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">Cole IT AI</h2>
+          <h2 className="text-2xl font-bold text-gray-900 mb-4">GPAI Blog</h2>
           <p className="text-gray-600 mb-8">
-            A weekly advice column about building product, driving growth, and accelerating your career.
+            AI-powered insights on technology, product development, and growth strategies.
           </p>
           <LazyNewsletterAnalytics>
             <div className="flex gap-4 max-w-md mx-auto">
@@ -440,7 +440,7 @@ export default async function HomePage({
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">Cole IT AI</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">GPAI</h3>
             </div>
             <div>
               <ul className="space-y-2">
@@ -456,8 +456,8 @@ export default async function HomePage({
             </div>
           </div>
           <div className="border-t border-gray-200 pt-8 text-center text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} Colemearchy • 
-              <Link href={`/${locale}/privacy`} className="hover:text-gray-900 underline underline-offset-2"> Privacy</Link> • 
+            <p>© {new Date().getFullYear()} GPAI •
+              <Link href={`/${locale}/privacy`} className="hover:text-gray-900 underline underline-offset-2"> Privacy</Link> •
               <Link href={`/${locale}/terms`} className="hover:text-gray-900 underline underline-offset-2"> Terms</Link>
             </p>
           </div>
