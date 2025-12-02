@@ -5,9 +5,13 @@
  * 유튜브 채널에 새로운 영상이 업로드되면 자동으로 블로그 포스트 생성
  */
 
+import dotenv from 'dotenv'
+dotenv.config() // .env 파일 로드
+
 import { google } from 'googleapis'
 import { prisma } from '@/lib/prisma'
 import { backupSinglePost } from '@/lib/auto-backup'
+import { convertVideoToBlog } from '@/lib/youtube-to-blog-service'
 
 const youtube = google.youtube({
   version: 'v3',
@@ -48,8 +52,7 @@ export interface SyncResult {
 function validateEnvironment(): void {
   const requiredEnvVars = [
     'YOUTUBE_API_KEY',
-    'YOUTUBE_CHANNEL_ID',
-    'NEXT_PUBLIC_SITE_URL'
+    'YOUTUBE_CHANNEL_ID'
   ]
 
   const missing = requiredEnvVars.filter(varName => !process.env[varName])
@@ -207,37 +210,11 @@ async function convertVideoToBlogPost(video: VideoInfo): Promise<boolean> {
   try {
     console.log(`📝 영상을 블로그 포스트로 변환 중: "${video.title}"`)
 
-    const siteUrl = process.env.NEXT_PUBLIC_SITE_URL
-    if (!siteUrl) {
-      throw new Error('NEXT_PUBLIC_SITE_URL environment variable is not set')
-    }
-
-    // YouTube-to-blog API 호출
-    const response = await fetch(`${siteUrl}/api/youtube-to-blog`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        videoId: video.videoId,
-        autoPublish: false // DRAFT로 생성 (수동 검토 후 발행)
-      })
+    // 직접 변환 함수 호출 (fetch 대신)
+    const result = await convertVideoToBlog({
+      videoId: video.videoId,
+      autoPublish: false // DRAFT로 생성 (수동 검토 후 발행)
     })
-
-    if (!response.ok) {
-      const errorText = await response.text().catch(() => 'Unknown error')
-      throw new Error(
-        `API call failed with status ${response.status} ${response.statusText}\n` +
-        `Response: ${errorText}`
-      )
-    }
-
-    const result = await response.json()
-
-    // API 응답 검증
-    if (!result.post || !result.post.title) {
-      throw new Error('Invalid API response: missing post data')
-    }
 
     console.log(`✅ 블로그 포스트 생성 완료: "${result.post.title}"`)
     console.log(`📄 슬러그: ${result.post.slug}`)
@@ -367,7 +344,6 @@ async function main(): Promise<void> {
   try {
     console.log('🎥 YouTube 자동 동기화 스크립트 시작...')
     console.log(`📺 채널 ID: ${CHANNEL_ID}`)
-    console.log(`🌐 사이트 URL: ${process.env.NEXT_PUBLIC_SITE_URL}`)
     console.log('')
 
     // 환경 변수 검증 (validateEnvironment가 이미 syncNewVideos 안에서 호출되지만, 명시적으로 여기서도 호출)

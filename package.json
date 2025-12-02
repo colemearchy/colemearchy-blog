@@ -26,6 +26,7 @@
     "postinstall": "prisma generate"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.71.0",
     "@fontsource/noto-sans-kr": "^5.2.8",
     "@fontsource/pretendard": "^5.2.5",
     "@google/generative-ai": "^0.24.1",
