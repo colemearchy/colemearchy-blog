@@ -18,6 +18,14 @@
     {
       "path": "/api/publish-posts",
       "schedule": "0 * * * *"
+    },
+    {
+      "path": "/api/cron/youtube-sync",
+      "schedule": "0 */6 * * *"
+    },
+    {
+      "path": "/api/cron/generate-daily-posts",
+      "schedule": "0 2 * * *"
     }
   ]
 }
