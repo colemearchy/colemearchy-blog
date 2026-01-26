@@ -410,34 +410,6 @@ export default async function HomePage({
         )}
       </main>
 
-      {/* Newsletter Signup */}
-      <section className="bg-gray-50 py-16 mt-20" aria-label="Newsletter signup">
-        <div className="max-w-2xl mx-auto px-4 text-center">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">GPAI Blog</h2>
-          <p className="text-gray-600 mb-8">
-            AI-powered insights on technology, product development, and growth strategies.
-          </p>
-          <LazyNewsletterAnalytics>
-            <div className="flex gap-4 max-w-md mx-auto">
-              <input
-                type="email"
-                name="email"
-                placeholder="Type your email..."
-                aria-label="Email address for newsletter"
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
-                required
-              />
-              <button
-                type="submit"
-                className="px-6 py-3 bg-gray-900 text-white font-medium rounded-lg hover:bg-black transition-colors"
-              >
-                Subscribe
-              </button>
-            </div>
-          </LazyNewsletterAnalytics>
-        </div>
-      </section>
-
       {/* Footer */}
       <footer className="bg-white py-12" role="contentinfo">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden">
