@@ -45,14 +45,10 @@ export async function middleware(request: NextRequest) {
       needsRedirect = true
     }
 
-    // Add locale (default to Korean for Korean speakers, English for others)
+    // Add locale (always default to Korean)
     if (!pathnameHasLocale && !skipLocaleRedirect) {
-      // Detect language from Accept-Language header
-      const acceptLanguage = request.headers.get('accept-language') || ''
-      const isKorean = acceptLanguage.toLowerCase().includes('ko')
-
-      // Default to Korean if Korean language detected, otherwise English
-      const locale = isKorean ? 'ko' : 'en'
+      // Always use Korean as default locale
+      const locale = 'ko'
       newUrl.pathname = `/${locale}${pathname}`
       needsRedirect = true
     }
