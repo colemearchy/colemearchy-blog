@@ -1,7 +1,7 @@
 import Link from 'next/link'
 import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
-import LazyNewsletterAnalytics from '@/components/LazyNewsletterAnalytics'
+// import LazyNewsletterAnalytics from '@/components/LazyNewsletterAnalytics' // Disabled newsletter feature
 import { Metadata } from 'next'
 import { navigationItems } from '@/lib/navigation'
 import { LazyAdSense } from '@/components/LazyAdSense'
@@ -154,15 +154,10 @@ export default async function HomePage({
       <header className="border-b border-gray-200">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-8">
-            <Link href="https://gpai.app" className="flex items-center gap-3">
-              <Image
-                src="/gpai-logo.png"
-                alt="GPAI logo"
-                width={120}
-                height={40}
-                className="h-10 w-auto"
-                priority
-              />
+            <Link href="/" className="flex items-center gap-3">
+              <h1 className="text-2xl font-bold text-gray-900">
+                Cole IT AI
+              </h1>
             </Link>
             <div className="flex gap-2 flex-shrink-0">
               <Link
@@ -415,7 +410,7 @@ export default async function HomePage({
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">GPAI</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">Cole IT AI</h3>
             </div>
             <div>
               <ul className="space-y-2">
@@ -431,7 +426,7 @@ export default async function HomePage({
             </div>
           </div>
           <div className="border-t border-gray-200 pt-8 text-center text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} GPAI •
+            <p>© {new Date().getFullYear()} Cole IT AI •
               <Link href={`/${locale}/privacy`} className="hover:text-gray-900 underline underline-offset-2"> Privacy</Link> •
               <Link href={`/${locale}/terms`} className="hover:text-gray-900 underline underline-offset-2"> Terms</Link>
             </p>

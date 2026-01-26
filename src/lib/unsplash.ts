@@ -102,7 +102,7 @@ export function extractImageKeywords(title: string): string {
     'JEE': 'exam preparation india',
     'SAT': 'standardized test',
     'ACT': 'college test',
-    'GPAI': 'ai technology education',
+    'Cole IT AI': 'ai technology education',
     'study': 'students studying',
     'exam': 'exam preparation',
     'college': 'university campus',
@@ -150,7 +150,7 @@ export function getOptimizedImageUrl(
  * 이미지 attribution (저작권 표시)
  */
 export function getImageAttribution(image: UnsplashImage): string {
-  return `Photo by <a href="${image.links.html}?utm_source=gpai_blog&utm_medium=referral">${image.user.name}</a> on <a href="https://unsplash.com?utm_source=gpai_blog&utm_medium=referral">Unsplash</a>`
+  return `Photo by <a href="${image.links.html}?utm_source=colemearchy_blog&utm_medium=referral">${image.user.name}</a> on <a href="https://unsplash.com?utm_source=colemearchy_blog&utm_medium=referral">Unsplash</a>`
 }
 
 /**

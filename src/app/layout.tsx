@@ -119,7 +119,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://i.ytimg.com" />
 
         {/* Preload critical images */}
-        <link rel="preload" as="image" href="/gpai-logo.png" fetchPriority="high" />
+        {/* <link rel="preload" as="image" href="/gpai-logo.png" fetchPriority="high" /> */} {/* Removed GPAI logo */}
         
         {/* Font preloading is handled automatically by next/font */}
         
