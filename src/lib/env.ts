@@ -43,11 +43,11 @@ export const env = {
   POSTGRES_URL: getOptionalEnv('POSTGRES_URL'),
 
   // AI Services
-  GEMINI_API_KEY: getRequiredEnv('GEMINI_API_KEY'),
+  GEMINI_API_KEY: getOptionalEnv('GEMINI_API_KEY'),
 
   // YouTube API
-  YOUTUBE_API_KEY: getRequiredEnv('YOUTUBE_API_KEY'),
-  YOUTUBE_CHANNEL_ID: getRequiredEnv('YOUTUBE_CHANNEL_ID'),
+  YOUTUBE_API_KEY: getOptionalEnv('YOUTUBE_API_KEY'),
+  YOUTUBE_CHANNEL_ID: getOptionalEnv('YOUTUBE_CHANNEL_ID'),
 
   // Site Configuration
   NEXT_PUBLIC_SITE_URL: getOptionalEnv('NEXT_PUBLIC_SITE_URL', 'http://localhost:3000'),

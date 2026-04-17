@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import { NextResponse } from 'next/server';
 import { getChannelVideos } from '@/lib/youtube';
 import { prisma } from '@/lib/prisma';

@@ -5,11 +5,19 @@ import { withErrorHandler, logger, createSuccessResponse, validateRequest } from
 import { verifyAdminAuth } from '@/lib/auth'
 import { z } from 'zod'
 
+export const dynamic = 'force-dynamic'
+
 // Direct Turso client to bypass Prisma INTEGER/REAL conversion issues
-const turso = createClient({
-  url: process.env.DATABASE_URL || '',
-  authToken: process.env.DATABASE_AUTH_TOKEN || ''
-})
+let _turso: ReturnType<typeof createClient> | null = null
+function getTurso() {
+  if (!_turso) {
+    _turso = createClient({
+      url: process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || "",
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    })
+  }
+  return _turso
+}
 
 const affiliateProductSchema = z.object({
   name: z.string().min(1, 'Product name is required'),
@@ -30,7 +38,7 @@ async function getProductsHandler(request: NextRequest) {
   logger.info('Fetching all affiliate products')
 
   // Use raw SQL query to avoid Prisma type conversion errors
-  const result = await turso.execute({
+  const result = await getTurso().execute({
     sql: `
       SELECT
         ap.*,
@@ -101,7 +109,7 @@ async function createProductHandler(request: NextRequest) {
   const now = Date.now()
   const id = `ap_${now}_${Math.random().toString(36).substr(2, 9)}`
 
-  await turso.execute({
+  await getTurso().execute({
     sql: `
       INSERT INTO "AffiliateProduct"
       (id, name, coupangUrl, category, price, imageUrl, keywords, description, createdAt, updatedAt)

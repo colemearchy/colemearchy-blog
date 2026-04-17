@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { getLatestVideos, isVideoAlreadyProcessed } from '../../../../scripts/auto-youtube-sync'
 

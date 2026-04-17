@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@libsql/client'
 import { GoogleGenerativeAI } from '@google/generative-ai'
@@ -5,10 +6,16 @@ import { generateAffiliateContentPrompt } from '@/lib/ai-prompts'
 import { injectAffiliateLinks } from '@/lib/utils/affiliate-link-injector'
 import { generateUniqueSlugWithTimestamp } from '@/lib/utils/slug'
 
-const turso = createClient({
-  url: process.env.DATABASE_URL || '',
-  authToken: process.env.DATABASE_AUTH_TOKEN || ''
-})
+let _turso: ReturnType<typeof createClient> | null = null
+function getTurso() {
+  if (!_turso) {
+    _turso = createClient({
+      url: process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || "",
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    })
+  }
+  return _turso
+}
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
@@ -38,7 +45,7 @@ export async function GET(request: NextRequest) {
     console.log('🚀 매일 자동 제휴 포스팅 시작...')
 
     // 2. 랜덤 상품 선택 (아직 콘텐츠 없는 상품 우선)
-    const result = await turso.execute({
+    const result = await getTurso().execute({
       sql: `
         SELECT ap.*
         FROM "AffiliateProduct" ap
@@ -52,7 +59,7 @@ export async function GET(request: NextRequest) {
     // 모든 상품에 콘텐츠가 있으면, 랜덤으로 하나 선택
     let product
     if (result.rows.length === 0) {
-      const fallbackResult = await turso.execute({
+      const fallbackResult = await getTurso().execute({
         sql: 'SELECT * FROM "AffiliateProduct" ORDER BY RANDOM() LIMIT 1'
       })
       product = fallbackResult.rows[0]
@@ -132,7 +139,7 @@ export async function GET(request: NextRequest) {
     const postId = `post-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
     const now = Date.now()
 
-    await turso.execute({
+    await getTurso().execute({
       sql: `INSERT INTO Post (
         id, title, slug, content, excerpt, tags,
         seoTitle, seoDescription, coverImage, status, author, originalLanguage,
@@ -158,7 +165,7 @@ export async function GET(request: NextRequest) {
     })
 
     // 7. PostAffiliateProduct 관계 추가
-    await turso.execute({
+    await getTurso().execute({
       sql: `INSERT INTO PostAffiliateProduct (
         id, postId, affiliateProductId, createdAt
       ) VALUES (?, ?, ?, ?)`,
@@ -180,7 +187,7 @@ export async function GET(request: NextRequest) {
       console.log('🔄 Vercel 재배포 트리거 완료')
     }
 
-    turso.close()
+    getTurso().close()
 
     return NextResponse.json({
       success: true,

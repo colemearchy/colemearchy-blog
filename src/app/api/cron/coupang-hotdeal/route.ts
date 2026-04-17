@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@libsql/client'
 import { GoogleGenerativeAI } from '@google/generative-ai'
@@ -5,10 +6,16 @@ import { generateAffiliateContentPrompt } from '@/lib/ai-prompts'
 import { injectAffiliateLinks } from '@/lib/utils/affiliate-link-injector'
 import { generateUniqueSlugWithTimestamp } from '@/lib/utils/slug'
 
-const turso = createClient({
-  url: process.env.DATABASE_URL || '',
-  authToken: process.env.DATABASE_AUTH_TOKEN || ''
-})
+let _turso: ReturnType<typeof createClient> | null = null
+function getTurso() {
+  if (!_turso) {
+    _turso = createClient({
+      url: process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || "",
+      authToken: process.env.TURSO_AUTH_TOKEN,
+    })
+  }
+  return _turso
+}
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
 
@@ -106,7 +113,7 @@ export async function GET(request: NextRequest) {
     for (const product of parsed.products) {
       const productId = `hotdeal-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
 
-      await turso.execute({
+      await getTurso().execute({
         sql: `INSERT INTO "AffiliateProduct" (
           id, name, coupangUrl, category, keywords, description, createdAt, updatedAt
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -138,7 +145,7 @@ export async function GET(request: NextRequest) {
 **파트너스 활동 고지**
 *이 포스팅은 쿠팡 파트너스 활동의 일환으로, 이에 따른 일정액의 수수료를 제공받습니다.*`
 
-    await turso.execute({
+    await getTurso().execute({
       sql: `INSERT INTO Post (
         id, title, slug, content, excerpt, tags,
         seoTitle, seoDescription, status, author, originalLanguage,
@@ -164,7 +171,7 @@ export async function GET(request: NextRequest) {
 
     // 6. PostAffiliateProduct 관계 추가
     for (const productId of productIds) {
-      await turso.execute({
+      await getTurso().execute({
         sql: `INSERT INTO PostAffiliateProduct (
           id, postId, affiliateProductId, createdAt
         ) VALUES (?, ?, ?, ?)`,
@@ -182,7 +189,7 @@ export async function GET(request: NextRequest) {
     console.log(`   - Status: DRAFT (쿠팡 링크 추가 필요)`)
     console.log(`   - 다음 단계: Admin에서 각 상품의 쿠팡 링크 추가 후 발행`)
 
-    turso.close()
+    getTurso().close()
 
     return NextResponse.json({
       success: true,
