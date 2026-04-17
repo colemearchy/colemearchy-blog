@@ -15,8 +15,8 @@ export default async function AboutPage({
       </h1>
       <p className="text-gray-600">
         {lang === 'ko' 
-          ? 'Cole IT AI는 AI와 기술에 대한 인사이트를 공유하는 블로그입니다.'
-          : 'Cole IT AI is a blog sharing insights about AI and technology.'}
+          ? 'CMA는 AI와 기술에 대한 인사이트를 공유하는 블로그입니다.'
+          : 'CMA is a blog sharing insights about AI and technology.'}
       </p>
     </PageLayout>
   )

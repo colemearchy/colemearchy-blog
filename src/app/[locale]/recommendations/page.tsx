@@ -10,12 +10,12 @@ export async function generateMetadata({
   const isKorean = locale === 'ko'
 
   return {
-    title: isKorean ? '추천 | Cole IT AI' : 'Recommendations | Cole IT AI',
+    title: isKorean ? '추천 | CMA' : 'Recommendations | CMA',
     description: isKorean
       ? '유용한 도구, 서비스, 리소스 추천'
       : 'Useful tools, services, and resource recommendations',
     openGraph: {
-      title: isKorean ? '추천 | Cole IT AI' : 'Recommendations | Cole IT AI',
+      title: isKorean ? '추천 | CMA' : 'Recommendations | CMA',
       description: isKorean
         ? '유용한 도구, 서비스, 리소스 추천'
         : 'Useful tools, services, and resource recommendations',

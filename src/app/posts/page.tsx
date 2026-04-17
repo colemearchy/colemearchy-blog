@@ -5,10 +5,10 @@ import InfinitePostsList from '@/components/InfinitePostsList'
 import { normalizePostsTags } from '@/lib/utils/tags'
 
 export const metadata: Metadata = {
-  title: 'All Posts | Colemearchy Blog',
+  title: 'All Posts | CMA Blog',
   description: 'Explore all blog posts about biohacking, startups, and sovereign living',
   openGraph: {
-    title: 'All Posts | Colemearchy Blog',
+    title: 'All Posts | CMA Blog',
     description: 'Explore all blog posts about biohacking, startups, and sovereign living',
     type: 'website',
   },
@@ -33,7 +33,7 @@ export default async function PostsPage() {
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Blog',
-    name: 'Colemearchy Blog',
+    name: 'CMA Blog',
     description: 'Thoughts on biohacking, startups, and sovereign living',
     url: `${process.env.NEXT_PUBLIC_SITE_URL}/posts`,
     blogPost: posts.map(post => ({
@@ -44,7 +44,7 @@ export default async function PostsPage() {
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/posts/${post.slug}`,
       author: {
         '@type': 'Person',
-        name: post.author || 'Colemearchy Blog',
+        name: post.author || 'CMA Blog',
       },
     })),
   }
@@ -61,7 +61,7 @@ export default async function PostsPage() {
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-6">
               <Link href="/" className="text-3xl font-bold text-gray-900">
-                Colemearchy Blog
+                CMA Blog
               </Link>
               <nav>
                 <Link href="/about" className="text-gray-600 hover:text-gray-900 ml-6">About</Link>
@@ -89,7 +89,7 @@ export default async function PostsPage() {
         <footer className="bg-gray-50 mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <p className="text-center text-gray-500 text-sm">
-              © {new Date().getFullYear()} Colemearchy Blog. All rights reserved.
+              © {new Date().getFullYear()} CMA Blog. All rights reserved.
             </p>
           </div>
         </footer>

@@ -218,12 +218,12 @@ export default async function PostPage({
     dateModified: post.updatedAt.toISOString(),
     author: {
       '@type': 'Person',
-      name: post.author || 'Cole IT AI',
+      name: post.author || 'CMA',
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/about`,
     },
     publisher: {
       '@type': 'Organization',
-      name: 'Cole IT AI',
+      name: 'CMA',
       logo: {
         '@type': 'ImageObject',
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`,
@@ -282,7 +282,7 @@ export default async function PostPage({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-6">
               <Link href="/" className="text-3xl font-bold text-gray-900">
-                Cole IT AI
+                CMA
               </Link>
               <nav className="flex items-center gap-4">
                 <div className="flex gap-2">
@@ -408,7 +408,7 @@ export default async function PostPage({
         <footer className="bg-gray-50 mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <p className="text-center text-gray-500 text-sm">
-              © {new Date().getFullYear()} Cole IT AI. All rights reserved.
+              © {new Date().getFullYear()} CMA. All rights reserved.
             </p>
           </div>
         </footer>

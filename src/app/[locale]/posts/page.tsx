@@ -14,12 +14,12 @@ export async function generateMetadata({
   const isKorean = locale === 'ko'
   
   return {
-    title: isKorean ? '모든 글 | Cole IT AI' : 'All Posts | Cole IT AI',
+    title: isKorean ? '모든 글 | CMA' : 'All Posts | CMA',
     description: isKorean 
       ? 'AI, 기술, 소프트웨어 개발에 관한 모든 블로그 글'
       : 'Explore all blog posts about AI, technology, and software development',
     openGraph: {
-      title: isKorean ? '모든 글 | Cole IT AI' : 'All Posts | Cole IT AI',
+      title: isKorean ? '모든 글 | CMA' : 'All Posts | CMA',
       description: isKorean 
         ? 'AI, 기술, 소프트웨어 개발에 관한 모든 블로그 글'
         : 'Explore all blog posts about AI, technology, and software development',
@@ -84,7 +84,7 @@ export default async function PostsPage({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Blog',
-    name: 'Cole IT AI',
+    name: 'CMA',
     description: lang === 'ko' 
       ? 'AI, 기술, 소프트웨어 개발에 관한 블로그'
       : 'A blog about AI, technology, and software development',
@@ -105,7 +105,7 @@ export default async function PostsPage({
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/posts/${post.slug}`,
         author: {
           '@type': 'Organization',
-          name: 'Cole IT AI',
+          name: 'CMA',
         },
       }
     }),

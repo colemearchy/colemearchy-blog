@@ -14,12 +14,12 @@ export async function generateMetadata({
   const isKorean = locale === 'ko'
 
   return {
-    title: isKorean ? '사이트맵 | Cole IT AI' : 'Sitemap | Cole IT AI',
+    title: isKorean ? '사이트맵 | CMA' : 'Sitemap | CMA',
     description: isKorean
       ? '블로그의 모든 페이지와 글을 한눈에 보기'
       : 'Browse all pages and posts on the blog',
     openGraph: {
-      title: isKorean ? '사이트맵 | Cole IT AI' : 'Sitemap | Cole IT AI',
+      title: isKorean ? '사이트맵 | CMA' : 'Sitemap | CMA',
       description: isKorean
         ? '블로그의 모든 페이지와 글을 한눈에 보기'
         : 'Browse all pages and posts on the blog',

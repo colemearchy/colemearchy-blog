@@ -73,7 +73,7 @@ You are the content strategist for Colemearchy blog. Based on the following read
 **Sample Knowledge Base:**
 ${knowledgeContext}
 
-**Colemearchy Blog Style (The Golden Triangle):**
+**CMA Blog Style (The Golden Triangle):**
 1. Biohacking & The Optimized Self: Personal journeys with modern health solutions (Wegovy, mental health meds, fitness, keto diet)
 2. The Startup Architect: Actionable insights on growth, SEO, AI, and leadership from a tech director perspective
 3. The Sovereign Mind: Philosophical and practical takes on investing, personal freedom, and building meaningful life

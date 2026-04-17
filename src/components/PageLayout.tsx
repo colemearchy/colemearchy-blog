@@ -17,7 +17,7 @@ export default function PageLayout({ locale, currentPath, children }: PageLayout
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-8">
             <Link href={`/${locale}`} className="text-3xl font-serif italic">
-              Cole IT AI
+              CMA
             </Link>
             <div className="flex gap-2">
               <Link
@@ -62,7 +62,7 @@ export default function PageLayout({ locale, currentPath, children }: PageLayout
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="text-sm text-gray-600">
-              © 2024 Cole IT AI. All rights reserved.
+              © 2024 CMA. All rights reserved.
             </div>
             <div className="flex gap-4">
               <Link

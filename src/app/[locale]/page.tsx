@@ -19,7 +19,7 @@ export async function generateMetadata({
   const { locale } = await params
 
   return {
-    title: locale === 'en' ? 'Cole IT AI - Tech & AI Blog' : 'Cole IT AI - 기술 및 AI 블로그',
+    title: locale === 'en' ? 'CMA - Tech & AI Blog' : 'CMA - 기술 및 AI 블로그',
     description: locale === 'en'
       ? 'A blog about AI, technology, and software development'
       : 'AI, 기술, 소프트웨어 개발에 관한 블로그',
@@ -156,7 +156,7 @@ export default async function HomePage({
           <div className="flex justify-between items-center py-8">
             <Link href="/" className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-gray-900">
-                Cole IT AI
+                CMA
               </h1>
             </Link>
             <div className="flex gap-2 flex-shrink-0">
@@ -410,7 +410,7 @@ export default async function HomePage({
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">Cole IT AI</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">CMA</h3>
             </div>
             <div>
               <ul className="space-y-2">
@@ -426,7 +426,7 @@ export default async function HomePage({
             </div>
           </div>
           <div className="border-t border-gray-200 pt-8 text-center text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} Cole IT AI •
+            <p>© {new Date().getFullYear()} CMA •
               <Link href={`/${locale}/privacy`} className="hover:text-gray-900 underline underline-offset-2"> Privacy</Link> •
               <Link href={`/${locale}/terms`} className="hover:text-gray-900 underline underline-offset-2"> Terms</Link>
             </p>

@@ -26,14 +26,14 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://colemearchy.com'),
   title: {
-    default: "Cole IT AI - Tech & AI Blog",
-    template: "%s | Cole IT AI"
+    default: "CMA - Tech & AI Blog",
+    template: "%s | CMA"
   },
-  description: "AI, technology, and software development insights from Cole IT AI.",
+  description: "AI, technology, and software development insights from CMA.",
   keywords: ["AI", "technology", "software development", "machine learning", "programming"],
-  authors: [{ name: "Cole IT AI" }],
-  creator: "Cole IT AI",
-  publisher: "Cole IT AI",
+  authors: [{ name: "CMA" }],
+  creator: "CMA",
+  publisher: "CMA",
   icons: {
     icon: '/icon',
     apple: '/apple-icon',
@@ -42,22 +42,22 @@ export const metadata: Metadata = {
     type: "website",
     locale: "en_US",
     url: "https://colemearchy.com",
-    siteName: "Cole IT AI",
-    title: "Cole IT AI - Tech & AI Blog",
-    description: "AI, technology, and software development insights from Cole IT AI.",
+    siteName: "CMA",
+    title: "CMA - Tech & AI Blog",
+    description: "AI, technology, and software development insights from CMA.",
     images: [
       {
         url: "/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Cole IT AI"
+        alt: "CMA"
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Cole IT AI",
-    description: "AI, technology, and software development insights from Cole IT AI.",
+    title: "CMA",
+    description: "AI, technology, and software development insights from CMA.",
     creator: "@coleitai",
     images: ["/og-image.png"]
   },
@@ -89,12 +89,12 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'Cole IT AI',
+    name: 'CMA',
     url: 'https://colemearchy.com',
-    description: 'AI, technology, and software development insights from Cole IT AI.',
+    description: 'AI, technology, and software development insights from CMA.',
     publisher: {
       '@type': 'Organization',
-      name: 'Cole IT AI'
+      name: 'CMA'
     },
     potentialAction: {
       '@type': 'SearchAction',
@@ -119,7 +119,7 @@ export default function RootLayout({
         <link rel="dns-prefetch" href="https://i.ytimg.com" />
 
         {/* Preload critical images */}
-        {/* <link rel="preload" as="image" href="/gpai-logo.png" fetchPriority="high" /> */} {/* Removed GPAI logo */}
+        {/* <link rel="preload" as="image" href="/gpai-logo.png" fetchPriority="high" /> */} {/* Removed CMA logo */}
         
         {/* Font preloading is handled automatically by next/font */}
         

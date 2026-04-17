@@ -102,7 +102,7 @@ export function extractImageKeywords(title: string): string {
     'JEE': 'exam preparation india',
     'SAT': 'standardized test',
     'ACT': 'college test',
-    'Cole IT AI': 'ai technology education',
+    'CMA': 'ai technology education',
     'study': 'students studying',
     'exam': 'exam preparation',
     'college': 'university campus',

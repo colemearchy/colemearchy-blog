@@ -2,7 +2,7 @@ import { Metadata } from 'next'
 import Link from 'next/link'
 
 export const metadata: Metadata = {
-  title: 'Podcast - Colemearchy Blog',
+  title: 'Podcast - CMA Blog',
   description: 'Listen to our podcast',
 }
 
@@ -13,7 +13,7 @@ export default function PodcastPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <Link href="/" className="text-3xl font-bold text-gray-900">
-              Colemearchy Blog
+              CMA Blog
             </Link>
             <nav>
               <Link href="/about" className="text-gray-600 hover:text-gray-900 ml-6">About</Link>

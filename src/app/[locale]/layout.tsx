@@ -14,7 +14,7 @@ export async function generateMetadata({
   const { locale } = await params
   
   return {
-    title: locale === 'en' ? 'Cole IT AI - Tech & AI Blog' : 'Cole IT AI - 기술 및 AI 블로그',
+    title: locale === 'en' ? 'CMA - Tech & AI Blog' : 'CMA - 기술 및 AI 블로그',
     description: locale === 'en' 
       ? 'A blog about AI, technology, and software development'
       : 'AI, 기술, 소프트웨어 개발에 관한 블로그',
@@ -23,17 +23,17 @@ export async function generateMetadata({
       apple: '/apple-icon',
     },
     openGraph: {
-      title: locale === 'en' ? 'Cole IT AI - Tech & AI Blog' : 'Cole IT AI - 기술 및 AI 블로그',
+      title: locale === 'en' ? 'CMA - Tech & AI Blog' : 'CMA - 기술 및 AI 블로그',
       description: locale === 'en' 
         ? 'A blog about AI, technology, and software development'
         : 'AI, 기술, 소프트웨어 개발에 관한 블로그',
-      siteName: 'Cole IT AI',
+      siteName: 'CMA',
       locale: locale === 'en' ? 'en_US' : 'ko_KR',
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
-      title: locale === 'en' ? 'Cole IT AI - Tech & AI Blog' : 'Cole IT AI - 기술 및 AI 블로그',
+      title: locale === 'en' ? 'CMA - Tech & AI Blog' : 'CMA - 기술 및 AI 블로그',
       description: locale === 'en' 
         ? 'A blog about AI, technology, and software development'
         : 'AI, 기술, 소프트웨어 개발에 관한 블로그',
