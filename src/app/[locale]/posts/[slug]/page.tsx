@@ -96,6 +96,10 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
   // Parse content if it's in JSON format
   let content = post.content
+
+  // Remove YouTube boilerplate from existing posts
+  content = content.replace(/---\s*\n+###\s*Watch the Video\s*\n+This post is based on our YouTube video\. Watch it for more details!\s*\n+---\s*\n+\*Originally published on YouTube:[^*]*\*\s*/g, '')
+  content = content.replace(/\*Originally published on YouTube:[^*]*\*\s*/g, '')
   
   // Check if content starts with ```json block
   if (content.startsWith('```json')) {

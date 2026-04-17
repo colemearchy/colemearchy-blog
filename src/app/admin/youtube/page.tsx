@@ -178,15 +178,7 @@ export default function YouTubeManagerPage() {
 
 ${content}
 
----
-
-### Watch the Video
-
-This post is based on our YouTube video. Watch it for more details!
-
----
-
-*Originally published on YouTube: ${new Date(video.publishedAt).toLocaleDateString()}*`
+`
 
     const timestamp = Date.now()
     // Convert to lowercase and replace underscores with hyphens for valid slug
