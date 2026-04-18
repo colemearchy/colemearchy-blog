@@ -94,14 +94,9 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
     }
   }
 
-  // Parse content if it's in JSON format
+  // Parse content if it's in JSON format (used for metadata extraction only)
   let content = post.content
 
-  // Remove YouTube boilerplate from existing posts
-  content = content.replace(/\n*---\n+### Watch the Video\n+This post is based on our YouTube video\. Watch it for more details!\n+---\n+\*Originally published on YouTube:[^*]*\*/g, '')
-  content = content.replace(/### Watch the Video[\s\S]*?Watch it for more details!/g, '')
-  content = content.replace(/\*Originally published on YouTube:[^*]*\*/g, '')
-  
   // Check if content starts with ```json block
   if (content.startsWith('```json')) {
     const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/)
@@ -205,7 +200,12 @@ export default async function PostPage({
   
   // Parse content if it's in JSON format
   let content = displayContent
-  
+
+  // Remove YouTube boilerplate from existing posts
+  content = content.replace(/\n*---\n+### Watch the Video\n+This post is based on our YouTube video\. Watch it for more details!\n+---\n+\*Originally published on YouTube:[^*]*\*/g, '')
+  content = content.replace(/### Watch the Video[\s\S]*?Watch it for more details!/g, '')
+  content = content.replace(/\*Originally published on YouTube:[^*]*\*/g, '')
+
   // Check if content starts with ```json block
   if (content.startsWith('```json')) {
     const jsonMatch = content.match(/```json\n([\s\S]*?)\n```/)
