@@ -26,20 +26,23 @@ export function LazyAdSense({ slot, format = 'auto', style }: LazyAdSenseProps) 
                 script.defer = true
                 script.crossOrigin = 'anonymous'
                 
+                script.onerror = () => {
+                  // Silently handle script load failure (ad blocker, network)
+                }
                 script.onload = () => {
                   try {
                     ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({})
-                  } catch (err) {
-                    console.error('AdSense error:', err)
+                  } catch {
+                    // Silently handle AdSense init error
                   }
                 }
-                
+
                 document.head.appendChild(script)
               } else {
                 try {
                   ((window as any).adsbygoogle = (window as any).adsbygoogle || []).push({})
-                } catch (err) {
-                  console.error('AdSense error:', err)
+                } catch {
+                  // Silently handle AdSense error
                 }
               }
             }

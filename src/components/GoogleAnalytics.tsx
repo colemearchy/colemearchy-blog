@@ -40,7 +40,7 @@ function GoogleAnalyticsInner() {
       script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`
       script.async = true
       script.defer = true
-      script.onerror = () => console.warn('Failed to load Google Analytics')
+      script.onerror = () => { /* silently handle GA load failure */ }
       script.onload = () => {
         window.gtag('event', 'page_view', {
           page_title: document.title,

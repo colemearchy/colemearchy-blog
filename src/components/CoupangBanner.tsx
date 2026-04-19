@@ -120,8 +120,8 @@ export default function CoupangBanner({
         src="https://ads-partners.coupang.com/g.js"
         strategy="lazyOnload"
         onLoad={handleScriptLoad}
-        onError={(e) => {
-          console.error('Failed to load Coupang banner script:', e)
+        onError={() => {
+          // Silently handle script load failure
         }}
       />
     </>

@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import ClientShell from '@/components/ClientShell';
+import { GoogleAnalytics } from '@/components/GoogleAnalytics';
+import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
+import AdBlockerNotice from '@/components/AdBlockerNotice';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -110,9 +112,7 @@ export default function RootLayout({
         <link rel="icon" href="/icon" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-icon" />
         
-        {/* Only preconnect to LCP-critical origins */}
-        <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
-        {/* Non-critical origins: dns-prefetch only */}
+        <link rel="dns-prefetch" href="https://images.unsplash.com" />
         <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
         <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         
@@ -124,8 +124,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ClientShell />
+        <GoogleAnalytics />
+        <ServiceWorkerRegistration />
         {children}
+        <AdBlockerNotice />
       </body>
     </html>
   );
