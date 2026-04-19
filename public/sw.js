@@ -1,17 +1,8 @@
-const CACHE_NAME = 'colemearchy-blog-v1';
-const urlsToCache = [
-  '/',
-  '/posts',
-  '/offline',
-];
+const CACHE_NAME = 'colemearchy-blog-v2';
 
-// Install service worker
+// Install service worker - skip caching to avoid errors
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.addAll(urlsToCache))
-      .then(() => self.skipWaiting())
-  );
+  event.waitUntil(self.skipWaiting());
 });
 
 // Activate service worker

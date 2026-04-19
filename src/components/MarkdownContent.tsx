@@ -1,12 +1,16 @@
 'use client'
 
 import React from 'react'
+import dynamic from 'next/dynamic'
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeRaw from 'rehype-raw'
-import CodeBlock from './CodeBlock'
 import LazyImage from './LazyImage'
 import type { Components } from 'react-markdown'
+
+const CodeBlock = dynamic(() => import('./CodeBlock'), {
+  loading: () => <code style={{ display: 'block', padding: '1rem', backgroundColor: '#1f2937', color: '#f3f4f6', borderRadius: '0.5rem', fontSize: '0.875rem', overflow: 'auto' }}>Loading...</code>,
+})
 
 interface MarkdownContentProps {
   content: string
