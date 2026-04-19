@@ -308,7 +308,7 @@ export default async function PostPage({
       />
       
       <div className="min-h-screen bg-white">
-        <header className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+        <header className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8" role="banner">
           <div className="border-b border-gray-100">
             <div className="flex justify-between items-center py-8">
               <Link href="/en" className="text-3xl font-serif italic">
@@ -334,7 +334,7 @@ export default async function PostPage({
           </div>
         </header>
 
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full overflow-x-hidden">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 w-full overflow-x-hidden">
           <div className="xl:flex xl:gap-8">
             <article className="xl:flex-1 max-w-4xl mx-auto xl:mx-0">
               <Breadcrumb postTitle={displayTitle} postSlug={post.slug} />
@@ -386,6 +386,21 @@ export default async function PostPage({
                         fill
                         className="object-contain bg-gray-100"
                         priority
+                        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
+                      />
+                    )
+                  }
+
+                  // Unsplash images are already optimized - skip /_next/image proxy to reduce LCP
+                  if (post.coverImage.includes('images.unsplash.com')) {
+                    return (
+                      <Image
+                        src={post.coverImage}
+                        alt={displayTitle}
+                        fill
+                        className="object-cover bg-gray-100"
+                        priority
+                        unoptimized
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 80vw, 1200px"
                       />
                     )
@@ -450,9 +465,9 @@ export default async function PostPage({
               <TableOfContents content={content} />
             </aside>
           </div>
-        </div>
+        </main>
 
-        <footer className="bg-gray-50 mt-20">
+        <footer className="bg-gray-50 mt-20" role="contentinfo">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <p className="text-center text-gray-500 text-sm">
               © {new Date().getFullYear()} CMA Blog. All rights reserved.
