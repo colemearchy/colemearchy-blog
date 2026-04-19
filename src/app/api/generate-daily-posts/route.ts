@@ -1,48 +1,21 @@
 export const dynamic = "force-dynamic"
 import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenerativeAI } from '@google/generative-ai';
+import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/prisma';
-import { MASTER_SYSTEM_PROMPT, generateContentPrompt } from '@/lib/ai-prompts';
+import { MASTER_SYSTEM_PROMPT } from '@/lib/ai-prompts';
 import { backupSinglePost } from '@/lib/auto-backup';
-
-const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 // Verify cron secret
 function verifyCronSecret(request: NextRequest): boolean {
   const authHeader = request.headers.get('authorization');
   const cronSecret = process.env.CRON_SECRET;
-  
+
   if (!cronSecret) {
     console.error('CRON_SECRET not configured');
     return false;
   }
-  
+
   return authHeader === `Bearer ${cronSecret}`;
-}
-
-// Generate embedding for a text
-async function generateEmbedding(text: string): Promise<number[]> {
-  const model = genAI.getGenerativeModel({ model: "text-embedding-004" });
-  const result = await model.embedContent(text);
-  return result.embedding.values;
-}
-
-// Search for similar knowledge using vector similarity
-async function searchSimilarKnowledge(queryEmbedding: number[], limit: number = 3) {
-  const results = await prisma.$queryRaw`
-    SELECT id, content, source, 
-           1 - (embedding <=> ${queryEmbedding}::vector) as similarity
-    FROM "Knowledge"
-    ORDER BY embedding <=> ${queryEmbedding}::vector
-    LIMIT ${limit}
-  `;
-  
-  return results as Array<{
-    id: string;
-    content: string;
-    source: string | null;
-    similarity: number;
-  }>;
 }
 
 // Generate slug from title
@@ -54,270 +27,200 @@ function generateSlug(title: string): string {
     .substring(0, 60);
 }
 
-// Generate topic ideas based on knowledge base
-async function generateTopicIdeas(): Promise<string[]> {
-  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-  
-  // Get some sample knowledge to inspire topics
-  const sampleKnowledge = await prisma.knowledge.findMany({
-    take: 5,
-    select: { content: true, source: true }
-  });
-  
-  const knowledgeContext = sampleKnowledge.map(k => 
-    `[${k.source}]: ${k.content.substring(0, 200)}...`
-  ).join('\n\n');
-  
-  const topicPrompt = `
-You are the content strategist for Colemearchy blog. Based on the following reading notes, generate 10 engaging blog topics that match our brand voice.
+// Parse structured text response from Claude
+function parseStructuredResponse(responseText: string, fallbackTopic: string) {
+  const lines = responseText.split('\n');
+  let title = fallbackTopic;
+  let excerpt = '';
+  let tags = '';
+  let seoTitle = '';
+  let seoDesc = '';
+  let contentStartIndex = 0;
 
-**Sample Knowledge Base:**
-${knowledgeContext}
+  for (let i = 0; i < Math.min(lines.length, 10); i++) {
+    const line = lines[i].trim();
+    if (line.startsWith('TITLE:')) {
+      title = line.replace('TITLE:', '').trim();
+    } else if (line.startsWith('EXCERPT:')) {
+      excerpt = line.replace('EXCERPT:', '').trim();
+    } else if (line.startsWith('TAGS:')) {
+      tags = line.replace('TAGS:', '').trim();
+    } else if (line.startsWith('SEO_TITLE:')) {
+      seoTitle = line.replace('SEO_TITLE:', '').trim();
+    } else if (line.startsWith('SEO_DESC:')) {
+      seoDesc = line.replace('SEO_DESC:', '').trim();
+    } else if (line === '---') {
+      contentStartIndex = i + 1;
+      break;
+    }
+  }
 
-**CMA Blog Style (The Golden Triangle):**
-1. Biohacking & The Optimized Self: Personal journeys with modern health solutions (Wegovy, mental health meds, fitness, keto diet)
-2. The Startup Architect: Actionable insights on growth, SEO, AI, and leadership from a tech director perspective
-3. The Sovereign Mind: Philosophical and practical takes on investing, personal freedom, and building meaningful life
+  const content = lines.slice(contentStartIndex).join('\n').trim();
 
-**Target Audience:** Ambitious millennials (25-40) in tech/finance/creative industries seeking life optimization beyond careers
-
-**Requirements:**
-1. Each topic should be 8-15 words long and click-worthy
-2. Include SEO-friendly keywords
-3. Provoke curiosity and promise actionable insights
-4. Be personal and experience-based (use "I", "My", "How I")
-5. Appeal to freedom-seeking, optimization-minded readers
-
-**Topic Categories to Cover:**
-- Biohacking experiments and results
-- Startup/business growth tactics
-- Investment and wealth building
-- Productivity and mental optimization
-- Technology and AI insights
-- Personal freedom and lifestyle design
-
-Respond in JSON format:
-{
-  "topics": [
-    "First topic title",
-    "Second topic title",
-    ...
-  ]
+  return { title, excerpt, tags, seoTitle, seoDesc, content };
 }
-`;
 
-  const result = await model.generateContent({
-    contents: [{ 
+// Generate topic ideas using Claude
+async function generateTopicIdeas(anthropic: Anthropic): Promise<string[]> {
+  const result = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 2048,
+    messages: [{
       role: 'user',
-      parts: [{ text: topicPrompt }] 
+      content: `블로그 colemearchy.com의 콘텐츠 전략가로서, 10개의 매력적인 블로그 주제를 생성해주세요.
+
+블로그 스타일 (The Golden Triangle):
+1. 바이오해킹 & 최적화된 자아: Wegovy, 정신건강, 피트니스, 케토 등 건강 최적화
+2. 스타트업 아키텍트: 성장, SEO, AI, 리더십에 대한 실행 가능한 인사이트 (PM/디자이너 관점)
+3. 주권적 마음: 투자, 개인의 자유, 의미 있는 삶 구축
+
+대상 독자: 25-40대 테크/금융/창의 산업 종사자, 삶의 최적화를 추구하는 야심찬 밀레니얼
+
+요구사항:
+- 한국어로 작성
+- 각 주제는 10-20자 내외, 클릭을 유도하는 제목
+- 개인 경험 기반 ("나의", "내가" 등 사용)
+- SEO 키워드 포함
+
+각 주제를 한 줄에 하나씩, 번호 없이 출력해주세요. 다른 설명 없이 주제만 10줄로.`
     }],
-    generationConfig: {
-      temperature: 0.8,
-      maxOutputTokens: 2048,
-    }
   });
 
-  try {
-    const response = JSON.parse(result.response.text());
-    return response.topics || [];
-  } catch (error) {
-    console.error('Failed to parse topic ideas:', error);
-    return [
-      'How I Biohacked My Way Out of Chronic Fatigue (5 Game-Changing Experiments)',
-      'The Growth Trap That Killed My Startup (And How to Avoid It)',
-      'From $50K to $500K: My Actual Investment Journey Timeline',
-      'Why I Quit Productivity Porn and Started Getting Things Done',
-      'The AI Tools That Actually Make Me Money (Not Just Hype)',
-      'How to Build Wealth While Working a 9-5 (My 3-Year Experiment)',
-      'The Biohacking Stack That Fixed My ADHD Without Medication',
-      'Why Your Startup is Failing (And the Pivot That Saved Mine)',
-      'My $10K Mistake That Taught Me How Markets Really Work',
-      'The Minimalist Productivity System That Changed Everything'
-    ];
-  }
+  const text = result.content[0].type === 'text' ? result.content[0].text : '';
+  const topics = text.split('\n').map(l => l.trim()).filter(l => l.length > 5);
+  return topics.slice(0, 10);
 }
 
-// Generate content using RAG
-async function generateContentWithRAG(topic: string): Promise<any> {
-  try {
-    // Generate embedding for the topic
-    const topicEmbedding = await generateEmbedding(topic);
-    
-    // Search for similar knowledge
-    const similarKnowledge = await searchSimilarKnowledge(topicEmbedding);
-    
-    // Create RAG context
-    const ragContext = similarKnowledge.length > 0 
-      ? `\n\n**과거 기록 컨텍스트 (Past Knowledge Context):**\n${
-          similarKnowledge.map((k, i) => 
-            `\n[Context ${i + 1}${k.source ? ` - from "${k.source}"` : ''}]:\n${k.content.substring(0, 500)}...`
-          ).join('\n')
-        }\n\n**위 컨텍스트를 참고하여 나의 과거 생각과 스타일을 반영해 글을 작성해주세요.**\n\n`
-      : '';
+// Generate a single blog post
+async function generateBlogPost(anthropic: Anthropic, topic: string) {
+  const result = await anthropic.messages.create({
+    model: 'claude-sonnet-4-20250514',
+    max_tokens: 8192,
+    system: MASTER_SYSTEM_PROMPT,
+    messages: [{
+      role: 'user',
+      content: `다음 주제로 블로그 포스트를 작성해주세요: "${topic}"
 
-    // Generate content
-    const fullPrompt = `${MASTER_SYSTEM_PROMPT}\n\n------\n\n${ragContext}**EXECUTE TASK:**\n\n${generateContentPrompt(topic, [], [])}`;
+요구사항:
+- 한국어로 작성
+- 최소 3000자 이상
+- 마크다운 형식
+- 개인 경험 기반 (PM/디자이너 관점, 개발자 아님)
+- SEO 최적화
+- "개발자로서", "코드를 짰어요" 같은 표현 절대 금지
+- 대신 "PM으로서", "AI 도구를 활용해서", "디자이너 출신으로" 사용
 
-    const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash-latest" });
-    const result = await model.generateContent({
-      contents: [{ 
-        role: 'user',
-        parts: [{ text: fullPrompt }] 
-      }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 8192,
-      }
-    });
+응답 형식 (반드시 지켜주세요):
+첫 줄: TITLE: [제목]
+둘째 줄: EXCERPT: [요약 1-2문장]
+셋째 줄: TAGS: [태그1, 태그2, 태그3]
+넷째 줄: SEO_TITLE: [SEO 제목 60자 이내]
+다섯째 줄: SEO_DESC: [메타설명 160자 이내]
+여섯째 줄: ---
+나머지: 본문 (마크다운)`
+    }],
+  });
 
-    const responseText = result.response.text();
-
-    // Parse the generated content
-    try {
-      // Remove markdown code block wrapper if present
-      let jsonText = responseText.trim();
-      if (jsonText.startsWith('```json')) {
-        jsonText = jsonText.replace(/^```json\s*/, '').replace(/\s*```$/, '');
-      } else if (jsonText.startsWith('```')) {
-        jsonText = jsonText.replace(/^```\s*/, '').replace(/\s*```$/, '');
-      }
-
-      const parsedContent = JSON.parse(jsonText);
-
-      // IMPORTANT: Ensure we're using ONLY the content field, not the entire JSON
-      if (parsedContent.content && typeof parsedContent.content === 'string') {
-        return parsedContent;
-      } else if (typeof parsedContent === 'object' && !parsedContent.content) {
-        // JSON doesn't have a content field, treat entire text as content
-        return {
-          title: parsedContent.title || topic,
-          content: responseText,
-          excerpt: parsedContent.excerpt || responseText.substring(0, 160),
-          tags: parsedContent.tags || []
-        };
-      }
-
-      return parsedContent;
-    } catch {
-      // If not JSON, wrap in content object
-      return {
-        title: topic,
-        content: responseText,
-        excerpt: responseText.substring(0, 160),
-        tags: []
-      };
-    }
-  } catch (error) {
-    console.error('Error generating content for topic:', topic, error);
-    return null;
-  }
+  return result.content[0].type === 'text' ? result.content[0].text : '';
 }
 
 export async function POST(request: NextRequest) {
   try {
-    // Verify that this is a legitimate cron job request
     if (!verifyCronSecret(request)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
     }
-    
-    console.log('🚀 Starting daily content generation...');
-    
-    const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-    if (!GEMINI_API_KEY) {
-      return NextResponse.json({ error: 'Gemini API key not configured' }, { status: 500 });
+
+    if (!process.env.ANTHROPIC_API_KEY) {
+      return NextResponse.json({ error: 'ANTHROPIC_API_KEY not configured' }, { status: 500 });
     }
 
+    const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    console.log('Starting daily content generation...');
+
     // Step 1: Generate topic ideas
-    console.log('💡 Generating topic ideas...');
-    const topics = await generateTopicIdeas();
-    console.log(`Generated ${topics.length} topics:`, topics);
+    console.log('Generating topic ideas...');
+    const topics = await generateTopicIdeas(anthropic);
+    console.log(`Generated ${topics.length} topics`);
 
     const generatedPosts = [];
     const failedTopics = [];
 
-    // Step 2: Generate content for each topic with scheduled publishing
+    // Step 2: Calculate publish times - 1 hour apart starting from KST 9AM tomorrow
     const today = new Date();
     const tomorrow = new Date(today);
-    tomorrow.setDate(tomorrow.getDate() + 1); // Generate for tomorrow
+    tomorrow.setDate(tomorrow.getDate() + 1);
     const startOfDay = new Date(tomorrow);
-    startOfDay.setHours(9, 0, 0, 0); // Start publishing at 9 AM
-    
-    // Calculate publish times spread throughout the day (9 AM - 11 PM)
+    startOfDay.setUTCHours(0, 0, 0, 0); // UTC 0AM = KST 9AM
+
     const publishTimes = [];
     for (let i = 0; i < 10; i++) {
       const publishTime = new Date(startOfDay);
-      publishTime.setHours(9 + Math.floor(i * 14 / 10), (i * 37) % 60, 0, 0); // Spread across 14 hours with varying minutes
+      publishTime.setUTCHours(i, 0, 0, 0); // UTC 0AM~9AM = KST 9AM~6PM
       publishTimes.push(publishTime);
     }
-    
+
+    // Step 3: Generate content for each topic
     for (let i = 0; i < Math.min(topics.length, 10); i++) {
       const topic = topics[i];
-      console.log(`📝 Generating content for: "${topic}" (${i + 1}/${Math.min(topics.length, 10)})`);
-      
+      console.log(`Generating content (${i + 1}/${Math.min(topics.length, 10)}): "${topic}"`);
+
       try {
-        const content = await generateContentWithRAG(topic);
-        
-        if (content) {
-          // Validate content length (minimum 2500 characters for ~3000 words)
-          const contentLength = content.content?.length || 0;
-          if (contentLength < 2500) {
-            console.warn(`⚠️ Content too short (${contentLength} chars), regenerating...`);
-            continue;
-          }
-          
-          // Save to database as draft with scheduled publish time
-          const slug = generateSlug(content.title || topic);
-          const uniqueSlug = `${slug}-${Date.now()}`;
-          
-          const post = await prisma.post.create({
-            data: {
-              title: content.title || topic,
-              slug: uniqueSlug,
-              content: content.content || '',
-              excerpt: content.excerpt || content.content?.substring(0, 160) || '',
-              tags: Array.isArray(content.tags) ? content.tags : [],
-              seoTitle: content.seoTitle || content.title,
-              seoDescription: content.seoDescription || content.excerpt,
-              status: 'PUBLISHED',
-              author: 'Colemearchy',
-              publishedAt: publishTimes[i], // Publish at scheduled time
-              createdAt: new Date()
-            }
-          });
+        const responseText = await generateBlogPost(anthropic, topic);
+        const parsed = parseStructuredResponse(responseText, topic);
 
-          // Auto-backup newly created daily post
-          try {
-            await backupSinglePost(post.id, 'post-create');
-            console.log(`✅ Auto-backup completed for daily post: ${post.title}`);
-          } catch (backupError) {
-            // Backup failure shouldn't break the main flow
-            console.warn(`⚠️ Auto-backup failed for post ${post.id}:`, backupError);
-          }
-
-          generatedPosts.push({
-            id: post.id,
-            title: post.title,
-            slug: post.slug,
-            publishDate: publishTimes[i].toISOString(),
-            contentLength: contentLength
-          });
-
-          console.log(`✅ Generated post: "${post.title}" (${contentLength} chars) - Scheduled for ${publishTimes[i].toLocaleString()}`);
-        } else {
+        if (parsed.content.length < 2500) {
+          console.warn(`Content too short (${parsed.content.length} chars), skipping...`);
           failedTopics.push(topic);
+          continue;
         }
 
-        // Add delay between generations to avoid rate limiting
-        if (i < topics.length - 1) {
-          await new Promise(resolve => setTimeout(resolve, 3000)); // Increased delay for quality
+        const slug = generateSlug(parsed.title);
+        const uniqueSlug = `${slug}-${Date.now()}`;
+
+        const post = await prisma.post.create({
+          data: {
+            title: parsed.title,
+            slug: uniqueSlug,
+            content: parsed.content,
+            excerpt: parsed.excerpt || parsed.content.substring(0, 160),
+            tags: parsed.tags,
+            seoTitle: parsed.seoTitle || parsed.title,
+            seoDescription: parsed.seoDesc || parsed.excerpt || parsed.content.substring(0, 160),
+            status: 'DRAFT',
+            author: 'Colemearchy',
+            scheduledAt: publishTimes[i],
+            createdAt: new Date()
+          }
+        });
+
+        try {
+          await backupSinglePost(post.id, 'post-create');
+        } catch (backupError) {
+          console.warn(`Auto-backup failed for post ${post.id}:`, backupError);
         }
+
+        generatedPosts.push({
+          id: post.id,
+          title: post.title,
+          slug: post.slug,
+          scheduledAt: publishTimes[i].toISOString(),
+          contentLength: parsed.content.length
+        });
+
+        console.log(`Generated: "${post.title}" (${parsed.content.length} chars) - Scheduled: ${publishTimes[i].toISOString()}`);
       } catch (error) {
-        console.error(`❌ Failed to generate content for topic: "${topic}"`, error);
+        console.error(`Failed: "${topic}"`, error);
         failedTopics.push(topic);
+      }
+
+      // Delay between generations
+      if (i < topics.length - 1) {
+        await new Promise(resolve => setTimeout(resolve, 2000));
       }
     }
 
-    console.log(`🎉 Daily content generation complete! Generated ${generatedPosts.length} posts`);
+    console.log(`Done! Generated ${generatedPosts.length} posts, ${failedTopics.length} failed`);
 
     return NextResponse.json({
       success: true,
@@ -328,20 +231,19 @@ export async function POST(request: NextRequest) {
     });
 
   } catch (error) {
-    console.error('❌ Error in daily content generation:', error);
-    return NextResponse.json({ 
+    console.error('Error in daily content generation:', error);
+    return NextResponse.json({
       error: 'Failed to generate daily content',
-      details: error instanceof Error ? error.message : 'Unknown error' 
+      details: error instanceof Error ? error.message : 'Unknown error'
     }, { status: 500 });
   }
 }
 
-// Support GET for manual testing
 export async function GET(request: NextRequest) {
   if (!verifyCronSecret(request)) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-  
+
   return NextResponse.json({
     message: 'Daily content generation endpoint is ready',
     timestamp: new Date().toISOString()
