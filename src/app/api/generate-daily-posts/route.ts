@@ -210,9 +210,9 @@ export async function POST(request: NextRequest) {
             coverImage,
             seoTitle: parsed.seoTitle || parsed.title,
             seoDescription: parsed.seoDesc || parsed.excerpt || parsed.content.substring(0, 160),
-            status: 'DRAFT',
+            status: 'PUBLISHED',
             author: 'Colemearchy',
-            scheduledAt: publishTimes[i],
+            publishedAt: publishTimes[i],
             createdAt: new Date()
           }
         });

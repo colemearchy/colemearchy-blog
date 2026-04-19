@@ -17,7 +17,7 @@
     },
     {
       "path": "/api/publish-posts",
-      "schedule": "0 * * * *"
+      "schedule": "0 1 * * *"
     },
     {
       "path": "/api/cron/youtube-sync",
