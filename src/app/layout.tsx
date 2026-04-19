@@ -1,14 +1,12 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import { GoogleAnalytics } from '@/components/GoogleAnalytics';
-import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
-import AdBlockerNotice from '@/components/AdBlockerNotice';
+import ClientShell from '@/components/ClientShell';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
-  display: 'optional',
+  display: 'swap',
   preload: true,
   adjustFontFallback: true,
   fallback: ['system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'sans-serif'],
@@ -17,8 +15,8 @@ const geistSans = Geist({
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-  display: 'optional',
-  preload: true,
+  display: 'swap',
+  preload: false,
   adjustFontFallback: true,
   fallback: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'Monaco', 'monospace'],
 });
@@ -112,18 +110,11 @@ export default function RootLayout({
         <link rel="icon" href="/icon" sizes="any" />
         <link rel="apple-touch-icon" href="/apple-icon" />
         
-        {/* DNS Prefetch & Preconnect for external resources */}
-        <link rel="preconnect" href="https://www.googletagmanager.com" crossOrigin="anonymous" />
-        <link rel="preconnect" href="https://pagead2.googlesyndication.com" crossOrigin="anonymous" />
+        {/* Only preconnect to LCP-critical origins */}
         <link rel="preconnect" href="https://images.unsplash.com" crossOrigin="anonymous" />
-        <link rel="dns-prefetch" href="https://images.unsplash.com" />
-        <link rel="dns-prefetch" href="https://www.youtube-nocookie.com" />
-        <link rel="dns-prefetch" href="https://i.ytimg.com" />
-
-        {/* Preload critical images */}
-        {/* <link rel="preload" as="image" href="/gpai-logo.png" fetchPriority="high" /> */} {/* Removed CMA logo */}
-        
-        {/* Font preloading is handled automatically by next/font */}
+        {/* Non-critical origins: dns-prefetch only */}
+        <link rel="dns-prefetch" href="https://www.googletagmanager.com" />
+        <link rel="dns-prefetch" href="https://pagead2.googlesyndication.com" />
         
         <script
           type="application/ld+json"
@@ -133,10 +124,8 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <GoogleAnalytics />
-        <ServiceWorkerRegistration />
+        <ClientShell />
         {children}
-        <AdBlockerNotice />
       </body>
     </html>
   );
