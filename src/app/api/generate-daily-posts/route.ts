@@ -4,6 +4,7 @@ import Anthropic from '@anthropic-ai/sdk';
 import { prisma } from '@/lib/prisma';
 import { MASTER_SYSTEM_PROMPT } from '@/lib/ai-prompts';
 import { backupSinglePost } from '@/lib/auto-backup';
+import { searchUnsplashImage, getOptimizedImageUrl } from '@/lib/unsplash';
 
 // Verify cron secret
 function verifyCronSecret(request: NextRequest): boolean {
@@ -35,9 +36,10 @@ function parseStructuredResponse(responseText: string, fallbackTopic: string) {
   let tags = '';
   let seoTitle = '';
   let seoDesc = '';
+  let coverKeyword = '';
   let contentStartIndex = 0;
 
-  for (let i = 0; i < Math.min(lines.length, 10); i++) {
+  for (let i = 0; i < Math.min(lines.length, 12); i++) {
     const line = lines[i].trim();
     if (line.startsWith('TITLE:')) {
       title = line.replace('TITLE:', '').trim();
@@ -49,6 +51,8 @@ function parseStructuredResponse(responseText: string, fallbackTopic: string) {
       seoTitle = line.replace('SEO_TITLE:', '').trim();
     } else if (line.startsWith('SEO_DESC:')) {
       seoDesc = line.replace('SEO_DESC:', '').trim();
+    } else if (line.startsWith('COVER_KEYWORD:')) {
+      coverKeyword = line.replace('COVER_KEYWORD:', '').trim();
     } else if (line === '---') {
       contentStartIndex = i + 1;
       break;
@@ -57,7 +61,21 @@ function parseStructuredResponse(responseText: string, fallbackTopic: string) {
 
   const content = lines.slice(contentStartIndex).join('\n').trim();
 
-  return { title, excerpt, tags, seoTitle, seoDesc, content };
+  return { title, excerpt, tags, seoTitle, seoDesc, coverKeyword, content };
+}
+
+// Fetch cover image from Unsplash
+async function fetchCoverImage(keyword: string, fallbackTitle: string): Promise<string | null> {
+  try {
+    const query = keyword || fallbackTitle.replace(/[^a-zA-Z\s]/g, '').trim().split(' ').slice(0, 3).join(' ') || 'technology';
+    const image = await searchUnsplashImage(query, 'landscape');
+    if (image) {
+      return getOptimizedImageUrl(image, 1200, 80);
+    }
+  } catch (e) {
+    console.warn('Unsplash image fetch failed:', e);
+  }
+  return null;
 }
 
 // Generate topic ideas using Claude
@@ -116,7 +134,8 @@ async function generateBlogPost(anthropic: Anthropic, topic: string) {
 셋째 줄: TAGS: [태그1, 태그2, 태그3]
 넷째 줄: SEO_TITLE: [SEO 제목 60자 이내]
 다섯째 줄: SEO_DESC: [메타설명 160자 이내]
-여섯째 줄: ---
+여섯째 줄: COVER_KEYWORD: [썸네일 이미지 검색용 영어 키워드 2-3단어, 예: productivity workspace, biohacking supplements]
+일곱째 줄: ---
 나머지: 본문 (마크다운)`
     }],
   });
@@ -175,6 +194,9 @@ export async function POST(request: NextRequest) {
           continue;
         }
 
+        // Fetch cover image from Unsplash
+        const coverImage = await fetchCoverImage(parsed.coverKeyword, parsed.title);
+
         const slug = generateSlug(parsed.title);
         const uniqueSlug = `${slug}-${Date.now()}`;
 
@@ -185,6 +207,7 @@ export async function POST(request: NextRequest) {
             content: parsed.content,
             excerpt: parsed.excerpt || parsed.content.substring(0, 160),
             tags: parsed.tags,
+            coverImage,
             seoTitle: parsed.seoTitle || parsed.title,
             seoDescription: parsed.seoDesc || parsed.excerpt || parsed.content.substring(0, 160),
             status: 'DRAFT',
