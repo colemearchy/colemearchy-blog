@@ -62,10 +62,13 @@ export default function CodeBlock({ children, className, inline }: CodeBlockProp
             console.warn(`Failed to load language: ${language}`, error)
           }
           
-          // Highlight all code blocks after language is loaded
-          setTimeout(() => {
-            Prism.default.highlightAll()
-          }, 0)
+          // Highlight code blocks after idle to reduce TBT
+          const highlight = () => Prism.default.highlightAll()
+          if (typeof requestIdleCallback !== 'undefined') {
+            requestIdleCallback(highlight)
+          } else {
+            setTimeout(highlight, 0)
+          }
         }
         
         loadLanguage()
@@ -97,6 +100,7 @@ export default function CodeBlock({ children, className, inline }: CodeBlockProp
     <div className="code-block relative" style={{position: 'relative', marginBottom: '1.5rem'}}>
       <button
         onClick={handleCopy}
+        aria-label={copied ? 'Copied to clipboard' : 'Copy code to clipboard'}
         className="copy-button"
         style={{
           position: 'absolute',

@@ -27,10 +27,18 @@ export default function ViewCounter({ postId, initialViews }: ViewCounterProps) 
       }
     }
 
-    // Track view after a short delay to ensure it's a real page view
-    const timer = setTimeout(trackView, 1000)
-    
-    return () => clearTimeout(timer)
+    // Track view after idle to reduce TBT
+    const idleId = typeof requestIdleCallback !== 'undefined'
+      ? requestIdleCallback(() => trackView(), { timeout: 3000 })
+      : undefined
+    const fallbackId = typeof requestIdleCallback === 'undefined'
+      ? setTimeout(trackView, 1500)
+      : undefined
+
+    return () => {
+      if (idleId !== undefined) cancelIdleCallback(idleId)
+      if (fallbackId !== undefined) clearTimeout(fallbackId)
+    }
   }, [postId])
 
   return <span>{views} views</span>

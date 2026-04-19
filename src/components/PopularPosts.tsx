@@ -47,9 +47,11 @@ export default function PopularPosts() {
         <div className="flex gap-1 text-sm">
           <button
             onClick={() => setPeriod('week')}
+            aria-label="Filter by week"
+            aria-pressed={period === 'week'}
             className={`px-3 py-1 rounded-md transition-colors ${
-              period === 'week' 
-                ? 'bg-gray-900 text-white' 
+              period === 'week'
+                ? 'bg-gray-900 text-white'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -57,9 +59,11 @@ export default function PopularPosts() {
           </button>
           <button
             onClick={() => setPeriod('month')}
+            aria-label="Filter by month"
+            aria-pressed={period === 'month'}
             className={`px-3 py-1 rounded-md transition-colors ${
-              period === 'month' 
-                ? 'bg-gray-900 text-white' 
+              period === 'month'
+                ? 'bg-gray-900 text-white'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >
@@ -67,9 +71,11 @@ export default function PopularPosts() {
           </button>
           <button
             onClick={() => setPeriod('all')}
+            aria-label="Filter by all time"
+            aria-pressed={period === 'all'}
             className={`px-3 py-1 rounded-md transition-colors ${
-              period === 'all' 
-                ? 'bg-gray-900 text-white' 
+              period === 'all'
+                ? 'bg-gray-900 text-white'
                 : 'text-gray-600 hover:text-gray-900'
             }`}
           >

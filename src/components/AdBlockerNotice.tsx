@@ -20,15 +20,23 @@ export default function AdBlockerNotice() {
     if (hasSeenAdBlockerNotice()) return
 
     // Detect ad blocker after a short delay to avoid impacting initial page load
-    const timer = setTimeout(async () => {
+    const detect = async () => {
       const isBlocked = await detectAdBlocker()
+      if (isBlocked) setShowNotice(true)
+    }
 
-      if (isBlocked) {
-        setShowNotice(true)
-      }
-    }, 2000) // Wait 2 seconds after page load
+    // Use requestIdleCallback to avoid blocking main thread
+    const idleId = typeof requestIdleCallback !== 'undefined'
+      ? requestIdleCallback(() => detect(), { timeout: 5000 })
+      : undefined
+    const fallbackId = typeof requestIdleCallback === 'undefined'
+      ? setTimeout(() => detect(), 3000)
+      : undefined
 
-    return () => clearTimeout(timer)
+    return () => {
+      if (idleId !== undefined) cancelIdleCallback(idleId)
+      if (fallbackId !== undefined) clearTimeout(fallbackId)
+    }
   }, [pathname])
 
   const handleClose = () => {
@@ -51,6 +59,7 @@ export default function AdBlockerNotice() {
         isClosing ? 'opacity-0 translate-y-4' : 'opacity-100 translate-y-0'
       }`}
       role="dialog"
+      aria-modal="true"
       aria-labelledby="adblock-notice-title"
       aria-describedby="adblock-notice-description"
     >

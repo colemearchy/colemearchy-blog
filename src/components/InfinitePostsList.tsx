@@ -58,23 +58,20 @@ export default function InfinitePostsList({
 
     setIsLoading(true)
     
-    // Simulate loading delay for better UX
-    setTimeout(() => {
-      const nextPage = page + 1
-      const startIndex = page * postsPerPage
-      const endIndex = startIndex + postsPerPage
-      const newPosts = initialPosts.slice(startIndex, endIndex)
-      
-      if (newPosts.length > 0) {
-        setPosts(prev => [...prev, ...newPosts])
-        setPage(nextPage)
-        setHasMore(endIndex < initialPosts.length)
-      } else {
-        setHasMore(false)
-      }
-      
-      setIsLoading(false)
-    }, 300)
+    const nextPage = page + 1
+    const startIndex = page * postsPerPage
+    const endIndex = startIndex + postsPerPage
+    const newPosts = initialPosts.slice(startIndex, endIndex)
+
+    if (newPosts.length > 0) {
+      setPosts(prev => [...prev, ...newPosts])
+      setPage(nextPage)
+      setHasMore(endIndex < initialPosts.length)
+    } else {
+      setHasMore(false)
+    }
+
+    setIsLoading(false)
   }, [page, postsPerPage, initialPosts, hasMore, isLoading])
 
   useEffect(() => {

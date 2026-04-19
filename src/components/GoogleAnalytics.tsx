@@ -18,20 +18,11 @@ function GoogleAnalyticsInner() {
     const existingScript = document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)
     if (existingScript) return
 
-    // Delay loading GA to prioritize content
-    const loadTimeout = setTimeout(() => {
-      // Load gtag script with proper attributes
-      const script = document.createElement('script')
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`
-      script.async = true
-      script.defer = true
-      
-      // Add error handling
-      script.onerror = () => {
-        console.warn('Failed to load Google Analytics')
-      }
-      
-      // Initialize gtag before appending script
+    // Load GA after main thread is idle to minimize TBT
+    const loadGA = () => {
+      const existingCheck = document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)
+      if (existingCheck) return
+
       window.dataLayer = window.dataLayer || []
       window.gtag = function gtag() {
         window.dataLayer.push(arguments)
@@ -42,12 +33,14 @@ function GoogleAnalyticsInner() {
         page_location: window.location.href,
         cookie_flags: 'SameSite=None;Secure',
         anonymize_ip: true,
-        send_page_view: false // Don't send automatic page view
+        send_page_view: false
       })
-      
-      document.head.appendChild(script)
-      
-      // Send initial page view after script loads
+
+      const script = document.createElement('script')
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`
+      script.async = true
+      script.defer = true
+      script.onerror = () => console.warn('Failed to load Google Analytics')
       script.onload = () => {
         window.gtag('event', 'page_view', {
           page_title: document.title,
@@ -55,9 +48,20 @@ function GoogleAnalyticsInner() {
           page_path: pathname
         })
       }
-    }, 3000) // 3 second delay to prioritize LCP
+      document.head.appendChild(script)
+    }
 
-    return () => clearTimeout(loadTimeout)
+    const idleId = typeof requestIdleCallback !== 'undefined'
+      ? requestIdleCallback(loadGA, { timeout: 5000 })
+      : undefined
+    const fallbackId = typeof requestIdleCallback === 'undefined'
+      ? setTimeout(loadGA, 3000)
+      : undefined
+
+    return () => {
+      if (idleId !== undefined) cancelIdleCallback(idleId)
+      if (fallbackId !== undefined) clearTimeout(fallbackId)
+    }
   }, [pathname])
 
   useEffect(() => {
