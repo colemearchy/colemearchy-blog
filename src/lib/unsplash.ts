@@ -135,15 +135,46 @@ export function extractImageKeywords(title: string): string {
  */
 export function getOptimizedImageUrl(
   image: UnsplashImage,
-  width: number = 1200,
-  quality: number = 80
+  width: number = 1080,
+  quality: number = 75
 ): string {
   const url = new URL(image.urls.raw)
   url.searchParams.append('w', width.toString())
   url.searchParams.append('q', quality.toString())
-  url.searchParams.append('fm', 'jpg')
+  url.searchParams.append('auto', 'format')
   url.searchParams.append('fit', 'crop')
   return url.toString()
+}
+
+/**
+ * 기존 Unsplash URL을 최적화된 형태로 변환
+ * fm=jpg → auto=format (AVIF/WebP 자동 전환)
+ * w=1200 → w=1080 (적정 크기)
+ * q=80 → q=75 (파일 크기 절감)
+ */
+export function optimizeUnsplashUrl(url: string): string {
+  if (!url.includes('images.unsplash.com')) return url
+  try {
+    const parsed = new URL(url)
+    // Switch from fixed format to auto-format (browser-negotiated AVIF/WebP)
+    if (parsed.searchParams.has('fm')) {
+      parsed.searchParams.delete('fm')
+      parsed.searchParams.set('auto', 'format')
+    }
+    // Reduce width if over 1080
+    const w = parseInt(parsed.searchParams.get('w') || '0')
+    if (w > 1080) {
+      parsed.searchParams.set('w', '1080')
+    }
+    // Reduce quality if over 75
+    const q = parseInt(parsed.searchParams.get('q') || '0')
+    if (q > 75) {
+      parsed.searchParams.set('q', '75')
+    }
+    return parsed.toString()
+  } catch {
+    return url
+  }
 }
 
 /**

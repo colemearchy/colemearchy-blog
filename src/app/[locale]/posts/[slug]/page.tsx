@@ -20,6 +20,7 @@ import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 import ViewCounter from '@/components/ViewCounter'
 import { navigationItems } from '@/lib/navigation'
 import { shouldUseNextImage } from '@/lib/image-utils'
+import { optimizeUnsplashUrl } from '@/lib/unsplash'
 import { tagsToArray } from '@/lib/utils/tags'
 
 interface PostPageProps {
@@ -391,11 +392,12 @@ export default async function PostPage({
                     )
                   }
 
-                  // Unsplash images are already optimized - skip /_next/image proxy to reduce LCP
+                  // Unsplash: optimize URL for auto-format (AVIF/WebP) + smaller size
                   if (post.coverImage.includes('images.unsplash.com')) {
+                    const optimizedSrc = optimizeUnsplashUrl(post.coverImage)
                     return (
                       <Image
-                        src={post.coverImage}
+                        src={optimizedSrc}
                         alt={displayTitle}
                         fill
                         className="object-cover bg-gray-100"
