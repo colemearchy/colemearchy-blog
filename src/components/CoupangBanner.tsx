@@ -55,8 +55,8 @@ export default function CoupangBanner({
     if (typeof window !== 'undefined' && (window as any).coupang && scriptLoadedRef.current) {
       try {
         (window as any).coupang.init()
-      } catch (error) {
-        console.warn('Failed to initialize Coupang banner:', error)
+      } catch {
+        // Silent fail - Coupang banner init is non-critical
       }
     }
   }, [widgetId])
@@ -66,8 +66,8 @@ export default function CoupangBanner({
     if (typeof window !== 'undefined' && (window as any).coupang) {
       try {
         (window as any).coupang.init()
-      } catch (error) {
-        console.warn('Failed to initialize Coupang banner on load:', error)
+      } catch {
+        // Silent fail - Coupang banner init is non-critical
       }
     }
   }

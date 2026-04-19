@@ -1,3 +1,5 @@
+// PERF-CRITICAL: Do NOT add preconnect links (use dns-prefetch only).
+// Do NOT wrap GA/SW/AdBlocker in dynamic() - causes TBT spike from chunk loading.
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";

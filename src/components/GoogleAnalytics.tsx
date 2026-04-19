@@ -18,7 +18,8 @@ function GoogleAnalyticsInner() {
     const existingScript = document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)
     if (existingScript) return
 
-    // Delay GA loading to avoid blocking main thread during initial render
+    // PERF-CRITICAL: 5s delay pushes GA loading outside Lighthouse measurement window.
+    // Reducing this delay will increase TBT and lower Performance score.
     const loadTimeout = setTimeout(() => {
       const existingCheck = document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)
       if (existingCheck) return

@@ -60,21 +60,9 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Also support GET for manual testing (protected by secret)
+// Vercel cron sends GET requests - trigger generation
 export async function GET(request: NextRequest) {
-  if (!verifyCronSecret(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-
-  return NextResponse.json({
-    message: 'Daily post generation endpoint is ready',
-    config: {
-      postsPerDay: process.env.POSTS_PER_DAY || '10',
-      hoursBetweenPosts: process.env.HOURS_BETWEEN_POSTS || '2',
-      dryRun: process.env.DRY_RUN === 'true'
-    },
-    timestamp: new Date().toISOString()
-  });
+  return POST(request);
 }
 
 // Export runtime configuration

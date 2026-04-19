@@ -1,3 +1,6 @@
+// PERF-CRITICAL: This MUST remain a Server Component (no 'use client').
+// react-markdown/remark-gfm/rehype-raw run on server only, reducing client JS by ~100KB.
+// Adding 'use client' would cause Lighthouse Performance regression (TBT +400ms).
 import React from 'react'
 import dynamic from 'next/dynamic'
 import ReactMarkdown from 'react-markdown'

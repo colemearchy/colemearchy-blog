@@ -175,32 +175,7 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Also support GET for manual testing (protected by secret)
+// Vercel cron sends GET requests - trigger publishing
 export async function GET(request: NextRequest) {
-  if (!verifyCronSecret(request)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-  }
-  
-  // Just check for scheduled posts without publishing
-  const now = new Date();
-  const scheduledPosts = await prisma.post.findMany({
-    where: {
-      status: 'DRAFT',
-      scheduledAt: {
-        lte: now,
-        not: null
-      }
-    },
-    select: {
-      id: true,
-      title: true,
-      scheduledAt: true
-    }
-  });
-  
-  return NextResponse.json({
-    scheduledPosts,
-    currentTime: now.toISOString(),
-    count: scheduledPosts.length
-  });
+  return POST(request);
 }

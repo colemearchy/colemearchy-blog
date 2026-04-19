@@ -58,8 +58,8 @@ export default function CodeBlock({ children, className, inline }: CodeBlockProp
                 await import('prismjs/components/prism-sql')
                 break
             }
-          } catch (error) {
-            console.warn(`Failed to load language: ${language}`, error)
+          } catch {
+            // Silent fail - unsupported language falls back to plain text
           }
           
           setTimeout(() => {
