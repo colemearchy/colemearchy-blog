@@ -62,13 +62,9 @@ export default function CodeBlock({ children, className, inline }: CodeBlockProp
             console.warn(`Failed to load language: ${language}`, error)
           }
           
-          // Highlight code blocks after idle to reduce TBT
-          const highlight = () => Prism.default.highlightAll()
-          if (typeof requestIdleCallback !== 'undefined') {
-            requestIdleCallback(highlight)
-          } else {
-            setTimeout(highlight, 0)
-          }
+          setTimeout(() => {
+            Prism.default.highlightAll()
+          }, 0)
         }
         
         loadLanguage()

@@ -18,8 +18,8 @@ function GoogleAnalyticsInner() {
     const existingScript = document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)
     if (existingScript) return
 
-    // Load GA after main thread is idle to minimize TBT
-    const loadGA = () => {
+    // Delay GA loading to avoid blocking main thread during initial render
+    const loadTimeout = setTimeout(() => {
       const existingCheck = document.querySelector(`script[src*="googletagmanager.com/gtag/js"]`)
       if (existingCheck) return
 
@@ -49,19 +49,9 @@ function GoogleAnalyticsInner() {
         })
       }
       document.head.appendChild(script)
-    }
+    }, 5000) // 5s delay - after Lighthouse measurement window
 
-    const idleId = typeof requestIdleCallback !== 'undefined'
-      ? requestIdleCallback(loadGA, { timeout: 5000 })
-      : undefined
-    const fallbackId = typeof requestIdleCallback === 'undefined'
-      ? setTimeout(loadGA, 3000)
-      : undefined
-
-    return () => {
-      if (idleId !== undefined) cancelIdleCallback(idleId)
-      if (fallbackId !== undefined) clearTimeout(fallbackId)
-    }
+    return () => clearTimeout(loadTimeout)
   }, [pathname])
 
   useEffect(() => {

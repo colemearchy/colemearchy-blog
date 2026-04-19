@@ -20,23 +20,13 @@ export default function AdBlockerNotice() {
     if (hasSeenAdBlockerNotice()) return
 
     // Detect ad blocker after a short delay to avoid impacting initial page load
-    const detect = async () => {
+    // Delay detection to avoid blocking main thread
+    const timer = setTimeout(async () => {
       const isBlocked = await detectAdBlocker()
       if (isBlocked) setShowNotice(true)
-    }
+    }, 6000) // 6s delay - well after interactive
 
-    // Use requestIdleCallback to avoid blocking main thread
-    const idleId = typeof requestIdleCallback !== 'undefined'
-      ? requestIdleCallback(() => detect(), { timeout: 5000 })
-      : undefined
-    const fallbackId = typeof requestIdleCallback === 'undefined'
-      ? setTimeout(() => detect(), 3000)
-      : undefined
-
-    return () => {
-      if (idleId !== undefined) cancelIdleCallback(idleId)
-      if (fallbackId !== undefined) clearTimeout(fallbackId)
-    }
+    return () => clearTimeout(timer)
   }, [pathname])
 
   const handleClose = () => {
