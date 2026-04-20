@@ -33,8 +33,11 @@ jobs:
         run: pnpm prisma generate
 
       - name: Generate daily blog posts
-        run: POSTS_PER_DAY=10 pnpm tsx scripts/generate-daily-posts.ts
+        run: pnpm tsx scripts/generate-daily-posts.ts
         env:
-          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+          DATABASE_URL: file:./dev.db
+          TURSO_DATABASE_URL: ${{ secrets.TURSO_DATABASE_URL }}
+          DATABASE_AUTH_TOKEN: ${{ secrets.DATABASE_AUTH_TOKEN }}
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          GEMINI_API_KEY_2: ${{ secrets.GEMINI_API_KEY_2}}
+          POSTS_PER_DAY: '5'
+          HOURS_BETWEEN_POSTS: '2'
