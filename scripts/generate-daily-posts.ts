@@ -65,21 +65,11 @@ async function generateBlogPost(topic: BlogTopic, index: number) {
     const now = new Date();
     const publishDate = new Date(now.getTime() + (index + 1) * HOURS_BETWEEN_POSTS * 60 * 60 * 1000);
 
-    // Skip embedding/RAG to stay within Vercel Hobby 60s function timeout
-    // Generate content directly
-    const fullPrompt = `${MASTER_SYSTEM_PROMPT}\n\n------\n\n**EXECUTE TASK:**\n\n${generateContentPrompt(
-      `colemearchy 스타일로 "${topic.prompt}"에 대한 깊이 있는 블로그 포스트 작성.
-
-**중요: 페르소나 준수**
-- 나는 디자이너 출신 6년차 PM (개발자 아님!)
-- AI 스타트업에서 제품 관리 담당
-- 개인적 경험과 실전 노하우를 담아서
-- "개발자로서", "코드를 짰어요" 같은 표현 절대 금지
-- 대신 "PM으로서", "AI 도구로", "디자이너 출신으로" 사용
-- 한국어로 작성`,
-      topic.keywords,
-      []
-    )}`;
+    // Minimal prompt to fit within Vercel Hobby 60s function timeout
+    const fullPrompt = `디자이너 출신 6년차 PM 관점에서 "${topic.prompt}" 주제로 한국어 블로그 포스트를 작성해줘.
+키워드: ${topic.keywords.join(', ')}
+요구사항: 500-800자, H2 소제목 3개, 개인 경험 포함, PM/디자이너 관점 유지
+JSON으로 응답: {"title":"제목","slug":"url-slug","excerpt":"요약","content":"마크다운 본문","tags":["태그"],"seoTitle":"SEO제목","seoDescription":"메타설명"}`;
 
     console.log('🤖 Calling Gemini API...');
     const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
@@ -90,7 +80,7 @@ async function generateBlogPost(topic: BlogTopic, index: number) {
       }],
       generationConfig: {
         temperature: 0.8,
-        maxOutputTokens: 4096,
+        maxOutputTokens: 2048,
       }
     });
 
@@ -177,22 +167,8 @@ async function main() {
   }
 
   // Get recently used topics to avoid duplicates (last 30 days)
-  console.log('🔍 최근 30일간 생성된 주제 확인 중...');
-  const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
-  const recentPosts = await prisma.post.findMany({
-    where: {
-      createdAt: { gte: thirtyDaysAgo },
-      youtubeVideoId: null // Only check non-YouTube posts
-    },
-    select: { title: true }
-  });
-
-  const excludePrompts = recentPosts.map(post => post.title);
-  console.log(`   최근 ${recentPosts.length}개 주제 제외\n`);
-
-  // Select weighted random topics from the pool (avoid recently used)
-  console.log('🎲 가중치 랜덤 선택 중 (40% PM, 20% 디자이너, 20% 바이오해킹, 20% 기타)...\n');
-  const selectedTopics = getWeightedRandomTopics(POSTS_PER_DAY, excludePrompts);
+  // Skip recent posts query to save time (Vercel Hobby 60s limit)
+  const selectedTopics = getWeightedRandomTopics(POSTS_PER_DAY, []);
 
   // Show selected topics
   console.log('📋 선택된 주제:');
