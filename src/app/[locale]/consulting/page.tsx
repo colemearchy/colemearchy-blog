@@ -145,8 +145,14 @@ export default async function ConsultingPage({
       <header className="border-b border-gray-100">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
-            <Link href={`/${locale}`} className="text-2xl font-bold tracking-tight">
-              CMA
+            <Link href={`/${locale}`} className="flex items-center gap-3 group">
+              <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden border border-gray-200">
+                <img src="/images/character.png" alt="Cole It AI Logo" className="w-full h-full object-cover" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-lg font-black tracking-tighter leading-none">COLE IT</span>
+                <span className="text-xs font-bold text-gray-500 tracking-widest leading-none mt-1">AI CONSULTING</span>
+              </div>
             </Link>
             <div className="flex items-center gap-4">
               <div className="flex gap-1 bg-gray-100 p-1 rounded-md">
@@ -339,7 +345,7 @@ export default async function ConsultingPage({
       <footer className="py-12 bg-white">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
           <p className="text-gray-400 text-sm">
-            © {new Date().getFullYear()} Cole • CMA. All rights reserved.
+            © {new Date().getFullYear()} Cole It AI. All rights reserved.
           </p>
         </div>
       </footer>
