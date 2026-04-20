@@ -17,7 +17,7 @@
     },
     {
       "path": "/api/publish-posts",
-      "schedule": "5 * * * *"
+      "schedule": "0 * * * *"
     },
     {
       "path": "/api/cron/youtube-sync",
@@ -25,7 +25,7 @@
     },
     {
       "path": "/api/cron/generate-daily-posts",
-      "schedule": "0 * * * *"
+      "schedule": "0 2 * * *"
     }
   ]
 }
