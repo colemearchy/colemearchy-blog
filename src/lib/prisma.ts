@@ -9,28 +9,22 @@ const globalForPrisma = globalThis as unknown as {
 function getPrismaClient(): PrismaClient {
   if (globalForPrisma._prisma) return globalForPrisma._prisma
 
-  const dbUrl = process.env.DATABASE_URL
-  if (!dbUrl) {
-    // During build, return a dummy client that will fail gracefully at runtime
-    // This prevents build crashes when DATABASE_URL is not set
-    console.warn('[prisma] DATABASE_URL not set — database queries will fail')
+  // TURSO_DATABASE_URL holds the actual libsql:// URL for the adapter.
+  // DATABASE_URL must be file:// for Prisma schema validation (provider="sqlite").
+  const tursoUrl = process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL
+  if (!tursoUrl) {
+    console.warn('[prisma] No database URL set — database queries will fail')
   }
 
-  // Only import and use LibSQL adapter when we have a URL
   // eslint-disable-next-line @typescript-eslint/no-require-imports
   const { PrismaLibSQL } = require('@prisma/adapter-libsql')
   const adapter = new PrismaLibSQL({
-    url: dbUrl || 'file:./dev.db',
+    url: tursoUrl || 'file:./dev.db',
     authToken: process.env.DATABASE_AUTH_TOKEN,
   })
 
   const client = new PrismaClient({
     adapter,
-    // Override schema-level URL validation (sqlite provider expects file: protocol,
-    // but production uses libsql:// via adapter)
-    datasources: {
-      db: { url: 'file:./dev.db' },
-    },
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   })
 
