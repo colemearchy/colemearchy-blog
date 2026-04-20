@@ -328,13 +328,6 @@ export default async function ConsultingPage({
                   >
                     cole.hkg@gmail.com
                   </Link>
-                  <Link 
-                    href="https://www.linkedin.com/in/hyunjun-an-5426aa196/"
-                    target="_blank"
-                    className="flex items-center justify-center w-full py-4 bg-transparent border border-gray-700 text-white font-bold rounded-xl hover:bg-gray-700 transition-colors"
-                  >
-                    LinkedIn
-                  </Link>
                 </div>
               </div>
             </div>
