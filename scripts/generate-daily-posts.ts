@@ -61,9 +61,9 @@ async function generateBlogPost(topic: BlogTopic, index: number) {
     console.log(`Topic: ${topic.prompt.substring(0, 70)}...`);
     console.log(`Category: ${topic.category}`);
 
-    // Calculate publish date (schedule posts HOURS_BETWEEN_POSTS apart starting from next hour)
+    // Publish immediately (scheduledAt = now so publish-posts cron picks it up right away)
     const now = new Date();
-    const publishDate = new Date(now.getTime() + (index + 1) * HOURS_BETWEEN_POSTS * 60 * 60 * 1000);
+    const publishDate = now;
 
     // Full prompt with system context (no timeout constraint in GitHub Actions)
     const fullPrompt = `${MASTER_SYSTEM_PROMPT}\n\n------\n\n**EXECUTE TASK:**\n\n${generateContentPrompt(
