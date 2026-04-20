@@ -93,7 +93,10 @@ async function generateBlogPost(topic: BlogTopic, index: number) {
       }
     });
 
-    const responseText = result.response.text();
+    let responseText = result.response.text();
+
+    // Strip markdown code block wrapper if present (```json ... ```)
+    responseText = responseText.replace(/^```(?:json)?\s*\n?/i, '').replace(/\n?```\s*$/i, '');
 
     // Step 5: Parse the generated content
     let parsedContent;
@@ -135,7 +138,7 @@ async function generateBlogPost(topic: BlogTopic, index: number) {
         slug: `${slug}-${Date.now()}`,
         content: parsedContent.content || responseText,
         excerpt: parsedContent.excerpt || responseText.substring(0, 160),
-        tags: parsedContent.tags || topic.keywords,
+        tags: Array.isArray(parsedContent.tags) ? parsedContent.tags.join(',') : (parsedContent.tags || topic.keywords.join(',')),
         seoTitle: parsedContent.seoTitle || parsedContent.title,
         seoDescription: parsedContent.seoDescription || parsedContent.excerpt,
         coverImage: parsedContent.coverImage,
