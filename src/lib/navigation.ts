@@ -2,6 +2,7 @@ export const navigationItems = {
   ko: [
     { href: '/', label: '홈' },
     { href: '/archive', label: '아카이브' },
+    { href: '/consulting', label: '컨설팅' },
     // Hidden until content is available:
     // { href: '/podcast', label: '팟캐스트' },
     // { href: '/how-i-ai', label: '내가 AI를 쓰는 법' },
@@ -12,6 +13,7 @@ export const navigationItems = {
   en: [
     { href: '/', label: 'Home' },
     { href: '/archive', label: 'Archive' },
+    { href: '/consulting', label: 'Consulting' },
     // Hidden until content is available:
     // { href: '/podcast', label: 'Podcast' },
     // { href: '/how-i-ai', label: 'How I AI' },

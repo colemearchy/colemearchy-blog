@@ -7,6 +7,7 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     let pathname = url.pathname
     const hostname = request.headers.get('host') || ''
+    const isConsultingSubdomain = hostname.includes('consulting.colemearchy.com')
 
 
     // Handle www redirect + other redirects in a single hop
@@ -17,6 +18,18 @@ export async function middleware(request: NextRequest) {
     const pathnameHasLocale = locales.some(
       (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
     )
+
+    // Subdomain Handling: consulting.colemearchy.com
+    if (isConsultingSubdomain) {
+      // For the subdomain, we want the root to show the consulting page
+      if (pathname === '/' || pathname === '/ko' || pathname === '/en') {
+        const locale = (pathname === '/en') ? 'en' : 'ko'
+        return NextResponse.rewrite(new URL(`/${locale}/consulting`, request.url))
+      }
+      
+      // If visiting /[locale]/something on subdomain, maybe redirect or rewrite
+      // But for now, let's just handle the main landing
+    }
 
     // Skip locale redirect for special routes
     const skipLocaleRedirect = [
