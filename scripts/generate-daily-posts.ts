@@ -1,9 +1,7 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { PrismaClient } from '@prisma/client';
 import { MASTER_SYSTEM_PROMPT, generateContentPrompt } from '../src/lib/ai-prompts';
 import { getWeightedRandomTopics, BlogTopic } from './blog-topics-pool';
-
-const prisma = new PrismaClient();
+import { prisma } from '../src/lib/prisma';
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);
 
 // Environment variables for configuration
@@ -300,7 +298,7 @@ if (require.main === module) {
       console.error('❌ 치명적 오류:', error);
       process.exit(1);
     })
-    .finally(() => prisma.$disconnect());
+    .finally(() => { /* shared prisma client handles its own lifecycle */ });
 }
 
 export { main as generateDailyPosts };
