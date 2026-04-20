@@ -83,56 +83,25 @@ Remember: Every piece of content must demonstrate real experience and expertise 
 `
 
 export function generateContentPrompt(userInput: string, keywords?: string[], affiliateProducts?: string[]) {
-  let prompt = `Create a comprehensive, in-depth blog post (MINIMUM 3000 words) based on the following:
-
-Topic: ${userInput}
-`
+  let prompt = `Write a blog post about: ${userInput}\n`
 
   if (keywords && keywords.length > 0) {
-    prompt += `\nTarget Keywords: ${keywords.join(', ')}`
+    prompt += `Keywords: ${keywords.join(', ')}\n`
   }
 
   if (affiliateProducts && affiliateProducts.length > 0) {
-    prompt += `\nAffiliate Products to naturally integrate: ${affiliateProducts.join(', ')}`
+    prompt += `Affiliate Products: ${affiliateProducts.join(', ')}\n`
   }
 
   prompt += `
+Requirements:
+- 800-1200 words, engaging and personal (E-E-A-T)
+- Use H2/H3 headings, short paragraphs
+- Include personal anecdotes and practical advice
+- End with a thought-provoking question
 
-CRITICAL REQUIREMENTS:
-- MINIMUM 3000 words of high-quality, engaging content
-- Write from personal experience and expertise (E-E-A-T compliance)
-- Include specific examples, case studies, and actionable insights
-- Use storytelling to make complex topics accessible
-- Add multiple sections with H2 and H3 headings for better readability
-- Include at least 5-7 major sections beyond introduction and conclusion
-- Add personal anecdotes that demonstrate real experience
-- Provide practical, actionable advice readers can implement
-- Use data, statistics, or research when relevant
-- End with a compelling conclusion and thought-provoking question
-
-CONTENT STRUCTURE REQUIREMENTS:
-1. Hook: Personal story or surprising fact
-2. Problem/Context: Why this topic matters now
-3. Main Content: 5-7 detailed sections with subheadings
-4. Personal Experience: Your journey/experiments with this topic
-5. Practical Implementation: Step-by-step guidance
-6. Common Mistakes: What to avoid
-7. Advanced Tips: Next-level insights
-8. Conclusion: Key takeaways and engagement question
-
-Please provide the content in the following JSON format:
-{
-  "title": "SEO-optimized title (max 60 chars)",
-  "slug": "url-friendly-slug",
-  "excerpt": "Compelling 2-3 sentence summary",
-  "content": "Full article content in Markdown format (MINIMUM 3000 words)",
-  "coverImage": "https://images.unsplash.com/... (REQUIRED - suggest a relevant Unsplash image URL)",
-  "tags": ["tag1", "tag2", "tag3", "tag4", "tag5"],
-  "seoTitle": "SEO title if different from main title",
-  "seoDescription": "Meta description (max 160 chars)"
-}
-
-IMPORTANT: You MUST include a coverImage URL. Search for a high-quality, relevant image on Unsplash that matches the article topic. Use the format: https://images.unsplash.com/photo-[ID]?q=80&w=2000`
+Respond in JSON:
+{"title":"SEO title (max 60 chars)","slug":"url-slug","excerpt":"2-3 sentence summary","content":"Markdown article","tags":["tag1","tag2","tag3"],"seoTitle":"SEO title","seoDescription":"Meta desc (max 160 chars)"}`
 
   return prompt
 }
