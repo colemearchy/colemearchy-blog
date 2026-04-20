@@ -43,7 +43,8 @@ export async function POST(request: NextRequest) {
         successful: result.success,
         failed: result.failed,
         dryRun: result.dryRun,
-        durationSeconds: parseFloat(duration)
+        durationSeconds: parseFloat(duration),
+        errors: result.errors || []
       },
       timestamp: new Date().toISOString()
     });

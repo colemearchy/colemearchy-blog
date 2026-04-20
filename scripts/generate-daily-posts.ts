@@ -280,7 +280,8 @@ async function main() {
   return {
     success: results.successful.length,
     failed: results.failed.length,
-    dryRun: DRY_RUN
+    dryRun: DRY_RUN,
+    errors: results.failed.map((f: any) => f.error).filter(Boolean)
   };
 }
 
