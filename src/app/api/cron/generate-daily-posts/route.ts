@@ -68,4 +68,4 @@ export async function GET(request: NextRequest) {
 
 // Export runtime configuration
 export const runtime = 'nodejs';
-export const maxDuration = 300; // 5 minutes (max for Pro plan)
+export const maxDuration = 60; // Vercel Hobby plan max
