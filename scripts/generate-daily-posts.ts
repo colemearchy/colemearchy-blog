@@ -65,29 +65,9 @@ async function generateBlogPost(topic: BlogTopic, index: number) {
     const now = new Date();
     const publishDate = new Date(now.getTime() + (index + 1) * HOURS_BETWEEN_POSTS * 60 * 60 * 1000);
 
-    // Step 1: Generate embedding for the prompt
-    console.log('🔍 Generating embedding for prompt...');
-    const promptEmbedding = await generateEmbedding(topic.prompt);
-
-    // Step 2: Search for similar knowledge
-    let similarKnowledge: any[] = [];
-    if (promptEmbedding.length > 0) {
-      console.log('📚 Searching for similar knowledge...');
-      similarKnowledge = await searchSimilarKnowledge(promptEmbedding);
-      console.log(`   Found ${similarKnowledge.length} similar knowledge entries`);
-    }
-
-    // Step 3: Create RAG context
-    const ragContext = similarKnowledge.length > 0
-      ? `\n\n**과거 기록 컨텍스트 (Past Knowledge Context):**\n${
-          similarKnowledge.map((k, i) =>
-            `\n[Context ${i + 1}${k.source ? ` - from "${k.source}"` : ''}]:\n${k.content.substring(0, 500)}...`
-          ).join('\n')
-        }\n\n**위 컨텍스트를 참고하여 나의 과거 생각과 스타일을 반영해 글을 작성해주세요.**\n\n`
-      : '';
-
-    // Step 4: Generate content with RAG context
-    const fullPrompt = `${MASTER_SYSTEM_PROMPT}\n\n------\n\n${ragContext}**EXECUTE TASK:**\n\n${generateContentPrompt(
+    // Skip embedding/RAG to stay within Vercel Hobby 60s function timeout
+    // Generate content directly
+    const fullPrompt = `${MASTER_SYSTEM_PROMPT}\n\n------\n\n**EXECUTE TASK:**\n\n${generateContentPrompt(
       `colemearchy 스타일로 "${topic.prompt}"에 대한 깊이 있는 블로그 포스트 작성.
 
 **중요: 페르소나 준수**
@@ -110,7 +90,7 @@ async function generateBlogPost(topic: BlogTopic, index: number) {
       }],
       generationConfig: {
         temperature: 0.8,
-        maxOutputTokens: 8192,
+        maxOutputTokens: 4096,
       }
     });
 
