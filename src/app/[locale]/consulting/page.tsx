@@ -217,23 +217,23 @@ export default async function ConsultingPage({
               </p>
             </div>
 
-            <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-              {problems[lang].map((item) => (
-                <div key={item.id} className="group p-8 rounded-2xl border border-gray-100 bg-white hover:border-gray-200 hover:shadow-xl hover:shadow-gray-100 transition-all">
-                  <div className="mb-6 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gray-900 text-white font-bold">
-                    0{item.id}
+              <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
+                {problems[lang].map((item) => (
+                  <div key={item.id} className="group p-8 rounded-2xl border border-gray-100 bg-white hover:border-gray-900 hover:text-white transition-all duration-300">
+                    <div className="mb-6 inline-flex items-center justify-center w-12 h-12 rounded-xl bg-gray-100 text-gray-900 font-bold group-hover:bg-white/10 group-hover:text-white transition-colors">
+                      0{item.id}
+                    </div>
+                    <h3 className="text-sm font-bold text-gray-400 mb-2 uppercase tracking-tight group-hover:text-gray-300">
+                      {item.problem}
+                    </h3>
+                    <h4 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-white transition-colors">
+                      {item.solution}
+                    </h4>
+                    <p className="text-gray-600 leading-relaxed group-hover:text-gray-300">
+                      {item.description}
+                    </p>
                   </div>
-                  <h3 className="text-lg font-bold text-gray-400 mb-2">
-                    {item.problem}
-                  </h3>
-                  <h4 className="text-xl font-bold text-gray-900 mb-4 group-hover:text-blue-600 transition-colors">
-                    {item.solution}
-                  </h4>
-                  <p className="text-gray-600 leading-relaxed">
-                    {item.description}
-                  </p>
-                </div>
-              ))}
+                ))}
               
               {/* Additional Service Card */}
               <div className="p-8 rounded-2xl border border-dashed border-gray-300 flex flex-col justify-center items-center text-center">
