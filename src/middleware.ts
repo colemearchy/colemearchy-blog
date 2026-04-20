@@ -23,12 +23,10 @@ export async function middleware(request: NextRequest) {
     if (isConsultingSubdomain) {
       // For the subdomain, we want the root to show the consulting page
       if (pathname === '/' || pathname === '/ko' || pathname === '/en') {
-        const locale = (pathname === '/en') ? 'en' : 'ko'
-        return NextResponse.rewrite(new URL(`/${locale}/consulting`, request.url))
+        const locale = (pathname === '/en' || pathname === '/en/') ? 'en' : 'ko'
+        const targetUrl = new URL(`/${locale}/consulting`, request.url)
+        return NextResponse.rewrite(targetUrl)
       }
-      
-      // If visiting /[locale]/something on subdomain, maybe redirect or rewrite
-      // But for now, let's just handle the main landing
     }
 
     // Skip locale redirect for special routes
