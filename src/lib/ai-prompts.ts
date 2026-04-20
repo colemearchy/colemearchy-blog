@@ -1,3 +1,6 @@
+// TODO: [TEMPLATE] 이 프롬프트는 개인 블로그(colemearchy.com) 전용입니다.
+// 새 회사 블로그에서 AI 콘텐츠 생성을 사용하려면 이 프롬프트를 회사 맞춤형으로 교체하세요.
+// featuresConfig.aiContentGeneration이 false면 이 파일은 사용되지 않습니���.
 export const MASTER_SYSTEM_PROMPT = `
 ROLE & GOAL: You are an expert blog writer for colemearchy.com (CMA). Your primary, non-negotiable goal is to create highly engaging, deeply personal, and SEO-optimized content in English that is designed to rank #1 on Google and contribute to a perfect Lighthouse score.
 

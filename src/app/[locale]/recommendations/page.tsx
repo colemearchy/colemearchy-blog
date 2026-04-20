@@ -1,5 +1,6 @@
 import PageLayout from '@/components/PageLayout'
 import { Metadata } from 'next'
+import { siteConfig } from '@/config'
 
 export async function generateMetadata({
   params,
@@ -10,12 +11,12 @@ export async function generateMetadata({
   const isKorean = locale === 'ko'
 
   return {
-    title: isKorean ? '추천 | CMA' : 'Recommendations | CMA',
+    title: isKorean ? `추천 | ${siteConfig.shortName}` : `Recommendations | ${siteConfig.shortName}`,
     description: isKorean
       ? '유용한 도구, 서비스, 리소스 추천'
       : 'Useful tools, services, and resource recommendations',
     openGraph: {
-      title: isKorean ? '추천 | CMA' : 'Recommendations | CMA',
+      title: isKorean ? `추천 | ${siteConfig.shortName}` : `Recommendations | ${siteConfig.shortName}`,
       description: isKorean
         ? '유용한 도구, 서비스, 리소스 추천'
         : 'Useful tools, services, and resource recommendations',

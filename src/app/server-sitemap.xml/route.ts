@@ -1,5 +1,6 @@
 import { getServerSideSitemap, ISitemapField } from 'next-sitemap'
 import { prisma } from '@/lib/prisma'
+import { siteConfig } from '@/config'
 
 export async function GET() {
   try {
@@ -22,7 +23,7 @@ export async function GET() {
     })
 
     const sitemap: ISitemapField[] = posts.map((post) => ({
-      loc: `https://colemearchy.com/posts/${post.slug}`,
+      loc: `${siteConfig.url}/posts/${post.slug}`,
       lastmod: post.updatedAt.toISOString(),
       changefreq: 'monthly',
       priority: 0.8,

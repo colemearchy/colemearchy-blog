@@ -1,4 +1,5 @@
 import Link from 'next/link'
+import { siteConfig, brandConfig } from '@/config'
 
 export default function ContactPage() {
   return (
@@ -7,7 +8,7 @@ export default function ContactPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <Link href="/" className="text-3xl font-bold text-gray-900">
-              CMA Blog
+              {brandConfig.logo.text}
             </Link>
             <nav>
               <Link href="/about" className="text-gray-600 hover:text-gray-900 ml-6">About</Link>
@@ -25,9 +26,9 @@ export default function ContactPage() {
           
           <h2>Get in Touch</h2>
           <div className="bg-gray-50 p-6 rounded-lg my-8">
-            <p className="mb-4"><strong>Email:</strong> contact@colemearchy.com</p>
-            <p className="mb-4"><strong>Twitter:</strong> @colemearchy</p>
-            <p><strong>GitHub:</strong> github.com/colemearchy</p>
+            <p className="mb-4"><strong>Email:</strong> {siteConfig.emails.contact}</p>
+            {siteConfig.social.twitter && <p className="mb-4"><strong>Twitter:</strong> {siteConfig.social.twitter}</p>}
+            {siteConfig.social.github && <p><strong>GitHub:</strong> {siteConfig.social.github}</p>}
           </div>
           
           <h2>Collaboration</h2>
@@ -41,7 +42,7 @@ export default function ContactPage() {
       <footer className="bg-gray-50 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <p className="text-center text-gray-500 text-sm">
-            © {new Date().getFullYear()} CMA Blog. All rights reserved.
+            © {new Date().getFullYear()} {brandConfig.copyright.holder}. All rights reserved.
           </p>
         </div>
       </footer>

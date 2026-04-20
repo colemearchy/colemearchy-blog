@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { siteConfig } from '@/config'
 
 export async function generateMetadata({
   params
@@ -7,10 +8,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   return {
-    title: locale === 'ko' ? '이용약관 | Colemearchy' : 'Terms of Service | Colemearchy',
-    description: locale === 'ko' 
-      ? 'Colemearchy의 이용약관입니다.'
-      : 'Terms of Service for Colemearchy',
+    title: locale === 'ko' ? `이용약관 | ${siteConfig.shortName}` : `Terms of Service | ${siteConfig.shortName}`,
+    description: locale === 'ko'
+      ? `${siteConfig.name}의 이용약관입니다.`
+      : `Terms of Service for ${siteConfig.name}`,
   }
 }
 
@@ -35,13 +36,13 @@ export default async function TermsPage({
             
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">제1조 (목적)</h2>
-              <p>이 약관은 Colemearchy(이하 "블로그"라 합니다)가 제공하는 블로그 서비스(이하 "서비스"라 합니다)의 이용과 관련하여 블로그와 이용자의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.</p>
+              <p>이 약관은 {siteConfig.name}(이하 &quot;블로그&quot;라 합니다)가 제공하는 블로그 서비스(이하 &quot;서비스&quot;라 합니다)의 이용과 관련하여 블로그와 이용자의 권리, 의무 및 책임사항, 기타 필요한 사항을 규정함을 목적으로 합니다.</p>
             </section>
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">제2조 (용어의 정의)</h2>
               <ol>
-                <li>"블로그"란 Colemearchy 웹사이트를 말합니다.</li>
+                <li>&quot;블로그&quot;란 {siteConfig.name} 웹사이트를 말합니다.</li>
                 <li>"이용자"란 블로그에 접속하여 이 약관에 따라 블로그가 제공하는 서비스를 받는 자를 말합니다.</li>
                 <li>"콘텐츠"란 블로그가 제공하는 모든 글, 이미지, 동영상 등을 말합니다.</li>
               </ol>
@@ -124,17 +125,17 @@ export default async function TermsPage({
             
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">1. Acceptance of Terms</h2>
-              <p>By accessing and using the Colemearchy blog (the "Service"), you accept and agree to be bound by these Terms of Service.</p>
+              <p>By accessing and using the {siteConfig.name} blog (the &quot;Service&quot;), you accept and agree to be bound by these Terms of Service.</p>
             </section>
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">2. Description of Service</h2>
-              <p>Colemearchy provides the following services:</p>
+              <p>{siteConfig.name} provides the following services:</p>
               <ul>
                 <li>Blog content viewing</li>
                 <li>Commenting functionality</li>
                 <li>Newsletter subscription</li>
-                <li>Other services as determined by Colemearchy</li>
+                <li>Other services as determined by {siteConfig.name}</li>
               </ul>
             </section>
 
@@ -154,7 +155,7 @@ export default async function TermsPage({
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">4. Intellectual Property Rights</h2>
               <ol>
-                <li>All content on Colemearchy, including text, graphics, logos, images, and software, is the property of Colemearchy and is protected by copyright laws.</li>
+                <li>All content on {siteConfig.name}, including text, graphics, logos, images, and software, is the property of {siteConfig.name} and is protected by copyright laws.</li>
                 <li>You may not reproduce, distribute, modify, create derivative works of, publicly display, republish, download, store, or transmit any of the material on our Service without prior written permission.</li>
               </ol>
             </section>
@@ -166,7 +167,7 @@ export default async function TermsPage({
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">6. Disclaimers</h2>
-              <p>The information on this blog is provided on an "as is" basis. To the fullest extent permitted by law, Colemearchy:</p>
+              <p>The information on this blog is provided on an &quot;as is&quot; basis. To the fullest extent permitted by law, {siteConfig.name}:</p>
               <ul>
                 <li>Makes no warranties, expressed or implied</li>
                 <li>Does not guarantee the accuracy, completeness, or usefulness of any information</li>
@@ -176,7 +177,7 @@ export default async function TermsPage({
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">7. Limitation of Liability</h2>
-              <p>In no event shall Colemearchy be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the Service.</p>
+              <p>In no event shall {siteConfig.name} be liable for any indirect, incidental, special, consequential, or punitive damages arising out of or related to your use of the Service.</p>
             </section>
 
             <section className="mb-8">
@@ -191,7 +192,7 @@ export default async function TermsPage({
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">10. Contact Information</h2>
-              <p>If you have any questions about these Terms of Service, please contact us at legal@colemearchy.com.</p>
+              <p>If you have any questions about these Terms of Service, please contact us at {siteConfig.emails.legal}.</p>
             </section>
           </>
         )}

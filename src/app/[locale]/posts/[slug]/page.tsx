@@ -16,7 +16,7 @@ import YouTubeEmbed from '@/components/YouTubeEmbed'
 import LazyCommentSection from '@/components/LazyCommentSection'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 import ViewCounter from '@/components/ViewCounter'
-import { navigationItems } from '@/lib/navigation'
+import { siteConfig, brandConfig, navigationConfig, featuresConfig } from '@/config'
 import { shouldUseNextImage } from '@/lib/image-utils'
 import { optimizeUnsplashUrl } from '@/lib/unsplash'
 import { tagsToArray } from '@/lib/utils/tags'
@@ -130,7 +130,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   const displayCoverImage = translation?.coverImage || post.coverImage
   
   const ogImageUrl = displayCoverImage ||
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(displayTitle)}&author=${encodeURIComponent(post.author || 'CMA')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(displayTitle)}&author=${encodeURIComponent(post.author || siteConfig.author.name)}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`
 
   return {
     title: post.seoTitle || displayTitle,
@@ -161,7 +161,7 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
   } catch (error) {
     console.error('Error generating metadata:', error)
     return {
-      title: 'Post - CMA Blog',
+      title: `Post - ${siteConfig.shortName}`,
       description: 'Blog post content unavailable'
     }
   }
@@ -242,26 +242,26 @@ export default async function PostPage({
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
-    image: post.coverImage || `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'CMA')}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`,
+    image: post.coverImage || `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || siteConfig.author.name)}&date=${encodeURIComponent(new Date(post.publishedAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`,
     datePublished: new Date(post.publishedAt).toISOString(),
     dateModified: new Date(post.updatedAt).toISOString(),
     author: {
-      '@type': 'Person',
-      name: post.author || 'CMA',
-      url: `${process.env.NEXT_PUBLIC_SITE_URL}/about`,
+      '@type': siteConfig.author.type,
+      name: post.author || siteConfig.author.name,
+      url: `${siteConfig.url}${siteConfig.author.aboutPath}`,
     },
     publisher: {
-      '@type': 'Organization',
-      name: 'CMA Blog',
+      '@type': siteConfig.author.type,
+      name: siteConfig.name,
       logo: {
         '@type': 'ImageObject',
-        url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`,
+        url: `${siteConfig.url}/logo.png`,
       },
-      url: process.env.NEXT_PUBLIC_SITE_URL,
+      url: siteConfig.url,
     },
     mainEntityOfPage: {
       '@type': 'WebPage',
-      '@id': `${process.env.NEXT_PUBLIC_SITE_URL}/posts/${post.slug}`,
+      '@id': `${siteConfig.url}/posts/${post.slug}`,
     },
     keywords: tagsToArray(post.tags).join(', '),
     articleSection: tagsToArray(post.tags)[0] || 'Blog',
@@ -278,19 +278,19 @@ export default async function PostPage({
         '@type': 'ListItem',
         position: 1,
         name: 'Home',
-        item: process.env.NEXT_PUBLIC_SITE_URL,
+        item: siteConfig.url,
       },
       {
         '@type': 'ListItem',
         position: 2,
         name: 'Posts',
-        item: `${process.env.NEXT_PUBLIC_SITE_URL}/posts`,
+        item: `${siteConfig.url}/posts`,
       },
       {
         '@type': 'ListItem',
         position: 3,
         name: post.title,
-        item: `${process.env.NEXT_PUBLIC_SITE_URL}/posts/${post.slug}`,
+        item: `${siteConfig.url}/posts/${post.slug}`,
       },
     ],
   }
@@ -310,13 +310,13 @@ export default async function PostPage({
         <header className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8" role="banner">
           <div className="border-b border-gray-100">
             <div className="flex justify-between items-center py-8">
-              <Link href="/en" className="text-3xl font-serif italic">
-                CMA Blog
+              <Link href={`/${locale}`} className="text-3xl font-serif italic">
+                {brandConfig.logo.text}
               </Link>
             </div>
             {/* Navigation */}
             <nav className="flex justify-center items-center gap-6 pb-4" aria-label="Main navigation">
-              {navigationItems[lang].map((item, index) => (
+              {(navigationConfig[lang as keyof typeof navigationConfig] ?? navigationConfig[siteConfig.defaultLocale]).map((item, index) => (
                 <Link
                   key={item.href}
                   href={`/${locale}${item.href === '/' ? '' : item.href}`}
@@ -470,7 +470,7 @@ export default async function PostPage({
         <footer className="bg-gray-50 mt-20" role="contentinfo">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <p className="text-center text-gray-500 text-sm">
-              © {new Date().getFullYear()} CMA Blog. All rights reserved.
+              &copy; {new Date().getFullYear()} {brandConfig.copyright.holder}. All rights reserved.
             </p>
           </div>
         </footer>

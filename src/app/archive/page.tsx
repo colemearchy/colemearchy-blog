@@ -1,9 +1,10 @@
 import { Metadata } from 'next'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
+import { siteConfig, brandConfig } from '@/config'
 
 export const metadata: Metadata = {
-  title: 'Archive - CMA Blog',
+  title: `Archive - ${siteConfig.name}`,
   description: 'Browse all posts organized by date',
 }
 
@@ -52,7 +53,7 @@ export default async function ArchivePage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-6">
             <Link href="/" className="text-3xl font-bold text-gray-900">
-              CMA Blog
+              {brandConfig.logo.text}
             </Link>
             <nav>
               <Link href="/about" className="text-gray-600 hover:text-gray-900 ml-6">About</Link>
@@ -105,7 +106,7 @@ export default async function ArchivePage() {
       <footer className="bg-gray-50 mt-20">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <p className="text-center text-gray-500 text-sm">
-            © {new Date().getFullYear()} CMA Blog. All rights reserved.
+            © {new Date().getFullYear()} {brandConfig.copyright.holder}. All rights reserved.
           </p>
         </div>
       </footer>

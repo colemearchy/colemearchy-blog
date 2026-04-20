@@ -113,7 +113,7 @@ export function AdminPostsTable({ posts: initialPosts }: AdminPostsTableProps) {
 
   const handleCopyUrl = async (slug: string) => {
     try {
-      const url = `https://colemearchy.com/posts/${slug}`
+      const url = `${process.env.NEXT_PUBLIC_SITE_URL || ''}/posts/${slug}`
       await navigator.clipboard.writeText(url)
       setCopiedUrl(slug)
       setTimeout(() => setCopiedUrl(null), 2000)

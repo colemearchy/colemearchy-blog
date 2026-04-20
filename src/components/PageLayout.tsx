@@ -1,5 +1,5 @@
 import Link from 'next/link'
-import { navigationItems } from '@/lib/navigation'
+import { siteConfig, brandConfig, navigationConfig } from '@/config'
 
 interface PageLayoutProps {
   locale: string
@@ -17,7 +17,7 @@ export default function PageLayout({ locale, currentPath, children }: PageLayout
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center py-8">
             <Link href={`/${locale}`} className="text-3xl font-serif italic">
-              CMA
+              {brandConfig.logo.text}
             </Link>
             <div className="flex gap-2">
               <Link
@@ -36,7 +36,7 @@ export default function PageLayout({ locale, currentPath, children }: PageLayout
           </div>
           {/* Navigation */}
           <nav className="flex justify-center items-center gap-6 pb-4" aria-label="Main navigation">
-            {navigationItems[lang].map((item) => (
+            {(navigationConfig[lang as keyof typeof navigationConfig] ?? navigationConfig[siteConfig.defaultLocale]).map((item) => (
               <Link
                 key={item.href}
                 href={`/${locale}${item.href === '/' ? '' : item.href}`}
@@ -62,7 +62,7 @@ export default function PageLayout({ locale, currentPath, children }: PageLayout
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
             <div className="text-sm text-gray-600">
-              © 2024 CMA. All rights reserved.
+              &copy; {brandConfig.copyright.startYear} {brandConfig.copyright.holder}. All rights reserved.
             </div>
             <div className="flex gap-4">
               <Link

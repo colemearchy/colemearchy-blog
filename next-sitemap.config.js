@@ -1,7 +1,7 @@
 /** @type {import('next-sitemap').IConfig} */
 module.exports = {
-  siteUrl: 'https://colemearchy.com',
-  generateRobotsTxt: true,
+  siteUrl: process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com',
+  generateRobotsTxt: false, // robots.txt는 src/app/robots.ts에서 동적 생성
   robotsTxtOptions: {
     policies: [
       {
@@ -19,7 +19,7 @@ module.exports = {
       },
     ],
     additionalSitemaps: [
-      'https://colemearchy.com/server-sitemap.xml',
+      `${process.env.NEXT_PUBLIC_SITE_URL || 'https://example.com'}/server-sitemap.xml`,
     ],
   },
   exclude: [

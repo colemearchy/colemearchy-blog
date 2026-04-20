@@ -6,6 +6,7 @@ import "./globals.css";
 import { GoogleAnalytics } from '@/components/GoogleAnalytics';
 import ServiceWorkerRegistration from '@/components/ServiceWorkerRegistration';
 import AdBlockerNotice from '@/components/AdBlockerNotice';
+import { siteConfig, brandConfig, featuresConfig } from '@/config';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -26,42 +27,42 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || 'https://colemearchy.com'),
+  metadataBase: new URL(siteConfig.url),
   title: {
-    default: "CMA - Tech & AI Blog",
-    template: "%s | CMA"
+    default: siteConfig.title[siteConfig.defaultLocale],
+    template: `%s | ${siteConfig.shortName}`
   },
-  description: "AI, technology, and software development insights from CMA.",
-  keywords: ["AI", "technology", "software development", "machine learning", "programming"],
-  authors: [{ name: "CMA" }],
-  creator: "CMA",
-  publisher: "CMA",
+  description: siteConfig.description[siteConfig.defaultLocale],
+  keywords: siteConfig.keywords,
+  authors: [{ name: siteConfig.author.name }],
+  creator: siteConfig.author.name,
+  publisher: siteConfig.author.name,
   icons: {
     icon: '/icon',
     apple: '/apple-icon',
   },
   openGraph: {
     type: "website",
-    locale: "en_US",
-    url: "https://colemearchy.com",
-    siteName: "CMA",
-    title: "CMA - Tech & AI Blog",
-    description: "AI, technology, and software development insights from CMA.",
+    locale: siteConfig.defaultLocale === 'ko' ? 'ko_KR' : 'en_US',
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: siteConfig.title[siteConfig.defaultLocale],
+    description: siteConfig.description[siteConfig.defaultLocale],
     images: [
       {
-        url: "/og-image.png",
+        url: brandConfig.ogImage,
         width: 1200,
         height: 630,
-        alt: "CMA"
+        alt: siteConfig.name
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "CMA",
-    description: "AI, technology, and software development insights from CMA.",
-    creator: "@coleitai",
-    images: ["/og-image.png"]
+    title: siteConfig.name,
+    description: siteConfig.description[siteConfig.defaultLocale],
+    ...(siteConfig.social.twitter ? { creator: siteConfig.social.twitter } : {}),
+    images: [brandConfig.ogImage]
   },
   robots: {
     index: true,
@@ -75,11 +76,10 @@ export const metadata: Metadata = {
     },
   },
   alternates: {
-    canonical: "https://colemearchy.com",
-    languages: {
-      'ko': '/ko',
-      'en': '/en',
-    }
+    canonical: siteConfig.url,
+    languages: Object.fromEntries(
+      siteConfig.locales.map(locale => [locale, `/${locale}`])
+    ),
   }
 };
 
@@ -91,18 +91,18 @@ export default function RootLayout({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'WebSite',
-    name: 'CMA',
-    url: 'https://colemearchy.com',
-    description: 'AI, technology, and software development insights from CMA.',
+    name: siteConfig.name,
+    url: siteConfig.url,
+    description: siteConfig.description[siteConfig.defaultLocale],
     publisher: {
-      '@type': 'Organization',
-      name: 'CMA'
+      '@type': siteConfig.author.type,
+      name: siteConfig.author.name,
     },
     potentialAction: {
       '@type': 'SearchAction',
       target: {
         '@type': 'EntryPoint',
-        urlTemplate: 'https://colemearchy.com/search?q={search_term_string}'
+        urlTemplate: `${siteConfig.url}/search?q={search_term_string}`
       },
       'query-input': 'required name=search_term_string'
     }
@@ -126,10 +126,10 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <GoogleAnalytics />
-        <ServiceWorkerRegistration />
+        {siteConfig.analytics.gaId && <GoogleAnalytics />}
+        {featuresConfig.serviceWorker && <ServiceWorkerRegistration />}
         {children}
-        <AdBlockerNotice />
+        {featuresConfig.adBlockerNotice && <AdBlockerNotice />}
       </body>
     </html>
   );

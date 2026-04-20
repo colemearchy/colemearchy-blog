@@ -1,6 +1,7 @@
 import { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { locales } from '@/lib/i18n'
+import { siteConfig } from '@/config'
 
 export async function generateStaticParams() {
   return locales.map((locale) => ({ locale }))
@@ -14,29 +15,29 @@ export async function generateMetadata({
   const { locale } = await params
   
   return {
-    title: locale === 'en' ? 'CMA - Tech & AI Blog' : 'CMA - 기술 및 AI 블로그',
-    description: locale === 'en' 
-      ? 'A blog about AI, technology, and software development'
-      : 'AI, 기술, 소프트웨어 개발에 관한 블로그',
+    title: locale === 'en' ? siteConfig.title.en : siteConfig.title.ko,
+    description: locale === 'en'
+      ? siteConfig.description.en
+      : siteConfig.description.ko,
     icons: {
       icon: '/icon',
       apple: '/apple-icon',
     },
     openGraph: {
-      title: locale === 'en' ? 'CMA - Tech & AI Blog' : 'CMA - 기술 및 AI 블로그',
-      description: locale === 'en' 
-        ? 'A blog about AI, technology, and software development'
-        : 'AI, 기술, 소프트웨어 개발에 관한 블로그',
-      siteName: 'CMA',
+      title: locale === 'en' ? siteConfig.title.en : siteConfig.title.ko,
+      description: locale === 'en'
+        ? siteConfig.description.en
+        : siteConfig.description.ko,
+      siteName: siteConfig.shortName,
       locale: locale === 'en' ? 'en_US' : 'ko_KR',
       type: 'website',
     },
     twitter: {
       card: 'summary_large_image',
-      title: locale === 'en' ? 'CMA - Tech & AI Blog' : 'CMA - 기술 및 AI 블로그',
-      description: locale === 'en' 
-        ? 'A blog about AI, technology, and software development'
-        : 'AI, 기술, 소프트웨어 개발에 관한 블로그',
+      title: locale === 'en' ? siteConfig.title.en : siteConfig.title.ko,
+      description: locale === 'en'
+        ? siteConfig.description.en
+        : siteConfig.description.ko,
     },
   }
 }

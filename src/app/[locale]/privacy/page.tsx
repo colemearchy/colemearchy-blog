@@ -1,4 +1,5 @@
 import { Metadata } from 'next'
+import { siteConfig } from '@/config'
 
 export async function generateMetadata({
   params
@@ -7,10 +8,10 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { locale } = await params
   return {
-    title: locale === 'ko' ? '개인정보처리방침 | Colemearchy' : 'Privacy Policy | Colemearchy',
-    description: locale === 'ko' 
-      ? 'Colemearchy의 개인정보처리방침입니다.'
-      : 'Privacy Policy for Colemearchy',
+    title: locale === 'ko' ? `개인정보처리방침 | ${siteConfig.shortName}` : `Privacy Policy | ${siteConfig.shortName}`,
+    description: locale === 'ko'
+      ? `${siteConfig.name}의 개인정보처리방침입니다.`
+      : `Privacy Policy for ${siteConfig.name}`,
   }
 }
 
@@ -35,7 +36,7 @@ export default async function PrivacyPage({
             
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">1. 개인정보의 수집 및 이용 목적</h2>
-              <p>Colemearchy는 다음의 목적을 위하여 개인정보를 처리합니다.</p>
+              <p>{siteConfig.name}는 다음의 목적을 위하여 개인정보를 처리합니다.</p>
               <ul>
                 <li>웹사이트 서비스 제공 및 개선</li>
                 <li>이용자 문의 대응</li>
@@ -74,7 +75,7 @@ export default async function PrivacyPage({
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">4. 개인정보의 제3자 제공</h2>
-              <p>Colemearchy는 원칙적으로 이용자의 개인정보를 제3자에게 제공하지 않습니다. 다만, 아래의 경우에는 예외로 합니다.</p>
+              <p>{siteConfig.name}는 원칙적으로 이용자의 개인정보를 제3자에게 제공하지 않습니다. 다만, 아래의 경우에는 예외로 합니다.</p>
               <ul>
                 <li>이용자가 사전에 동의한 경우</li>
                 <li>법령의 규정에 의거하거나, 수사 목적으로 법령에 정해진 절차와 방법에 따라 수사기관의 요구가 있는 경우</li>
@@ -110,8 +111,8 @@ export default async function PrivacyPage({
               <h2 className="text-2xl font-semibold mb-4">8. 개인정보 보호책임자</h2>
               <p>개인정보 처리에 관한 업무를 총괄해서 책임지고, 개인정보 처리와 관련한 정보주체의 불만처리 및 피해구제 등을 위하여 아래와 같이 개인정보 보호책임자를 지정하고 있습니다.</p>
               <ul>
-                <li>개인정보 보호책임자: Colemearchy 운영팀</li>
-                <li>이메일: privacy@colemearchy.com</li>
+                <li>개인정보 보호책임자: {siteConfig.name} 운영팀</li>
+                <li>이메일: {siteConfig.emails.privacy}</li>
               </ul>
             </section>
 
@@ -156,7 +157,7 @@ export default async function PrivacyPage({
 
             <section className="mb-8">
               <h2 className="text-2xl font-semibold mb-4">3. Information Sharing</h2>
-              <p>We do not share personal information with companies, organizations, or individuals outside of Colemearchy except in the following cases:</p>
+              <p>We do not share personal information with companies, organizations, or individuals outside of {siteConfig.name} except in the following cases:</p>
               <ul>
                 <li>With your consent</li>
                 <li>For legal reasons</li>
@@ -188,7 +189,7 @@ export default async function PrivacyPage({
               <h2 className="text-2xl font-semibold mb-4">7. Contact Information</h2>
               <p>If you have any questions about this Privacy Policy, please contact us:</p>
               <ul>
-                <li>Email: privacy@colemearchy.com</li>
+                <li>Email: {siteConfig.emails.privacy}</li>
               </ul>
             </section>
 

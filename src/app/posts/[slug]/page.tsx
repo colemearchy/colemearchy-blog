@@ -15,6 +15,7 @@ import CommentSection from '@/components/comments/CommentSection'
 import { calculateReadingTime, formatReadingTime } from '@/lib/reading-time'
 import ViewCounter from '@/components/ViewCounter'
 import { tagsToArray } from '@/lib/utils/tags'
+import { siteConfig, brandConfig } from '@/config'
 
 interface PostPageProps {
   params: Promise<{ slug: string }>
@@ -89,8 +90,8 @@ export async function generateMetadata({ params }: PostPageProps): Promise<Metad
 
   const readingTime = calculateReadingTime(content)
   
-  const ogImageUrl = post.coverImage || 
-    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}&date=${encodeURIComponent(post.publishedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`
+  const ogImageUrl = post.coverImage ||
+    `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || siteConfig.author.name)}&date=${encodeURIComponent(post.publishedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`
 
   return {
     title: post.seoTitle || post.title,
@@ -213,17 +214,17 @@ export default async function PostPage({
     '@type': 'BlogPosting',
     headline: post.title,
     description: post.excerpt,
-    image: post.coverImage || `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || 'Colemearchy')}&date=${encodeURIComponent(post.publishedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`,
+    image: post.coverImage || `${process.env.NEXT_PUBLIC_SITE_URL}/api/og?title=${encodeURIComponent(post.title)}&author=${encodeURIComponent(post.author || siteConfig.author.name)}&date=${encodeURIComponent(post.publishedAt.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }))}&readTime=${encodeURIComponent(formatReadingTime(readingTime))}&tags=${encodeURIComponent(tagsToArray(post.tags).join(','))}`,
     datePublished: post.publishedAt.toISOString(),
     dateModified: post.updatedAt.toISOString(),
     author: {
       '@type': 'Person',
-      name: post.author || 'CMA',
+      name: post.author || siteConfig.author.name,
       url: `${process.env.NEXT_PUBLIC_SITE_URL}/about`,
     },
     publisher: {
       '@type': 'Organization',
-      name: 'CMA',
+      name: siteConfig.shortName,
       logo: {
         '@type': 'ImageObject',
         url: `${process.env.NEXT_PUBLIC_SITE_URL}/logo.png`,
@@ -282,7 +283,7 @@ export default async function PostPage({
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div className="flex justify-between items-center py-6">
               <Link href="/" className="text-3xl font-bold text-gray-900">
-                CMA
+                {brandConfig.logo.text}
               </Link>
               <nav className="flex items-center gap-4">
                 <div className="flex gap-2">
@@ -408,7 +409,7 @@ export default async function PostPage({
         <footer className="bg-gray-50 mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <p className="text-center text-gray-500 text-sm">
-              © {new Date().getFullYear()} CMA. All rights reserved.
+              © {new Date().getFullYear()} {brandConfig.copyright.holder}. All rights reserved.
             </p>
           </div>
         </footer>

@@ -3,7 +3,7 @@ import Image from 'next/image'
 import { prisma } from '@/lib/prisma'
 // import LazyNewsletterAnalytics from '@/components/LazyNewsletterAnalytics' // Disabled newsletter feature
 import { Metadata } from 'next'
-import { navigationItems } from '@/lib/navigation'
+import { siteConfig, brandConfig, navigationConfig } from '@/config'
 import { LazyAdSense } from '@/components/LazyAdSense'
 import { shouldUseNextImage } from '@/lib/image-utils'
 import { tagsToArray } from '@/lib/utils/tags'
@@ -19,21 +19,20 @@ export async function generateMetadata({
   const { locale } = await params
 
   return {
-    title: locale === 'en' ? 'CMA - Tech & AI Blog' : 'CMA - 기술 및 AI 블로그',
-    description: locale === 'en'
-      ? 'A blog about AI, technology, and software development'
-      : 'AI, 기술, 소프트웨어 개발에 관한 블로그',
+    title: siteConfig.title[locale as keyof typeof siteConfig.title] ?? siteConfig.title[siteConfig.defaultLocale],
+    description: siteConfig.description[locale as keyof typeof siteConfig.description] ?? siteConfig.description[siteConfig.defaultLocale],
     alternates: {
-      canonical: `https://colemearchy.com/${locale}`,
+      canonical: `${siteConfig.url}/${locale}`,
       languages: {
-        'ko': '/ko',
-        'en': '/en',
-        'x-default': '/ko',
+        ...Object.fromEntries(siteConfig.locales.map(l => [l, `/${l}`])),
+        'x-default': `/${siteConfig.defaultLocale}`,
       }
     },
-    other: {
-      'naver-site-verification': 'b6f99c40e119f35973da1ab8da181dd5ccf28734'
-    }
+    ...(siteConfig.verification.naver ? {
+      other: {
+        'naver-site-verification': siteConfig.verification.naver
+      }
+    } : {})
   }
 }
 
@@ -156,7 +155,7 @@ export default async function HomePage({
           <div className="flex justify-between items-center py-8">
             <Link href="/" className="flex items-center gap-3">
               <h1 className="text-2xl font-bold text-gray-900">
-                CMA
+                {brandConfig.logo.text}
               </h1>
             </Link>
             <div className="flex gap-2 flex-shrink-0">
@@ -176,7 +175,7 @@ export default async function HomePage({
           </div>
           {/* Navigation */}
           <nav className="flex justify-center items-center gap-6 pb-4" aria-label="Main navigation">
-            {navigationItems[lang].map((item, index) => (
+            {(navigationConfig[lang as keyof typeof navigationConfig] ?? navigationConfig[siteConfig.defaultLocale]).map((item, index) => (
               <Link
                 key={item.href}
                 href={`/${locale}${item.href === '/' ? '' : item.href}`}
@@ -410,7 +409,7 @@ export default async function HomePage({
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 w-full overflow-x-hidden">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
             <div>
-              <h3 className="font-semibold text-gray-900 mb-4">CMA</h3>
+              <h3 className="font-semibold text-gray-900 mb-4">{brandConfig.logo.text}</h3>
             </div>
             <div>
               <ul className="space-y-2">
@@ -426,7 +425,7 @@ export default async function HomePage({
             </div>
           </div>
           <div className="border-t border-gray-200 pt-8 text-center text-sm text-gray-500">
-            <p>© {new Date().getFullYear()} CMA •
+            <p>&copy; {new Date().getFullYear()} {brandConfig.copyright.holder} &bull;
               <Link href={`/${locale}/privacy`} className="hover:text-gray-900 underline underline-offset-2"> Privacy</Link> •
               <Link href={`/${locale}/terms`} className="hover:text-gray-900 underline underline-offset-2"> Terms</Link>
             </p>

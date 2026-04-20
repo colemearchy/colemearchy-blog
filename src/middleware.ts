@@ -19,19 +19,22 @@ export async function middleware(request: NextRequest) {
       (locale) => pathname.startsWith(`/${locale}/`) || pathname === `/${locale}`
     )
 
-    // Subdomain Handling: consulting.colemearchy.com
-    if (isConsultingSubdomain) {
-      // Redirect all subdomain traffic to the consulting path if not already there
+    // Subdomain Handling (consulting feature toggle)
+    // 이 기능은 featuresConfig.consulting이 true일 때만 활성화된다.
+    // Edge Runtime에서는 config를 직접 import할 수 없으므로 환경변수로 제어한다.
+    const consultingEnabled = process.env.NEXT_PUBLIC_FEATURE_CONSULTING === 'true'
+    const consultingDomain = process.env.NEXT_PUBLIC_CONSULTING_DOMAIN || ''
+
+    if (consultingEnabled && isConsultingSubdomain) {
       if (!pathname.includes('/consulting')) {
         const locale = (pathname === '/en' || pathname.startsWith('/en/')) ? 'en' : 'ko'
         return NextResponse.redirect(new URL(`/${locale}/consulting`, request.url))
       }
     }
 
-    // Main Domain: colemearchy.com
-    if (!isConsultingSubdomain && pathname.includes('/consulting')) {
+    if (consultingEnabled && !isConsultingSubdomain && pathname.includes('/consulting') && consultingDomain) {
       const locale = pathname.startsWith('/en') ? 'en' : 'ko'
-      return NextResponse.redirect(new URL(`https://consulting.colemearchy.com/${locale}/consulting`, request.url))
+      return NextResponse.redirect(new URL(`https://${consultingDomain}/${locale}/consulting`, request.url))
     }
 
     // Skip locale redirect for special routes

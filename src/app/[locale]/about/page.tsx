@@ -1,4 +1,5 @@
 import PageLayout from '@/components/PageLayout'
+import { siteConfig } from '@/config'
 
 export default async function AboutPage({
   params,
@@ -14,9 +15,9 @@ export default async function AboutPage({
         {lang === 'ko' ? '소개' : 'About'}
       </h1>
       <p className="text-gray-600">
-        {lang === 'ko' 
-          ? 'CMA는 AI와 기술에 대한 인사이트를 공유하는 블로그입니다.'
-          : 'CMA is a blog sharing insights about AI and technology.'}
+        {lang === 'ko'
+          ? `${siteConfig.shortName}는 AI와 기술에 대한 인사이트를 공유하는 블로그입니다.`
+          : `${siteConfig.shortName} is a blog sharing insights about AI and technology.`}
       </p>
     </PageLayout>
   )

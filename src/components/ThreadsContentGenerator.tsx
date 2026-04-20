@@ -14,7 +14,7 @@ interface ThreadsContentGeneratorProps {
 
 export default function ThreadsContentGenerator({ post }: ThreadsContentGeneratorProps) {
   const [copied, setCopied] = useState(false)
-  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://colemearchy.com'
+  const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || ''
   
   // Generate Threads-optimized content
   const generateThreadsContent = () => {

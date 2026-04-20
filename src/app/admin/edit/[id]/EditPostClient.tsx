@@ -197,11 +197,11 @@ export default function EditPostClient({ id }: { id: string }) {
               <span className="text-sm text-gray-600">한국어:</span>
               <div className="flex items-center gap-2">
                 <code className="text-sm bg-white px-2 py-1 rounded border border-gray-200">
-                  https://colemearchy.com/ko/posts/{post.slug}
+                  {process.env.NEXT_PUBLIC_SITE_URL || ''}/ko/posts/{post.slug}
                 </code>
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(`https://colemearchy.com/ko/posts/${post.slug}`)
+                    navigator.clipboard.writeText(`{process.env.NEXT_PUBLIC_SITE_URL || ''}/ko/posts/${post.slug}`)
                     setCopiedUrl('ko')
                     setTimeout(() => setCopiedUrl(null), 2000)
                   }}
@@ -215,11 +215,11 @@ export default function EditPostClient({ id }: { id: string }) {
               <span className="text-sm text-gray-600">영어:</span>
               <div className="flex items-center gap-2">
                 <code className="text-sm bg-white px-2 py-1 rounded border border-gray-200">
-                  https://colemearchy.com/en/posts/{post.slug}
+                  {process.env.NEXT_PUBLIC_SITE_URL || ''}/en/posts/{post.slug}
                 </code>
                 <button
                   onClick={() => {
-                    navigator.clipboard.writeText(`https://colemearchy.com/en/posts/${post.slug}`)
+                    navigator.clipboard.writeText(`{process.env.NEXT_PUBLIC_SITE_URL || ''}/en/posts/${post.slug}`)
                     setCopiedUrl('en')
                     setTimeout(() => setCopiedUrl(null), 2000)
                   }}

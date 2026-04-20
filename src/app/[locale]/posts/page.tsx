@@ -4,6 +4,7 @@ import { prisma } from '@/lib/prisma'
 import InfinitePostsList from '@/components/InfinitePostsList'
 import PageLayout from '@/components/PageLayout'
 import { normalizePostsTags } from '@/lib/utils/tags'
+import { siteConfig } from '@/config'
 
 export async function generateMetadata({
   params,
@@ -14,15 +15,11 @@ export async function generateMetadata({
   const isKorean = locale === 'ko'
   
   return {
-    title: isKorean ? '모든 글 | CMA' : 'All Posts | CMA',
-    description: isKorean 
-      ? 'AI, 기술, 소프트웨어 개발에 관한 모든 블로그 글'
-      : 'Explore all blog posts about AI, technology, and software development',
+    title: isKorean ? `모든 글 | ${siteConfig.shortName}` : `All Posts | ${siteConfig.shortName}`,
+    description: siteConfig.description[isKorean ? 'ko' : 'en'],
     openGraph: {
-      title: isKorean ? '모든 글 | CMA' : 'All Posts | CMA',
-      description: isKorean 
-        ? 'AI, 기술, 소프트웨어 개발에 관한 모든 블로그 글'
-        : 'Explore all blog posts about AI, technology, and software development',
+      title: isKorean ? `모든 글 | ${siteConfig.shortName}` : `All Posts | ${siteConfig.shortName}`,
+      description: siteConfig.description[isKorean ? 'ko' : 'en'],
       type: 'website',
     },
   }
@@ -84,11 +81,9 @@ export default async function PostsPage({
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Blog',
-    name: 'CMA',
-    description: lang === 'ko' 
-      ? 'AI, 기술, 소프트웨어 개발에 관한 블로그'
-      : 'A blog about AI, technology, and software development',
-    url: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/posts`,
+    name: siteConfig.name,
+    description: siteConfig.description[lang as keyof typeof siteConfig.description] ?? siteConfig.description[siteConfig.defaultLocale],
+    url: `${siteConfig.url}/${locale}/posts`,
     blogPost: posts.map(post => {
       const title = lang === 'en' && post.translations?.[0]?.title
         ? post.translations[0].title
@@ -102,10 +97,10 @@ export default async function PostsPage({
         headline: title,
         description: excerpt,
         datePublished: post.publishedAt?.toISOString(),
-        url: `${process.env.NEXT_PUBLIC_SITE_URL}/${locale}/posts/${post.slug}`,
+        url: `${siteConfig.url}/${locale}/posts/${post.slug}`,
         author: {
-          '@type': 'Organization',
-          name: 'CMA',
+          '@type': siteConfig.author.type,
+          name: siteConfig.author.name,
         },
       }
     }),

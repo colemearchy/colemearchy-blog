@@ -73,10 +73,11 @@ const nextConfig: NextConfig = {
         protocol: 'http',
         hostname: 'localhost',
       },
-      {
-        protocol: 'https',
-        hostname: 'colemearchy.com',
-      },
+      // 자체 도메인 이미지 (NEXT_PUBLIC_SITE_URL 환경변수에서 추출)
+      ...(process.env.NEXT_PUBLIC_SITE_URL ? [{
+        protocol: 'https' as const,
+        hostname: new URL(process.env.NEXT_PUBLIC_SITE_URL).hostname,
+      }] : []),
       {
         protocol: 'https',
         hostname: '*.public.blob.vercel-storage.com',

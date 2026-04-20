@@ -2,6 +2,7 @@ import PageLayout from '@/components/PageLayout'
 import Link from 'next/link'
 import { prisma } from '@/lib/prisma'
 import { Metadata } from 'next'
+import { siteConfig } from '@/config'
 
 export const dynamic = 'force-dynamic'
 
@@ -14,12 +15,12 @@ export async function generateMetadata({
   const isKorean = locale === 'ko'
 
   return {
-    title: isKorean ? '사이트맵 | CMA' : 'Sitemap | CMA',
+    title: isKorean ? `사이트맵 | ${siteConfig.shortName}` : `Sitemap | ${siteConfig.shortName}`,
     description: isKorean
       ? '블로그의 모든 페이지와 글을 한눈에 보기'
       : 'Browse all pages and posts on the blog',
     openGraph: {
-      title: isKorean ? '사이트맵 | CMA' : 'Sitemap | CMA',
+      title: isKorean ? `사이트맵 | ${siteConfig.shortName}` : `Sitemap | ${siteConfig.shortName}`,
       description: isKorean
         ? '블로그의 모든 페이지와 글을 한눈에 보기'
         : 'Browse all pages and posts on the blog',

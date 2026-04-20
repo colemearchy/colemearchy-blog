@@ -35,12 +35,13 @@ describe('constants', () => {
       expect(SEO).toHaveProperty('DEFAULT_OG_IMAGE')
     })
 
-    it('should have correct site name', () => {
-      expect(SEO.SITE_NAME).toBe('Colemearchy')
+    it('should have correct site name from config', () => {
+      expect(SEO.SITE_NAME).toBeTruthy()
+      expect(typeof SEO.SITE_NAME).toBe('string')
     })
 
     it('should have Twitter handle', () => {
-      expect(SEO.TWITTER_HANDLE).toBe('@colemearchy')
+      expect(typeof SEO.TWITTER_HANDLE).toBe('string')
     })
 
     it('should have default OG image path', () => {

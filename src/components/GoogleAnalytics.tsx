@@ -2,10 +2,11 @@
 
 import { useEffect, Suspense } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
+import { siteConfig } from '@/config'
 
 // Global types are defined in src/types/gtag.d.ts
 
-const GA_MEASUREMENT_ID = 'G-KBJG8YGB9P'
+const GA_MEASUREMENT_ID = siteConfig.analytics.gaId
 
 function GoogleAnalyticsInner() {
   const pathname = usePathname()

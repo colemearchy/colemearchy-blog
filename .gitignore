@@ -60,4 +60,6 @@ dev.log
 # local backups (sensitive data)
 /local-backups/
 dev.db
+prisma/dev.db
 .env*.local
+*.bak

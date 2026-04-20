@@ -1,16 +1,21 @@
 /**
  * 애플리케이션 전역 상수
+ *
+ * SEO 상수는 src/config/site.config.ts 에서 관리.
+ * 이 파일의 SEO 객체는 하위 호환성을 위해 config를 re-export 한다.
  */
+import { siteConfig } from '@/config'
+import { brandConfig } from '@/config'
 
-// SEO 관련 상수
+// SEO 관련 상수 (config 기반)
 export const SEO = {
-  DEFAULT_TITLE: 'Colemearchy - Biohacking, Tech Leadership, and Sovereign Living',
-  DEFAULT_DESCRIPTION: 'Raw insights on biohacking, tech leadership, and building a sovereign life. From a tech director who refuses to follow the script.',
-  DEFAULT_KEYWORDS: ['biohacking', 'tech leadership', 'startup growth', 'SEO', 'AI', 'personal freedom', 'investing'],
-  SITE_NAME: 'Colemearchy',
-  SITE_URL: process.env.NEXT_PUBLIC_SITE_URL || 'https://colemearchy.com',
-  TWITTER_HANDLE: '@colemearchy',
-  DEFAULT_OG_IMAGE: '/og-image.png',
+  DEFAULT_TITLE: siteConfig.title[siteConfig.defaultLocale],
+  DEFAULT_DESCRIPTION: siteConfig.description[siteConfig.defaultLocale],
+  DEFAULT_KEYWORDS: siteConfig.keywords,
+  SITE_NAME: siteConfig.name,
+  SITE_URL: siteConfig.url,
+  TWITTER_HANDLE: siteConfig.social.twitter,
+  DEFAULT_OG_IMAGE: brandConfig.ogImage,
 } as const
 
 // 페이지네이션 상수
