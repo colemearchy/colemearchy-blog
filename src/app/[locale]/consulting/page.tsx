@@ -99,15 +99,12 @@ const profile = {
   ko: {
     name: "콜(Cole)",
     intro: "비즈니스 실무자가 직접 사용하는 AI와 자동화 시스템을 만듭니다.",
-    career: [
+    achievements: [
       "콜잇AI - AI 실무 교육 유튜버 (2025.08~)",
       "패스트캠퍼스, 비상, 아정당 등 다수 기업 특강 진행",
       "셀피쉬클럽 - 초기 멤버 (2023.03~)",
       "마켓핏랩 - 그로스PM (2022.03~)",
       "시리즈B 투자 AI 스타트업 초기멤버 & 이사 (2020.03~)",
-    ],
-    education: [
-      "홍익대학교 산업디자인학과 졸업",
       "AC2(애자일 코칭 제곱) 48기 수료",
       "Webflow 전 자격증 취득",
     ],
@@ -115,15 +112,12 @@ const profile = {
   en: {
     name: "Cole",
     intro: "Building AI and automation systems that business practitioners actually use.",
-    career: [
+    achievements: [
       "Cole It AI - AI Practitioner YouTuber (Aug 2025~)",
       "Corporate training for FastCampus, Visang, Ajungdang, etc.",
       "Selfish Club - Early Member (Mar 2023~)",
       "MarketFitLab - Growth PM (Mar 2022~)",
       "Co-founder & Director at Series B AI Startup (Mar 2020~)",
-    ],
-    education: [
-      "B.A. Industrial Design, Hongik University",
       "AC2 (Agile Coaching Squared) 48th Cohort",
       "Webflow Certified Professional",
     ],
@@ -285,21 +279,9 @@ export default async function ConsultingPage({
                 
                 <div className="space-y-8">
                   <div>
-                    <h4 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">{isEn ? 'Career' : '경력'}</h4>
+                    <h4 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">{isEn ? 'Experience & Activities' : '경력 및 활동'}</h4>
                     <ul className="space-y-3">
-                      {profile[lang].career.map((item, index) => (
-                        <li key={index} className="flex items-start gap-3">
-                          <span className="text-gray-500 mt-1">•</span>
-                          <span className="text-gray-200">{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                  
-                  <div>
-                    <h4 className="text-sm font-bold text-gray-500 mb-4 uppercase tracking-wider">{isEn ? 'Education & Skills' : '학력 및 활동'}</h4>
-                    <ul className="space-y-3">
-                      {profile[lang].education.map((item, index) => (
+                      {profile[lang].achievements.map((item, index) => (
                         <li key={index} className="flex items-start gap-3">
                           <span className="text-gray-500 mt-1">•</span>
                           <span className="text-gray-200">{item}</span>
