@@ -97,14 +97,14 @@ const problems = {
 
 const profile = {
   ko: {
-    name: "Cole",
+    name: "콜(Cole)",
     intro: "비즈니스 실무자가 직접 사용하는 AI와 자동화 시스템을 만듭니다.",
     career: [
       "콜잇AI - AI 실무 교육 유튜버 (2025.08~)",
-      "인톡 - Operation Lead (2026.04~)",
+      "패스트캠퍼스, 비상, 아정당 등 다수 기업 특강 진행",
       "셀피쉬클럽 - 초기 멤버 (2023.03~)",
       "마켓핏랩 - 그로스PM (2022.03~)",
-      "AI 스타트업 초기멤버 & 이사 (2020.03~)",
+      "시리즈B 투자 AI 스타트업 초기멤버 & 이사 (2020.03~)",
     ],
     education: [
       "홍익대학교 산업디자인학과 졸업",
@@ -116,11 +116,11 @@ const profile = {
     name: "Cole",
     intro: "Building AI and automation systems that business practitioners actually use.",
     career: [
-      "Cole AI - AI Practitioner YouTuber (Aug 2025~)",
-      "Intalk - Operation Lead (Apr 2026~)",
+      "Cole It AI - AI Practitioner YouTuber (Aug 2025~)",
+      "Corporate training for FastCampus, Visang, Ajungdang, etc.",
       "Selfish Club - Early Member (Mar 2023~)",
       "MarketFitLab - Growth PM (Mar 2022~)",
-      "AI Startup Co-founder & Director (Mar 2020~)",
+      "Co-founder & Director at Series B AI Startup (Mar 2020~)",
     ],
     education: [
       "B.A. Industrial Design, Hongik University",
@@ -172,21 +172,11 @@ export default async function ConsultingPage({
             </div>
           </div>
           <nav className="flex gap-6 pb-4">
-            {navigationItems[lang].map((item) => (
-              <Link
-                key={item.href}
-                href={`/${locale}${item.href === '/' ? '' : item.href}`}
-                className="text-sm font-medium text-gray-500 hover:text-gray-900"
-              >
-                {item.label}
-              </Link>
-            ))}
-            <Link
-              href={`/${locale}/consulting`}
+            <span
               className="text-sm font-bold text-gray-900 border-b-2 border-gray-900 pb-4 -mb-4"
             >
               {isEn ? 'Consulting' : '컨설팅'}
-            </Link>
+            </span>
           </nav>
         </div>
       </header>

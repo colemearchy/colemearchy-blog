@@ -21,12 +21,17 @@ export async function middleware(request: NextRequest) {
 
     // Subdomain Handling: consulting.colemearchy.com
     if (isConsultingSubdomain) {
-      // For the subdomain, we want the root to show the consulting page
-      if (pathname === '/' || pathname === '/ko' || pathname === '/en') {
-        const locale = (pathname === '/en' || pathname === '/en/') ? 'en' : 'ko'
-        const targetUrl = new URL(`/${locale}/consulting`, request.url)
-        return NextResponse.rewrite(targetUrl)
+      // Redirect all subdomain traffic to the consulting path if not already there
+      if (!pathname.includes('/consulting')) {
+        const locale = (pathname === '/en' || pathname.startsWith('/en/')) ? 'en' : 'ko'
+        return NextResponse.redirect(new URL(`/${locale}/consulting`, request.url))
       }
+    }
+
+    // Main Domain: colemearchy.com
+    if (!isConsultingSubdomain && pathname.includes('/consulting')) {
+      const locale = pathname.startsWith('/en') ? 'en' : 'ko'
+      return NextResponse.redirect(new URL(`https://consulting.colemearchy.com/${locale}/consulting`, request.url))
     }
 
     // Skip locale redirect for special routes
