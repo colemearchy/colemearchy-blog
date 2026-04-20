@@ -109,7 +109,7 @@ export async function convertVideoToBlog(
 
   // Generate blog content using Gemini
   logger.info('Generating blog content', { videoId, isShort })
-  const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+  const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
 
   // Process in chunks if needed
   let generatedContent = ''
@@ -238,7 +238,7 @@ OUTPUT FORMAT:
 }
   `.trim()
 
-  const finalModel = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+  const finalModel = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
   const finalResult = await finalModel.generateContent(blogPrompt)
   const finalResponse = await finalResult.response
   const finalText = finalResponse.text()

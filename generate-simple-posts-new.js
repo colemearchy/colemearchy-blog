@@ -65,7 +65,7 @@ async function generateBlogPost(title, index) {
 
 마크다운 본문만 작성해주세요. JSON이나 다른 형식은 사용하지 마세요.`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
     const result = await model.generateContent(prompt);
     
     const content = result.response.text();

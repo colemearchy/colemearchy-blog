@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
 
     // 2. Gemini에게 "오늘의 추천템" 요청
     // 실제로는 쿠팡 API를 사용하지만, 여기서는 Gemini가 트렌드 상품 추천
-    const model = genAI.getGenerativeModel({ model: 'gemini-2.0-flash-exp' })
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
 
     const trendPrompt = `
 당신은 15년차 블로그 성장 전략가이자 쿠팡 파트너스 전문가입니다.

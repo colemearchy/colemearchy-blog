@@ -74,7 +74,7 @@ async function generateContentHandler(request: NextRequest) {
     logger.info('Starting Gemini content generation');
     const fullPrompt = `${MASTER_SYSTEM_PROMPT}\n\n------\n\n${existingPostsContext}${ragContext}**EXECUTE TASK:**\n\n${generateContentPrompt(prompt, keywords, affiliateProducts)}`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
     logger.info('Calling Gemini API');
     const result = await model.generateContent({
       contents: [{

@@ -147,7 +147,7 @@ async function generateBlogPost(topic, index) {
 
 마크다운 형식을 적극 활용하여 가독성을 높여주세요.`;
 
-    const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash-exp" });
+    const model = genAI.getGenerativeModel({ model: "gemini-2.5-flash-lite" });
     const result = await model.generateContent({
       contents: [{
         role: 'user',
