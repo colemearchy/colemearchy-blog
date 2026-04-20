@@ -26,6 +26,11 @@ function getPrismaClient(): PrismaClient {
 
   const client = new PrismaClient({
     adapter,
+    // Override schema-level URL validation (sqlite provider expects file: protocol,
+    // but production uses libsql:// via adapter)
+    datasources: {
+      db: { url: 'file:./dev.db' },
+    },
     log: process.env.NODE_ENV === 'development' ? ['query', 'error', 'warn'] : ['error'],
   })
 
