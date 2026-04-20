@@ -7,7 +7,7 @@ export async function middleware(request: NextRequest) {
     const url = request.nextUrl.clone()
     let pathname = url.pathname
     const hostname = request.headers.get('host') || ''
-    const isConsultingSubdomain = hostname.includes('consulting.colemearchy.com')
+    const isConsultingSubdomain = hostname.startsWith('consulting.')
 
 
     // Handle www redirect + other redirects in a single hop
