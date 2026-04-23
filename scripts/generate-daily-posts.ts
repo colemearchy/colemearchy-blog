@@ -46,6 +46,14 @@ async function searchSimilarKnowledge(queryEmbedding: number[], limit: number = 
   }
 }
 
+// Safely coerce any value to a comma-separated string for Prisma
+function ensureTagString(value: unknown, fallback: string[]): string {
+  if (typeof value === 'string') return value;
+  if (Array.isArray(value)) return value.map(String).join(',');
+  if (value != null) return String(value);
+  return fallback.join(',');
+}
+
 // Generate slug from title
 function generateSlug(title: string): string {
   return title
@@ -138,7 +146,7 @@ async function generateBlogPost(topic: BlogTopic, index: number) {
         slug: `${slug}-${Date.now()}`,
         content: parsedContent.content || responseText,
         excerpt: parsedContent.excerpt || responseText.substring(0, 160),
-        tags: Array.isArray(parsedContent.tags) ? parsedContent.tags.join(',') : (parsedContent.tags || topic.keywords.join(',')),
+        tags: ensureTagString(parsedContent.tags, topic.keywords),
         seoTitle: parsedContent.seoTitle || parsedContent.title,
         seoDescription: parsedContent.seoDescription || parsedContent.excerpt,
         coverImage: parsedContent.coverImage,

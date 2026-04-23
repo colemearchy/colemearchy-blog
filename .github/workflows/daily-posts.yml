@@ -42,6 +42,22 @@ jobs:
 
       - name: Publish posts immediately
         run: |
-          curl -s -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
-            https://colemearchy.com/api/publish-posts
-        continue-on-error: true
+          echo "🚀 Publishing generated posts..."
+
+          RESPONSE=$(curl -s -L -w "\n%{http_code}" -X POST \
+            https://colemearchy.com/api/publish-posts \
+            -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
+            -H "Content-Type: application/json")
+
+          HTTP_CODE=$(echo "$RESPONSE" | tail -n1)
+          BODY=$(echo "$RESPONSE" | sed '$d')
+
+          echo "HTTP Code: $HTTP_CODE"
+          echo "Response: $BODY"
+
+          if [ "$HTTP_CODE" -eq 200 ]; then
+            echo "✅ Successfully published posts"
+          else
+            echo "❌ Failed to publish posts (HTTP $HTTP_CODE)"
+            exit 1
+          fi
