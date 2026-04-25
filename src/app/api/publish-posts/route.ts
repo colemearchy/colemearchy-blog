@@ -4,16 +4,21 @@ import { prisma } from '@/lib/prisma';
 import { env } from '@/lib/env';
 
 // Verify cron secret
-function verifyCronSecret(request: NextRequest): boolean {
+function verifyCronSecret(request: NextRequest): { valid: boolean; debug: string } {
   const authHeader = request.headers.get('authorization');
   const cronSecret = env.CRON_SECRET;
 
   if (!cronSecret) {
-    console.error('CRON_SECRET not configured');
-    return false;
+    return { valid: false, debug: 'CRON_SECRET not configured' };
   }
 
-  return authHeader === `Bearer ${cronSecret}`;
+  const expected = `Bearer ${cronSecret}`;
+  const match = authHeader === expected;
+
+  return {
+    valid: match,
+    debug: `secretLen=${cronSecret.length},headerLen=${authHeader?.length ?? 0},match=${match}`
+  };
 }
 
 // Trigger Vercel redeployment
@@ -75,8 +80,9 @@ async function submitToIndexNow(url: string) {
 export async function POST(request: NextRequest) {
   try {
     // Verify that this is a legitimate cron job request
-    if (!verifyCronSecret(request)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    const auth = verifyCronSecret(request);
+    if (!auth.valid) {
+      return NextResponse.json({ error: 'Unauthorized', debug: auth.debug }, { status: 401 });
     }
     
     console.log('Running scheduled post publication...');
