@@ -45,7 +45,7 @@ jobs:
           echo "🚀 Publishing generated posts..."
 
           RESPONSE=$(curl -s -L -w "\n%{http_code}" -X POST \
-            https://colemearchy.com/api/publish-posts \
+            https://www.colemearchy.com/api/publish-posts \
             -H "Authorization: Bearer ${{ secrets.CRON_SECRET }}" \
             -H "Content-Type: application/json")
 
