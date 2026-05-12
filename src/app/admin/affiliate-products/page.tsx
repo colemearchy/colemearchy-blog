@@ -40,20 +40,20 @@ export default function AffiliateProductsPage() {
 
   const fetchProducts = async () => {
     try {
-      // 개발 환경에서는 비밀번호 프롬프트 스킵
-      const password = process.env.NODE_ENV === 'development'
-        ? 'dksguswns2'
-        : prompt('Admin 비밀번호를 입력하세요:')
+      const password = prompt('Admin 비밀번호를 입력하세요:')
 
       if (!password) return
 
       const res = await fetch(`/api/admin/affiliate-products?password=${password}`)
-      if (!res.ok) throw new Error('Failed to fetch')
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null)
+        throw new Error(errorData?.error || `HTTP ${res.status}`)
+      }
 
       const data = await res.json()
       setProducts(data.data.products || [])
     } catch (error) {
-      alert('상품 목록을 불러오는데 실패했습니다.')
+      alert(`상품 목록을 불러오는데 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`)
     } finally {
       setIsLoading(false)
     }
@@ -81,7 +81,11 @@ export default function AffiliateProductsPage() {
         })
       })
 
-      if (!res.ok) throw new Error('Failed to save')
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null)
+        const errorMsg = errorData?.error || errorData?.message || `HTTP ${res.status}`
+        throw new Error(errorMsg)
+      }
 
       alert(editingProduct ? '수정되었습니다!' : '등록되었습니다!')
       setIsFormOpen(false)
@@ -97,7 +101,7 @@ export default function AffiliateProductsPage() {
       })
       fetchProducts()
     } catch (error) {
-      alert('저장에 실패했습니다.')
+      alert(`저장에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`)
     }
   }
 
@@ -112,12 +116,15 @@ export default function AffiliateProductsPage() {
         method: 'DELETE'
       })
 
-      if (!res.ok) throw new Error('Failed to delete')
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => null)
+        throw new Error(errorData?.error || `HTTP ${res.status}`)
+      }
 
       alert('삭제되었습니다!')
       fetchProducts()
     } catch (error) {
-      alert('삭제에 실패했습니다.')
+      alert(`삭제에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`)
     }
   }
 
