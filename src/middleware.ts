@@ -93,7 +93,12 @@ export async function middleware(request: NextRequest) {
       const credentials = Buffer.from(base64Credentials, 'base64').toString('ascii')
       const [username, password] = credentials.split(':')
       
-      const adminPassword = process.env.ADMIN_PASSWORD || 'admin123'
+      const adminPassword = process.env.ADMIN_PASSWORD
+
+      if (!adminPassword) {
+        console.error('ADMIN_PASSWORD environment variable is not set')
+        return new NextResponse('Server configuration error', { status: 500 })
+      }
       
       if (username !== 'admin' || password !== adminPassword) {
         return new NextResponse('Invalid credentials', {
