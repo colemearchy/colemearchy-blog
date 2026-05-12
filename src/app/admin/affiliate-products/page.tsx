@@ -21,6 +21,8 @@ export default function AffiliateProductsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingProduct, setEditingProduct] = useState<AffiliateProduct | null>(null)
+  const [isSaving, setIsSaving] = useState(false)
+  const [lastPostLink, setLastPostLink] = useState<{ title: string; slug: string } | null>(null)
 
   // Form state
   const [formData, setFormData] = useState({
@@ -65,6 +67,7 @@ export default function AffiliateProductsPage() {
     const password = prompt('Admin 비밀번호를 입력하세요:')
     if (!password) return
 
+    setIsSaving(true)
     try {
       const url = editingProduct
         ? `/api/admin/affiliate-products/${editingProduct.id}?password=${password}`
@@ -87,7 +90,14 @@ export default function AffiliateProductsPage() {
         throw new Error(errorMsg)
       }
 
-      alert(editingProduct ? '수정되었습니다!' : '등록되었습니다!')
+      const data = await res.json()
+      const post = data?.data?.post
+
+      if (post?.slug) {
+        setLastPostLink({ title: post.title, slug: post.slug })
+      }
+
+      alert(editingProduct ? '수정되었습니다!' : post?.slug ? `등록 및 글 발행 완료! /ko/posts/${post.slug}` : '등록되었습니다!')
       setIsFormOpen(false)
       setEditingProduct(null)
       setFormData({
@@ -102,6 +112,8 @@ export default function AffiliateProductsPage() {
       fetchProducts()
     } catch (error) {
       alert(`저장에 실패했습니다: ${error instanceof Error ? error.message : '알 수 없는 오류'}`)
+    } finally {
+      setIsSaving(false)
     }
   }
 
@@ -170,6 +182,24 @@ export default function AffiliateProductsPage() {
           + 새 상품 등록
         </button>
       </div>
+
+      {/* Last generated post link */}
+      {lastPostLink && (
+        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-green-800">글 발행 완료</p>
+            <p className="text-sm text-green-600">{lastPostLink.title}</p>
+          </div>
+          <a
+            href={`/ko/posts/${lastPostLink.slug}`}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="px-4 py-2 bg-green-600 text-white rounded-md hover:bg-green-700 text-sm"
+          >
+            글 보기
+          </a>
+        </div>
+      )}
 
       {/* Products Table */}
       <div className="bg-white rounded-lg shadow overflow-hidden">
@@ -329,6 +359,12 @@ export default function AffiliateProductsPage() {
                 />
               </div>
 
+              {!editingProduct && (
+                <p className="text-sm text-gray-500">
+                  * 새 상품 등록 시 AI가 자동으로 블로그 글을 생성합니다.
+                </p>
+              )}
+
               <div className="flex justify-end space-x-3 pt-4">
                 <button
                   type="button"
@@ -337,14 +373,16 @@ export default function AffiliateProductsPage() {
                     setEditingProduct(null)
                   }}
                   className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50"
+                  disabled={isSaving}
                 >
                   취소
                 </button>
                 <button
                   type="submit"
-                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700"
+                  className="px-4 py-2 bg-purple-600 text-white rounded-md hover:bg-purple-700 disabled:opacity-50"
+                  disabled={isSaving}
                 >
-                  {editingProduct ? '수정' : '등록'}
+                  {isSaving ? 'AI 글 생성 중...' : editingProduct ? '수정' : '등록 + 글 발행'}
                 </button>
               </div>
             </form>

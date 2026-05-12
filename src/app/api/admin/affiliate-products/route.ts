@@ -4,6 +4,10 @@ import { createClient } from '@libsql/client'
 import { withErrorHandler, logger, createSuccessResponse, validateRequest } from '@/lib/error-handler'
 import { verifyAdminAuth } from '@/lib/auth'
 import { z } from 'zod'
+import { GoogleGenerativeAI } from '@google/generative-ai'
+import { generateAffiliateContentPrompt } from '@/lib/ai-prompts'
+import { injectAffiliateLinks } from '@/lib/utils/affiliate-link-injector'
+import { generateUniqueSlugWithTimestamp } from '@/lib/utils/slug'
 
 export const dynamic = 'force-dynamic'
 
@@ -131,8 +135,104 @@ async function createProductHandler(request: NextRequest) {
 
   logger.info('Affiliate product created', { productId: id })
 
+  // Auto-generate blog post using Gemini
+  let post = null
+  try {
+    const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY || '')
+    const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash-lite' })
+
+    const keywords = (validatedData.keywords || '').split(',').map((k: string) => k.trim())
+    const prompt = generateAffiliateContentPrompt(
+      validatedData.name,
+      validatedData.coupangUrl,
+      keywords,
+      'review',
+      {
+        category: validatedData.category,
+        description: validatedData.description || ''
+      }
+    )
+
+    const geminiResult = await model.generateContent({
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.8, maxOutputTokens: 8192 }
+    })
+
+    const responseText = geminiResult.response.text()
+
+    let jsonText = responseText.trim()
+    if (jsonText.startsWith('```json')) {
+      jsonText = jsonText.replace(/^```json\s*/, '').replace(/\s*```$/, '')
+    } else if (jsonText.startsWith('```')) {
+      jsonText = jsonText.replace(/^```\s*/, '').replace(/\s*```$/, '')
+    }
+
+    let parsedContent
+    try {
+      parsedContent = JSON.parse(jsonText)
+    } catch {
+      parsedContent = {
+        title: `${validatedData.name} 실사용 후기`,
+        content: responseText,
+        excerpt: responseText.substring(0, 160),
+        tags: keywords,
+        seoTitle: `${validatedData.name} 후기`,
+        seoDescription: responseText.substring(0, 160)
+      }
+    }
+
+    const contentWithLinks = injectAffiliateLinks(parsedContent.content, [{
+      id,
+      name: validatedData.name,
+      coupangUrl: validatedData.coupangUrl,
+      category: validatedData.category,
+      keywords: validatedData.keywords || ''
+    }])
+
+    const slug = generateUniqueSlugWithTimestamp(parsedContent.title)
+    const postId = `post-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`
+    const postNow = Date.now()
+
+    await getTurso().execute({
+      sql: `INSERT INTO Post (
+        id, title, slug, content, excerpt, tags,
+        seoTitle, seoDescription, coverImage, status, author, originalLanguage,
+        createdAt, updatedAt, views
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      args: [
+        postId,
+        parsedContent.title,
+        slug,
+        contentWithLinks,
+        parsedContent.excerpt || contentWithLinks.substring(0, 160),
+        Array.isArray(parsedContent.tags) ? parsedContent.tags.join(',') : keywords.join(','),
+        parsedContent.seoTitle || parsedContent.title,
+        parsedContent.seoDescription || parsedContent.excerpt,
+        parsedContent.coverImage || null,
+        'PUBLISHED',
+        'Colemearchy AI',
+        'ko',
+        postNow,
+        postNow,
+        0
+      ]
+    })
+
+    await getTurso().execute({
+      sql: `INSERT INTO PostAffiliateProduct (
+        id, postId, affiliateProductId, createdAt
+      ) VALUES (?, ?, ?, ?)`,
+      args: [`rel-${postNow}`, postId, id, postNow]
+    })
+
+    post = { id: postId, title: parsedContent.title, slug }
+    logger.info('Auto-generated post for affiliate product', { postId, slug })
+  } catch (postError) {
+    logger.error('Failed to auto-generate post', { error: String(postError) })
+  }
+
   return createSuccessResponse(
-    { product: { id, ...validatedData } },
+    { product: { id, ...validatedData }, post },
     new URL(request.url).pathname
   )
 }
