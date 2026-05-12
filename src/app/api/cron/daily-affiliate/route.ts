@@ -11,7 +11,7 @@ function getTurso() {
   if (!_turso) {
     _turso = createClient({
       url: process.env.TURSO_DATABASE_URL || process.env.DATABASE_URL || "",
-      authToken: process.env.TURSO_AUTH_TOKEN,
+      authToken: process.env.TURSO_AUTH_TOKEN || process.env.DATABASE_AUTH_TOKEN,
     })
   }
   return _turso
